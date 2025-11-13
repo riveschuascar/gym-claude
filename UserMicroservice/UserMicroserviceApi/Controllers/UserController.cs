@@ -16,7 +16,7 @@ namespace UserMicroservice.Api.Controllers
             this.service = service;
         }
 
-        [HttpPost("Create")]
+        [HttpPost("Crear")]
         public async Task<IActionResult> Insert([FromBody]User t)
         { 
            var res=await service.Create(t);

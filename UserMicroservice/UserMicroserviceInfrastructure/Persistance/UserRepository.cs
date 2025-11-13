@@ -17,11 +17,11 @@ namespace UserMicroservice.Infrastructure.Persistence
 
         public async Task<Result<IEnumerable<User>>> GetAll()
         {
-            const string query = @"SELECT * FROM users.user WHERE Id = @Id;";
+            const string query = @"SELECT * FROM users.user WHERE IsActive = true;";
 
             try
             {
-                var users = await _connection.QueryAsync<User>(query, new { Id = DBNull.Value });
+                var users = await _connection.QueryAsync<User>(query);
                 return Result<IEnumerable<User>>.Success(users);
             }
             catch (Exception ex)
