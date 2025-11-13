@@ -9,7 +9,7 @@ namespace Users.Domain.Entities
         public string SecondLastname { get; set; }
         public DateTime DateOfBirth { get; set; }
         public string Ci { get; set; }
-        public string Role { get; set; }
+        public string UserRole { get; set; }
         public DateTime HireDate { get; set; }
         public decimal MonthlySalary { get; set; }
         public string Specialization { get; set; }

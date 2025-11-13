@@ -69,10 +69,10 @@ namespace Users.Infrastructure.Persistence
                 entity.IsActive = true;
 
                 const string query = @"
-                INSERT INTO ""User"" 
-                    (Name, FirstLastname, SecondLastname, DateOfBirth, Ci, Role, HireDate, MonthlySalary, Specialization, Email, Password, MustChangePassword, CreatedAt, LastModification, IsActive)
+                INSERT INTO users.user
+                    (Name, FirstLastname, SecondLastname, DateOfBirth, Ci, UserRole, HireDate, MonthlySalary, Specialization, Email, Password, MustChangePassword, CreatedAt, LastModification, IsActive)
                 VALUES 
-                    (@Name, @FirstLastname, @SecondLastname, @DateOfBirth, @Ci, @Role, @HireDate, @MonthlySalary, @Specialization, @Email, @Password, @MustChangePassword, @CreatedAt, @LastModification, @IsActive)
+                    (@Name, @FirstLastname, @SecondLastname, @DateOfBirth, @Ci, @UserRole, @HireDate, @MonthlySalary, @Specialization, @Email, crypt(@Password, gen_salt('bf')), @MustChangePassword, @CreatedAt, @LastModification, @IsActive)
                 RETURNING Id;";
 
                 entity.Id = await conn.ExecuteScalarAsync<int>(query, entity, transaction);
@@ -95,11 +95,11 @@ namespace Users.Infrastructure.Persistence
 
             try
             {
-                if (string.IsNullOrWhiteSpace(entity.Role))
+                if (string.IsNullOrWhiteSpace(entity.UserRole))
                 {
-                    const string existingRoleQuery = @"SELECT Role FROM users.user WHERE Id = @Id;";
+                    const string existingRoleQuery = @"SELECT UserRole FROM users.user WHERE Id = @Id;";
                     var existingRole = await conn.ExecuteScalarAsync<string>(existingRoleQuery, new { Id = entity.Id }, transaction);
-                    entity.Role = existingRole;
+                    entity.UserRole = existingRole;
                 }
 
                 entity.LastModification = DateTime.UtcNow;
@@ -111,7 +111,7 @@ namespace Users.Infrastructure.Persistence
                     SecondLastname = @SecondLastname,
                     DateOfBirth = @DateOfBirth,
                     Ci = @Ci,
-                    Role = @Role,
+                    UserRole = @UserRole,
                     HireDate = @HireDate,
                     MonthlySalary = @MonthlySalary,
                     Specialization = @Specialization,
