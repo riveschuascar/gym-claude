@@ -1,12 +1,12 @@
-using Domain.Shared;
-using Domain.Entities;
+using Users.Domain.Shared;
+using Users.Domain.Entities;
 
-namespace Domain.Ports
+namespace Users.Domain.Ports
 {
     public interface IRepository
     {
-        Task<Result<IEnumerable<User>>> GetAll();
         Task<Result<User>> GetById(int id);
+        Task<Result<IEnumerable<User>>> GetAll();
         Task<Result<User>> Create(User entity);
         Task<Result<User>> Update(User entity);
         Task<Result> DeleteById(int id);

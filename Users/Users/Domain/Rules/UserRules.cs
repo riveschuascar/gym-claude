@@ -1,14 +1,13 @@
-using System;
-using System.Linq;
-using System.Net.Mail;
 using System.Text.RegularExpressions;
-using Domain.Shared;
+using Users.Domain.Shared;
 
-namespace Domain.Rules
+namespace Users.Domain.Rules
 {
-    internal static class UserRules
+    internal static partial class UserRules
     {
-        private static readonly Regex LettersAndSpacesRegex = new(@"^[A-Za-zÁÉÍÓÚáéíóúÑñ ]+$");
+        [GeneratedRegex(@"^[A-Za-zÁÉÍÓÚáéíóúÑñ ]+$")]
+        private static partial Regex MyRegex();
+        private static readonly Regex LettersAndSpacesRegex = MyRegex();
 
         public static Result<string> NameRules(string? name)
         {
@@ -112,6 +111,18 @@ namespace Domain.Rules
                 return Result<decimal>.Failure("El salario no puede ser negativo o cero.");
 
             return Result<decimal>.Success(salary.Value);
+        }
+
+        public static Result<string> EmailRules(string? email)
+        {
+            if (string.IsNullOrWhiteSpace(email))
+                return Result<string>.Failure("El correo electrónico es obligatorio.");
+
+            var emailPattern = @"^[^@\s]+@[^@\s]+\.[^@\s]+$";
+            if (!Regex.IsMatch(email, emailPattern))
+                return Result<string>.Failure("El formato del correo electrónico no es válido.");
+
+            return Result<string>.Success(email);
         }
 
         public static Result<string> PasswordRules(string? password)

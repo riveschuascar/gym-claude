@@ -1,11 +1,12 @@
-using Domain.Entities;
+using Users.Domain.Entities;
+using Users.Domain.Shared;
 
-namespace Application.Interfaces
+namespace Users.Application.Interfaces
 {
     public interface IUserService
     {
         Task<Result<User>> GetById(int id);
-        Task<IEnumerable<User>> GetAll(); 
+        Task<Result<IEnumerable<User>>> GetAll(); 
         Task<Result<User>> Create(User newUser);
         Task<Result<User>> Update(User userToUpdate);
         Task<Result<bool>> Delete(int userId);

@@ -1,6 +1,7 @@
-using Domain.Entities;
+using Users.Domain.Entities;
+using Users.Domain.Shared;
 
-namespace Domain.Ports
+namespace Users.Domain.Ports
 {
     public interface IUserRepository : IRepository
     {

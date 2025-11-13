@@ -1,21 +1,22 @@
-using Domain.Entities;
-using Domain.Ports;
-using Domain.Shared;
+using Users.Domain.Entities;
+using Users.Domain.Ports;
+using Users.Domain.Shared;
 using Dapper;
 using Npgsql;
 
-namespace Infrastructure.Persistence
+namespace Users.Infrastructure.Persistence
 {
     public class UserRepository : IUserRepository
     {
         private readonly string _connectionString;
 
-        public UserRepository(IUserConnectionProvider connectionProvider)
+        public UserRepository(IConfiguration configuration)
         {
-            ArgumentNullException.ThrowIfNull(connectionProvider, nameof(connectionProvider));
+            if (configuration == null)
+                throw new ArgumentNullException(nameof(configuration));
 
-            _connectionString = connectionProvider.GetConnectionString()
-                                ?? throw new InvalidOperationException("El connection provider debe entregar una cadena válida.");
+            _connectionString = configuration.GetConnectionString("UsersDatabase")
+                                ?? throw new InvalidOperationException("La cadena de conexión 'UsersDatabase' no está configurada.");
         }
 
         public async Task<Result<IEnumerable<User>>> GetAll()

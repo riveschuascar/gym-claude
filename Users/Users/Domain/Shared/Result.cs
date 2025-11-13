@@ -1,4 +1,4 @@
-namespace Domain.Shared
+namespace Users.Domain.Shared
 {
     public class Result<T>
     {

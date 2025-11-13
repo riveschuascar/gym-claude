@@ -1,83 +1,89 @@
-using Domain.Ports;
-using Domain.Rules;
-using Application.Interfaces;
+using Users.Domain.Ports;
+using Users.Domain.Shared;
+using Users.Domain.Entities;
+using Users.Domain.Rules;
+using Users.Domain.Validators;
+using Users.Application.Interfaces;
 
-public class UserService : IUserService
+namespace Users.Application.Services
 {
-    private readonly IUserRepository repo;
-
-    public UserService(IUserRepository userRepository)
+    public class UserService : IUserService
     {
-        repo = userRepository;
-    }
+        private readonly IUserRepository repo;
 
-    public async Task<IEnumerable<User>> GetAll()
-    {
-        return await repo.GetAllAsync();
-    }
-
-    public async Task<Result<User>> GetById(int id)
-    {
-        var user = await repo.GetById(id);
-        if (user == null)
+        public UserService(IUserRepository userRepository)
         {
-            return Result<User>.Failure($"No se encontró el usuario con ID {id}.");
-        }
-        return Result<User>.Success(user);
-    }
-
-    public async Task<Result<User>> Create(User newUser)
-    {
-        var validationResult = UserValidator.Validar(newUser);
-        if (validationResult.IsFailure)
-        {
-            return validationResult;
+            repo = userRepository;
         }
 
-        var createdUser = await repo.CreateAsync(newUser);
-        return Result<User>.Success(createdUser);
-    }
-
-    public async Task<Result<User>> Update(User userToUpdate)
-    {
-        var validationResult = UserValidator.Validar(userToUpdate);
-        if (validationResult.IsFailure)
+        public async Task<Result<IEnumerable<User>>> GetAll()
         {
-            return validationResult;
+             return await repo.GetAll();
         }
 
-        var updatedUser = await repo.UpdateAsync(userToUpdate);
-        if (updatedUser == null)
+        public async Task<Result<User>> GetById(int id)
         {
-            return Result<User>.Failure($"No se encontró el usuario con ID {userToUpdate.Id} para actualizar.");
+            var res = await repo.GetById(id);
+            if (!res.IsSuccess)
+            {
+                return Result<User>.Failure($"No se encontró el usuario con ID {id}.");
+            }
+            return Result<User>.Success(res.Value!);
         }
 
-        return Result<User>.Success(updatedUser);
-    }
-
-    public async Task<Result<bool>> Delete(int userId)
-    {
-        var success = await repo.DeleteByIdAsync(userId);
-        if (!success)
+        public async Task<Result<User>> Create(User newUser)
         {
-            return Result<bool>.Failure($"No se pudo eliminar el usuario con ID {userId} (probablemente no se encontró).");
-        }
-        return Result<bool>.Success(true);
-    }
+            var res = UserValidator.Validate(newUser);
+            if (!res.IsSuccess)
+            {
+                return res;
+            }
 
-    public async Task<Result<bool>> UpdatePassword(int userId, string currentPassword, string newPassword)
-    {
-        var passwordValidationResult = PasswordRules.Validar(newPassword);
-        if (passwordValidationResult.IsFailure)
-        {
-            return Result<bool>.Failure(passwordValidationResult.Error);
+            res = await repo.Create(newUser);
+            return Result<User>.Success(res.Value!);
         }
 
-        var success = await repo.UpdatePasswordAsync(userId, newPassword);
-        if (!success)
+        public async Task<Result<User>> Update(User userToUpdate)
         {
-            return Result<bool>.Failure($"No se pudo actualizar la contraseña para el usuario con ID {userId}.");
+            var res = UserValidator.Validate(userToUpdate);
+            if (!res.IsSuccess)
+            {
+                return res;
+            }
+
+            var updatedUser = await repo.Update(userToUpdate);
+            if (updatedUser == null)
+            {
+                return Result<User>.Failure($"No se encontró el usuario con ID {userToUpdate.Id} para actualizar.");
+            }
+
+            return Result<User>.Success(updatedUser.Value!);
         }
-        return Result<bool>.Success(true);
+
+        public async Task<Result<bool>> Delete(int userId)
+        {
+            var res = await repo.DeleteById(userId);
+            if (!res.IsSuccess)
+            {
+                return Result<bool>.Failure($"No se pudo eliminar el usuario con ID {userId} (probablemente no se encontró).");
+            }
+            return Result<bool>.Success(true);
+        }
+
+        public async Task<Result<bool>> UpdatePassword(int userId, string currentPassword, string newPassword)
+        {
+            var passwordres = UserRules.PasswordRules(newPassword);
+            if (!passwordres.IsSuccess)
+            {
+                return Result<bool>.Failure(passwordres.Error!);
+            }
+
+            var res = await repo.UpdatePassword(userId, newPassword);
+            if (!res.IsSuccess)
+            {
+                return Result<bool>.Failure($"No se pudo actualizar la contraseña para el usuario con ID {userId}.");
+            }
+            return Result<bool>.Success(true);
+        }
     }
 }
