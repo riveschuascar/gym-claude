@@ -10,6 +10,6 @@ namespace UserMicroservice.Application.Interfaces
         Task<Result<User>> Create(User newUser);
         Task<Result<User>> Update(User userToUpdate);
         Task<Result<bool>> Delete(int userId);
-        Task<Result<bool>> UpdatePassword(int userId, string currentPassword, string newPassword);
+        Task<Result<bool>> UpdatePassword(string userEmail, string currentPassword, string newPassword);
     }
 }

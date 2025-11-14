@@ -70,7 +70,7 @@ namespace UserMicroservice.Application.Services
             return Result<bool>.Success(true);
         }
 
-        public async Task<Result<bool>> UpdatePassword(int userId, string currentPassword, string newPassword)
+        public async Task<Result<bool>> UpdatePassword(string userEmail, string currentPassword, string newPassword)
         {
             var passwordres = UserRules.PasswordRules(newPassword);
             if (!passwordres.IsSuccess)
@@ -78,10 +78,10 @@ namespace UserMicroservice.Application.Services
                 return Result<bool>.Failure(passwordres.Error!);
             }
 
-            var res = await repo.UpdatePassword(userId, newPassword);
+            var res = await repo.UpdatePassword(userEmail, newPassword);
             if (!res.IsSuccess)
             {
-                return Result<bool>.Failure($"No se pudo actualizar la contraseña para el usuario con ID {userId}.");
+                return Result<bool>.Failure($"No se pudo actualizar la contraseña para el usuario con ID {userEmail}.");
             }
             return Result<bool>.Success(true);
         }

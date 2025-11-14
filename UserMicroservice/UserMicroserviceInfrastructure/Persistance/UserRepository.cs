@@ -103,8 +103,6 @@ namespace UserMicroservice.Infrastructure.Persistence
                     MonthlySalary = @MonthlySalary,
                     Specialization = @Specialization,
                     Email = @Email,
-                    Password = @Password,
-                    MustChangePassword = @MustChangePassword,
                     LastModification = @LastModification,
                     IsActive = @IsActive
                 WHERE Id = @Id;";
@@ -161,13 +159,13 @@ namespace UserMicroservice.Infrastructure.Persistence
             }
         }
 
-        public async Task<Result> UpdatePassword(int id, string password)
+        public async Task<Result> UpdatePassword(string email, string password)
         {
             const string query = @"UPDATE users.user SET Password = @Password, MustChangePassword = false WHERE Id = @Id";
 
             try
             {
-                var affected = await _connection.ExecuteAsync(query, new { Id = id, Password = password });
+                var affected = await _connection.ExecuteAsync(query, new { Email = email, Password = password });
                 return affected > 0
                     ? Result.Success()
                     : Result.Failure("No se encontró el usuario para actualizar contraseña.");
