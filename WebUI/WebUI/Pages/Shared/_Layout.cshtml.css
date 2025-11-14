@@ -39,10 +39,48 @@ button.accept-policy {
   line-height: inherit;
 }
 
-.footer {
-  position: absolute;
-  bottom: 0;
-  width: 100%;
-  white-space: nowrap;
-  line-height: 60px;
+.footer{
+    padding-bottom:20px;
+    padding-top:30px;
+    background-color: #111;
+}
+.footer p {
+    color: #fff;
+    opacity: 0.8;
+    font-size: 14px;
+}
+
+.bg-black {
+    background: #111;
+}
+
+.footer-menu li a {
+    color: #fff;
+    opacity: 0.8;
+    font-size: 14px;
+}
+
+.footer-menu li a:hover {
+    color: rgb(245, 99, 75);
+    opacity: 1;
+}
+
+.lh-40 {
+    line-height: 40px;
+}
+
+.footer-socials li a {
+    color: #fff;
+    opacity: 0.8;
+}
+
+.recent-blog a {
+    line-height: 1.5;
+    font-size: 14px;
+}
+
+.footer-socials li a {
+    color: #595b65;
+    font-size: 18px;
+    padding-left: 10px;
 }
