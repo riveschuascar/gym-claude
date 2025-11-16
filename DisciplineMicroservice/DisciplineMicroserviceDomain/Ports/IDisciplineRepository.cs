@@ -11,6 +11,5 @@ namespace DisciplineMicroservice.DisciplineMicroserviceDomain.Ports
         Task<Result<Discipline>> Create(Discipline entity);
         Task<Result<Discipline>> Update(Discipline entity);
         Task<Result> DeleteById(int id);
-        Task<Result<IEnumerable<Discipline>>> GetAll(int id);
     }
 }
