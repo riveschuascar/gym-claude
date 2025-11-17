@@ -3,6 +3,7 @@ using MembershipMicroservice.MembershipMicroserviceDomain.Entities;
 using MembershipMicroservice.MembershipMicroserviceDomain.Ports;
 using MembershipMicroservice.MembershipMicroserviceDomain.Shared;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Configuration;
 using Npgsql;
 
 namespace MembershipMicroservice.MembershipMicroserviceInfraestructure.Persistence
