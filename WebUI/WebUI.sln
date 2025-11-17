@@ -5,6 +5,8 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebUI", "WebUI\WebUI.csproj", "{87282BF7-FB68-43D4-9D53-021D217397CA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MembershipMicroservice", "..\MembershipMicroservice\MembershipMicroservice.csproj", "{E955B849-C9F3-4F2E-B357-1192ECAFB0C3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,8 +29,23 @@ Global
 		{87282BF7-FB68-43D4-9D53-021D217397CA}.Release|x64.Build.0 = Release|Any CPU
 		{87282BF7-FB68-43D4-9D53-021D217397CA}.Release|x86.ActiveCfg = Release|Any CPU
 		{87282BF7-FB68-43D4-9D53-021D217397CA}.Release|x86.Build.0 = Release|Any CPU
+		{E955B849-C9F3-4F2E-B357-1192ECAFB0C3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E955B849-C9F3-4F2E-B357-1192ECAFB0C3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E955B849-C9F3-4F2E-B357-1192ECAFB0C3}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{E955B849-C9F3-4F2E-B357-1192ECAFB0C3}.Debug|x64.Build.0 = Debug|Any CPU
+		{E955B849-C9F3-4F2E-B357-1192ECAFB0C3}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{E955B849-C9F3-4F2E-B357-1192ECAFB0C3}.Debug|x86.Build.0 = Debug|Any CPU
+		{E955B849-C9F3-4F2E-B357-1192ECAFB0C3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E955B849-C9F3-4F2E-B357-1192ECAFB0C3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E955B849-C9F3-4F2E-B357-1192ECAFB0C3}.Release|x64.ActiveCfg = Release|Any CPU
+		{E955B849-C9F3-4F2E-B357-1192ECAFB0C3}.Release|x64.Build.0 = Release|Any CPU
+		{E955B849-C9F3-4F2E-B357-1192ECAFB0C3}.Release|x86.ActiveCfg = Release|Any CPU
+		{E955B849-C9F3-4F2E-B357-1192ECAFB0C3}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {9A0B7B23-0647-4BBF-8E7C-A8263F3A4E57}
 	EndGlobalSection
 EndGlobal
