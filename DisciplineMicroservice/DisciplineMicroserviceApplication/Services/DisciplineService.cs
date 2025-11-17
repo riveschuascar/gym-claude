@@ -5,7 +5,7 @@ using DisciplineMicroservice.DisciplineMicroserviceDomain.Ports;
 using DisciplineMicroservice.DisciplineMicroserviceDomain.Shared;
 using DisciplineMicroservice.DisciplineMicroserviceDomain.Validators;
 
-using Microsoft.AspNetCore.Identity;
+//using Microsoft.AspNetCore.Identity;
 
 namespace DisciplineMicroservice.DisciplineMicroserviceApplication.Services
 {
