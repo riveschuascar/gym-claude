@@ -11,9 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="MembershipMicroserviceApplication\" />
-    <Folder Include="MembershipMicroserviceInfraestructure\" />
-    <Folder Include="MembershipMicroserviceDomain\" />
+    <Folder Include="MembershipMicroserviceInfraestructure\Persistence\" />
   </ItemGroup>
 
 </Project>
