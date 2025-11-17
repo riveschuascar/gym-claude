@@ -18,4 +18,11 @@ public class DisciplinesController : ControllerBase
         var result = await _disciplineService.GetAll();
         return result.IsSuccess ? Ok(result.Value) : BadRequest(result.Error);
     }
+
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetById(int id)
+    {
+        var result = await _disciplineService.GetById(id);
+        return result.IsSuccess ? Ok(result.Value) : NotFound(result.Error);
+    }
 }

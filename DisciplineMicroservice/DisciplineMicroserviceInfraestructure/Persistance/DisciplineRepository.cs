@@ -4,6 +4,10 @@ using DisciplineMicroservice.DisciplineMicroserviceDomain.Entities;
 using DisciplineMicroservice.DisciplineMicroserviceDomain.Ports;
 using DisciplineMicroservice.DisciplineMicroserviceDomain.Shared;
 using Microsoft.Extensions.Configuration;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Threading.Tasks;
 
 namespace DisciplineMicroservice.DisciplineMicroserviceInfraestructure.Persistance
 {
@@ -20,13 +24,19 @@ namespace DisciplineMicroservice.DisciplineMicroserviceInfraestructure.Persistan
 
         private NpgsqlConnection CreateConnection() => new NpgsqlConnection(_connectionString);
 
+        // Obtener todas las disciplinas activas
         public async Task<Result<IEnumerable<Discipline>>> GetAll()
         {
             const string query = @"
-            SELECT disciplineid AS Id, name AS Name, starttime AS StartTime, endtime AS EndTime, 
-                   createdat AS CreatedAt, lastmodification AS LastModification, isactive AS IsActive
+            SELECT id AS Id,
+                   name AS Name,
+                   start_time AS StartTime,
+                   end_time AS EndTime,
+                   created_at AS CreatedAt,
+                   last_modification AS LastModification,
+                   is_active AS IsActive
             FROM discipline
-            WHERE isactive = true;";
+            WHERE is_active = true;";
 
             try
             {
@@ -38,31 +48,23 @@ namespace DisciplineMicroservice.DisciplineMicroserviceInfraestructure.Persistan
             catch (Exception ex)
             {
                 Console.WriteLine("Error en GetAll: " + ex.Message);
-                // Datos de prueba si falla
-                var dummy = new List<Discipline>
-            {
-                new Discipline
-                {
-                    Id = 1,
-                    Name = "Test Discipline",
-                    StartTime = TimeSpan.FromHours(8),
-                    EndTime = TimeSpan.FromHours(9),
-                    CreatedAt = DateTime.UtcNow,
-                    LastModification = DateTime.UtcNow,
-                    IsActive = true
-                }
-            };
-                return Result<IEnumerable<Discipline>>.Success(dummy);
+                return Result<IEnumerable<Discipline>>.Failure("Error al obtener disciplinas.");
             }
         }
 
+        // Obtener disciplina por Id
         public async Task<Result<Discipline>> GetById(int id)
         {
             const string query = @"
-            SELECT disciplineid AS Id, name AS Name, starttime AS StartTime, endtime AS EndTime, 
-                   createdat AS CreatedAt, lastmodification AS LastModification, isactive AS IsActive
+            SELECT id AS Id,
+                   name AS Name,
+                   start_time AS StartTime,
+                   end_time AS EndTime,
+                   created_at AS CreatedAt,
+                   last_modification AS LastModification,
+                   is_active AS IsActive
             FROM discipline
-            WHERE disciplineid = @Id AND isactive = true;";
+            WHERE id = @Id AND is_active = true;";
 
             try
             {
@@ -71,19 +73,7 @@ namespace DisciplineMicroservice.DisciplineMicroserviceInfraestructure.Persistan
                 var discipline = await conn.QuerySingleOrDefaultAsync<Discipline>(query, new { Id = id });
 
                 if (discipline == null)
-                {
-                    // Retornar disciplina de prueba si no se encuentra
-                    return Result<Discipline>.Success(new Discipline
-                    {
-                        Id = (short)id,
-                        Name = "Test Discipline",
-                        StartTime = TimeSpan.FromHours(8),
-                        EndTime = TimeSpan.FromHours(9),
-                        CreatedAt = DateTime.UtcNow,
-                        LastModification = DateTime.UtcNow,
-                        IsActive = true
-                    });
-                }
+                    return Result<Discipline>.Failure($"No se encontró la disciplina con Id {id}");
 
                 return Result<Discipline>.Success(discipline);
             }
@@ -94,19 +84,21 @@ namespace DisciplineMicroservice.DisciplineMicroserviceInfraestructure.Persistan
             }
         }
 
+        // Crear nueva disciplina
         public async Task<Result<Discipline>> Create(Discipline entity)
         {
             const string query = @"
             INSERT INTO discipline
-                (name, starttime, endtime, createdat, lastmodification, isactive)
+                (name, start_time, end_time, created_at, last_modification, is_active)
             VALUES
                 (@Name, @StartTime, @EndTime, @CreatedAt, @LastModification, @IsActive)
-            RETURNING disciplineid;";
+            RETURNING id;";
 
             try
             {
                 using var conn = CreateConnection();
                 await conn.OpenAsync();
+
                 entity.CreatedAt = DateTime.UtcNow;
                 entity.LastModification = DateTime.UtcNow;
                 entity.IsActive = true;
@@ -119,28 +111,27 @@ namespace DisciplineMicroservice.DisciplineMicroserviceInfraestructure.Persistan
             catch (Exception ex)
             {
                 Console.WriteLine("Error en Create: " + ex.Message);
-                // Retornar disciplina de prueba
-                entity.Id = 999;
-                entity.Name = "Test Created Discipline";
-                return Result<Discipline>.Success(entity);
+                return Result<Discipline>.Failure("Error al crear disciplina.");
             }
         }
 
+        // Actualizar disciplina
         public async Task<Result<Discipline>> Update(Discipline entity)
         {
             const string query = @"
             UPDATE discipline
             SET name = @Name,
-                starttime = @StartTime,
-                endtime = @EndTime,
-                lastmodification = @LastModification,
-                isactive = @IsActive
-            WHERE disciplineid = @Id;";
+                start_time = @StartTime,
+                end_time = @EndTime,
+                last_modification = @LastModification,
+                is_active = @IsActive
+            WHERE id = @Id;";
 
             try
             {
                 using var conn = CreateConnection();
                 await conn.OpenAsync();
+
                 entity.LastModification = DateTime.UtcNow;
 
                 var affected = await conn.ExecuteAsync(query, entity);
@@ -157,13 +148,14 @@ namespace DisciplineMicroservice.DisciplineMicroserviceInfraestructure.Persistan
             }
         }
 
+        // Eliminar disciplina (marcar como inactiva)
         public async Task<Result> DeleteById(int id)
         {
             const string query = @"
             UPDATE discipline
-            SET isactive = false,
-                lastmodification = @LastModification
-            WHERE disciplineid = @Id;";
+            SET is_active = false,
+                last_modification = @LastModification
+            WHERE id = @Id;";
 
             try
             {
