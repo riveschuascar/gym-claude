@@ -9,10 +9,9 @@ public class DetailsModel : PageModel
     private readonly HttpClient _http;
     public ClientDto Client { get; set; } = new();
 
-    public DetailsModel(IConfiguration configuration)
+    public DetailsModel(IHttpClientFactory factory)
     {
-        var baseUrl = configuration["ClientApiBase"] ?? "http://localhost:5135";
-        _http = new HttpClient { BaseAddress = new Uri(baseUrl) };
+        _http = factory.CreateClient("ClientAPI");
     }
 
     public async Task<IActionResult> OnGetAsync(int id)
@@ -23,4 +22,3 @@ public class DetailsModel : PageModel
         return Page();
     }
 }
-

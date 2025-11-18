@@ -9,13 +9,13 @@ namespace WebUI.Pages.Clients;
 public class EditModel : PageModel
 {
     private readonly HttpClient _http;
+
     [BindProperty]
     public ClientDto Client { get; set; } = new();
 
-    public EditModel(IConfiguration configuration)
+    public EditModel(IHttpClientFactory factory)
     {
-        var baseUrl = configuration["ClientApiBase"] ?? "http://localhost:5135";
-        _http = new HttpClient { BaseAddress = new Uri(baseUrl) };
+        _http = factory.CreateClient("ClientAPI");
     }
 
     public async Task<IActionResult> OnGetAsync(int id)

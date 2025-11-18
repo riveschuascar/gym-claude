@@ -9,10 +9,9 @@ public class IndexModel : PageModel
     private readonly HttpClient _http;
     public List<ClientDto> Clients { get; set; } = new();
 
-    public IndexModel(IConfiguration configuration)
+    public IndexModel(IHttpClientFactory factory)
     {
-        var baseUrl = configuration["ClientApiBase"] ?? "http://localhost:5135";
-        _http = new HttpClient { BaseAddress = new Uri(baseUrl) };
+        _http = factory.CreateClient("ClientAPI");
     }
 
     public async Task OnGet()
