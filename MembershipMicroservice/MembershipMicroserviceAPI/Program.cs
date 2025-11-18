@@ -1,4 +1,4 @@
-using MembershipMicroservice.MembershipMicroserviceApplication.Interfaces;
+﻿using MembershipMicroservice.MembershipMicroserviceApplication.Interfaces;
 using MembershipMicroservice.MembershipMicroserviceApplication.Services;
 using MembershipMicroservice.MembershipMicroserviceDomain.Ports;
 using MembershipMicroservice.MembershipMicroserviceInfraestructure.Persistence;
@@ -27,8 +27,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseAuthorization();
-app.MapGet("/ping", () => "pong");
 app.MapControllers();
-app.UseHttpsRedirection();
 
 app.Run();
