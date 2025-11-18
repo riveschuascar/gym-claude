@@ -8,7 +8,7 @@
     <h1 class="display-4">Gestión de Clientes</h1>
     <p class="lead text-muted">Lista general de todos los usuarios.</p>
     <a class="btn btn-primary shadow-sm" asp-page="Create">+ Registrar Nuevo Cliente</a>
- </div>
+</div>
 
 @if (TempData["ErrorMessage"] is string err && !string.IsNullOrWhiteSpace(err))
 {
@@ -33,36 +33,40 @@
                 </tr>
             </thead>
             <tbody>
-            @foreach (var c in Model.Clients)
-            {
-                <tr>
-                    <td>
-                        <a asp-page="Details" asp-route-id="@c.Id" class="text-decoration-none">
-                            @c.Name @c.FirstLastname @c.SecondLastname
-                        </a>
-                    </td>
-                    <td>@c.Ci</td>
-                    <td>@(c.DateBirth?.ToString("d"))</td>
-                    <td>
-                        @if (!string.IsNullOrWhiteSpace(c.FitnessLevel))
-                        {
-                            <span class="badge bg-secondary">@c.FitnessLevel</span>
-                        }
-                    </td>
-                    <td>@(c.CurrentWeightKg?.ToString("0.##"))</td>
-                    <td class="text-center">
-                        <div class="btn-group" role="group">
-                            <a asp-page="Details" asp-route-id="@c.Id" class="btn btn-sm btn-outline-info" title="Ver">
-                                <i class="fas fa-eye"></i>
+                @foreach (var c in Model.Users)
+                {
+                    <tr> 
+                    
+                        <td>
+                            <a asp-page="Details" asp-route-id="@c.Id" class="text-decoration-none">
+                                @c.Name @c.FirstLastname @c.SecondLastname
                             </a>
-                            <a asp-page="Edit" asp-route-id="@c.Id" class="btn btn-sm btn-outline-warning">Editar</a>
-                            <form method="post" asp-page-handler="Delete" asp-route-id="@c.Id" class="d-inline" onsubmit="confirmDelete(event, 'al cliente @c.Name @c.FirstLastname');">
-                                <button type="submit" class="btn btn-sm btn-outline-danger">Eliminar</button>
-                            </form>
-                        </div>
-                    </td>
-                </tr>
-            }
+                        </td>
+                        <td>@c.Ci</td>
+                        <td>@(c.DateOfBirth?.ToString("d"))</td>
+                        <td>
+                            @if (!string.IsNullOrWhiteSpace(c.UserRole))
+                            {
+                                <span class="badge bg-secondary">@c.UserRole</span>
+                            }
+                        </td>
+                        <td>@(c.HireDate?.ToString("d"))</td>
+                        <td>@(c.MonthlySalary?.ToString("C"))</td>
+                        <td>@c.Specialization</td>
+                        <td class="text-center">
+                            <div class="btn-group" role="group">
+                                <a asp-page="Details" asp-route-id="@c.Id" class="btn btn-sm btn-outline-info" title="Ver">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a asp-page="Edit" asp-route-id="@c.Id" class="btn btn-sm btn-outline-warning">Editar</a>
+                                <form method="post" asp-page-handler="Delete" asp-route-id="@c.Id" class="d-inline"
+                                    onsubmit="confirmDelete(event, 'al usuario @c.Name @c.FirstLastname');">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">Eliminar</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                }
             </tbody>
         </table>
     </div>

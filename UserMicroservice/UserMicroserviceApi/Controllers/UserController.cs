@@ -6,11 +6,11 @@ namespace UserMicroservice.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ClienteController : ControllerBase
+    public class UserController : ControllerBase
     {
         private readonly UserService service;
 
-        public ClienteController(UserService service)
+        public UserController(UserService service)
         {
             this.service = service;
         }
