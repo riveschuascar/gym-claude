@@ -7,7 +7,7 @@ public class Result<T>
     public T? Value { get; }
     public string Error { get; }
 
-    public Result(bool isSuccess, T? value, string error)
+    private Result(bool isSuccess, T? value, string error)
     {
         IsSuccess = isSuccess;
         Value = value;

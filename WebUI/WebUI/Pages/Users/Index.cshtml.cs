@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using WebUI.Common;
 using WebUI.DTO;
 
 namespace WebUI.Pages.Users;
@@ -19,21 +18,14 @@ public class IndexModel : PageModel
     {
         try
         {
-            // Deserializar directamente a Result<List<UserDTO>>
-            var response = await _userHttp.GetFromJsonAsync<Result<List<UserDTO>>>("/api/User");
+            // Deserializar directamente a List<UserDTO>
+            var data = await _userHttp.GetFromJsonAsync<List<UserDTO>>("/api/User");
 
-            if (response?.Value != null)
-            {
-                Users = response.Value
-                    .OrderBy(u => u.Name)
-                    .ThenBy(u => u.FirstLastname)
-                    .ThenBy(u => u.SecondLastname)
-                    .ToList();
-            }
-            else
-            {
-                Users = new List<UserDTO>();
-            }
+            Users = (data ?? new List<UserDTO>())
+                .OrderBy(u => u.Name)
+                .ThenBy(u => u.FirstLastname)
+                .ThenBy(u => u.SecondLastname)
+                .ToList();
         }
         catch (HttpRequestException ex)
         {
@@ -57,8 +49,25 @@ public class IndexModel : PageModel
 
     public async Task<IActionResult> OnPostDeleteAsync(int id)
     {
-        var resp = await _userHttp.DeleteAsync($"/api/User/{id}");
-        // Ignoramos el estado para simplificar, refrescamos la lista
+        try
+        {
+            var resp = await _userHttp.DeleteAsync($"/api/User/Eliminar/{id}");
+
+            if (resp.IsSuccessStatusCode)
+            {
+                TempData["SuccessMessage"] = "Usuario eliminado exitosamente.";
+            }
+            else
+            {
+                TempData["ErrorMessage"] = "No se pudo eliminar el usuario.";
+            }
+        }
+        catch (Exception ex)
+        {
+            TempData["ErrorMessage"] = "Error al conectar con el microservicio.";
+            Console.WriteLine($"Error: {ex.Message}");
+        }
+
         return RedirectToPage();
     }
 }
