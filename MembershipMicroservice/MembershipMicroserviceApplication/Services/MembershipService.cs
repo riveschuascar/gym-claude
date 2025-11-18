@@ -32,15 +32,13 @@ namespace MembershipMicroservice.MembershipMicroserviceApplication.Services
 
         public async Task<Result<Membership>> Create(Membership newMembership)
         {
-            var res = MembershipValidators.Validate(newMembership);
+            var res = MembershipValidators.Validate(newMembership, isUpdate: false);
 
             if (!res.IsSuccess)
-            {
                 return res;
-            }
 
-            res = await repo.Create(newMembership);
-            return Result<Membership>.Success(res.Value!);
+            var created = await repo.Create(newMembership);
+            return Result<Membership>.Success(created.Value!);
         }
 
         public async Task<Result<Membership>> Update(Membership membershipToUpdate)
@@ -58,6 +56,9 @@ namespace MembershipMicroservice.MembershipMicroserviceApplication.Services
             }
 
             var updatedMembership = await repo.Update(membershipToUpdate);
+
+            if (!updatedMembership.IsSuccess)
+                return Result<Membership>.Failure(updatedMembership.Error);
 
             return Result<Membership>.Success(updatedMembership.Value!);
         }

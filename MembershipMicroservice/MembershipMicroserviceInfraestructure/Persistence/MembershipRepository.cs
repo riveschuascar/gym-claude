@@ -17,9 +17,7 @@ namespace MembershipMicroservice.MembershipMicroserviceInfraestructure.Persisten
         {
             _connectionString = config.GetConnectionString("MembershipMicroserviceDB")
                 ?? throw new Exception("No se encontró la cadena de conexión 'MembershipMicroserviceDB'");
-
             _logger = logger;
-            Console.WriteLine("ConnectionString: " + _connectionString);
         }
 
         private NpgsqlConnection CreateConnection() => new NpgsqlConnection(_connectionString);
@@ -27,17 +25,17 @@ namespace MembershipMicroservice.MembershipMicroserviceInfraestructure.Persisten
         public async Task<Result<IEnumerable<Membership>>> GetAll()
         {
             const string query = @"
-            SELECT id AS Id,
-                   name AS Name,
-                   price AS Price,
-                   description AS Description,
-                   monthly_sessions AS MonthlySessions,
-                   created_at AS CreatedAt,
-                   last_modification AS LastModification,
-                   is_active AS IsActive
-            FROM membership
-            WHERE is_active = true
-            ORDER BY name ASC;";
+                SELECT id AS Id,
+                       name AS Name,
+                       price AS Price,
+                       description AS Description,
+                       monthly_sessions AS MonthlySessions,
+                       created_at AS CreatedAt,
+                       last_modification AS LastModification,
+                       is_active AS IsActive
+                FROM membership
+                WHERE is_active = true
+                ORDER BY name ASC;";
 
             try
             {
@@ -57,16 +55,16 @@ namespace MembershipMicroservice.MembershipMicroserviceInfraestructure.Persisten
         public async Task<Result<Membership>> GetById(int id)
         {
             const string query = @"
-            SELECT id AS Id,
-                   name AS Name,
-                   price AS Price,
-                   description AS Description,
-                   monthly_sessions AS MonthlySessions,
-                   created_at AS CreatedAt,
-                   last_modification AS LastModification,
-                   is_active AS IsActive
-            FROM membership
-            WHERE id = @Id;";
+                SELECT id AS Id,
+                       name AS Name,
+                       price AS Price,
+                       description AS Description,
+                       monthly_sessions AS MonthlySessions,
+                       created_at AS CreatedAt,
+                       last_modification AS LastModification,
+                       is_active AS IsActive
+                FROM membership
+                WHERE id = @Id AND is_active = true;";
 
             try
             {
@@ -90,11 +88,11 @@ namespace MembershipMicroservice.MembershipMicroserviceInfraestructure.Persisten
         public async Task<Result<Membership>> Create(Membership entity)
         {
             const string query = @"
-            INSERT INTO membership
-                (name, price, description, monthly_sessions, created_at, last_modification, is_active)
-            VALUES
-                (@Name, @Price, @Description, @MonthlySessions, @CreatedAt, @LastModification, @IsActive)
-            RETURNING id;";
+                INSERT INTO membership
+                    (name, price, description, monthly_sessions, created_at, last_modification, is_active)
+                VALUES
+                    (@Name, @Price, @Description, @MonthlySessions, @CreatedAt, @LastModification, @IsActive)
+                RETURNING id;";
 
             try
             {
@@ -120,14 +118,14 @@ namespace MembershipMicroservice.MembershipMicroserviceInfraestructure.Persisten
         public async Task<Result<Membership>> Update(Membership entity)
         {
             const string query = @"
-            UPDATE membership
-            SET name = @Name,
-                price = @Price,
-                description = @Description,
-                monthly_sessions = @MonthlySessions,
-                last_modification = @LastModification,
-                is_active = @IsActive
-            WHERE id = @Id;";
+                UPDATE membership
+                SET name = @Name,
+                    price = @Price,
+                    description = @Description,
+                    monthly_sessions = @MonthlySessions,
+                    last_modification = @LastModification,
+                    is_active = @IsActive
+                WHERE id = @Id;";
 
             try
             {
@@ -153,25 +151,19 @@ namespace MembershipMicroservice.MembershipMicroserviceInfraestructure.Persisten
         public async Task<Result> DeleteById(int id)
         {
             const string query = @"
-            UPDATE membership
-            SET is_active = false,
-                last_modification = @LastModification
-            WHERE id = @Id;";
+        UPDATE membership
+        SET is_active = false,
+            last_modification = @LastModification
+        WHERE id = @Id;";
 
             try
             {
                 using var conn = CreateConnection();
                 await conn.OpenAsync();
 
-                var affected = await conn.ExecuteAsync(query, new
-                {
-                    Id = id,
-                    LastModification = DateTime.UtcNow
-                });
+                var affected = await conn.ExecuteAsync(query, new { Id = id, LastModification = DateTime.UtcNow });
 
-                return affected > 0
-                    ? Result.Success()
-                    : Result.Failure("No se encontró la membresía para eliminar.");
+                return affected > 0 ? Result.Success() : Result.Failure("No se encontró la membresía para eliminar.");
             }
             catch (Exception ex)
             {
