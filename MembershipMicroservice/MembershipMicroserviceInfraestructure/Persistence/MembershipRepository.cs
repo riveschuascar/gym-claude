@@ -15,8 +15,8 @@ namespace MembershipMicroservice.MembershipMicroserviceInfraestructure.Persisten
 
         public MembershipRepository(IConfiguration config, ILogger<MembershipRepository> logger)
         {
-            _connectionString = config.GetConnectionString("DisciplineMicroserviceDB")
-                ?? throw new Exception("No se encontró la cadena de conexión 'DisciplineMicroserviceDB'");
+            _connectionString = config.GetConnectionString("MembershipMicroserviceDB")
+                ?? throw new Exception("No se encontró la cadena de conexión 'MembershipMicroserviceDB'");
 
             _logger = logger;
             Console.WriteLine("ConnectionString: " + _connectionString);
