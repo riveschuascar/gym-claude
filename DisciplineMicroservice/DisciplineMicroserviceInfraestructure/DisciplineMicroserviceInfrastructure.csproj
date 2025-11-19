@@ -11,7 +11,7 @@
 		<Company>MiEmpresa</Company>
 		<Product>DisciplineMicroserviceInfraestructure</Product>
 
-		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+		<!--<GenerateAssemblyInfo>false</GenerateAssemblyInfo>-->
 	</PropertyGroup>
 
 	<ItemGroup>

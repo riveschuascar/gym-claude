@@ -11,6 +11,8 @@
 		<FileVersion>1.0.0.0</FileVersion>
 		<Company>MiEmpresa</Company>
 		<Product>DisciplineMicroserviceApplication</Product>
+
+		<!--<GenerateAssemblyInfo>false</GenerateAssemblyInfo>-->
 	</PropertyGroup>
 
 	<ItemGroup>

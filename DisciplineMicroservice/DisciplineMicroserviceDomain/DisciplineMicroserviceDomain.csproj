@@ -12,6 +12,8 @@
 		<Company>MiEmpresa</Company>
 		<!-- Aquí pones el nombre de tu empresa o tu nombre -->
 		<Product>DisciplineMicroserviceInfrastructure</Product>
+
+		<!--<GenerateAssemblyInfo>false</GenerateAssemblyInfo>-->
 	</PropertyGroup>
 
 	<ItemGroup>

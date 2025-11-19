@@ -12,6 +12,8 @@
 		<Company>MiEmpresa</Company>
 		<Product>DisciplineMicroserviceAPI</Product>
 		<!-- No necesitas GenerateAssemblyInfo si borras AssemblyInfo.cs -->
+
+		<!--<GenerateAssemblyInfo>false</GenerateAssemblyInfo>-->
 	</PropertyGroup>
 
 	<ItemGroup>
