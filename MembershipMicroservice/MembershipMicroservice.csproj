@@ -13,10 +13,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="sql\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <None Include="MembershipMicroserviceAPI\MembershipMicroserviceAPI.csproj" />
     <None Include="MembershipMicroserviceApplication\MembershipMicroserviceApplication.csproj" />
     <None Include="MembershipMicroserviceDomain\MembershipMicroserviceDomain.csproj" />
