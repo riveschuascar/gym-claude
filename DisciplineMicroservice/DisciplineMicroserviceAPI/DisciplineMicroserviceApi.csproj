@@ -1,25 +1,32 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
-  <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-	<ImplicitUsings>enable</ImplicitUsings>
-	<Nullable>enable</Nullable>
-	<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.3.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration" Version="8.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="8.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0" />
-    <PackageReference Include="Npgsql" Version="7.0.4" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="10.0.1" />
-  </ItemGroup>
+		<!-- Información de ensamblado moderna -->
+		<Version>1.0.0</Version>
+		<AssemblyVersion>1.0.0.0</AssemblyVersion>
+		<FileVersion>1.0.0.0</FileVersion>
+		<Company>MiEmpresa</Company>
+		<Product>DisciplineMicroserviceAPI</Product>
+		<!-- No necesitas GenerateAssemblyInfo si borras AssemblyInfo.cs -->
+	</PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\DisciplineMicroserviceApplication\DisciplineMicroserviceApplication.csproj" />
-    <ProjectReference Include="..\DisciplineMicroserviceDomain\DisciplineMicroserviceDomain.csproj" />
-    <ProjectReference Include="..\DisciplineMicroserviceInfraestructure\DisciplineMicroserviceInfrastructure.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.3.0" />
+		<PackageReference Include="Microsoft.Extensions.Configuration" Version="8.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="8.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0" />
+		<PackageReference Include="Npgsql" Version="7.0.4" />
+		<PackageReference Include="Swashbuckle.AspNetCore" Version="10.0.1" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\DisciplineMicroserviceApplication\DisciplineMicroserviceApplication.csproj" />
+		<ProjectReference Include="..\DisciplineMicroserviceDomain\DisciplineMicroserviceDomain.csproj" />
+		<ProjectReference Include="..\DisciplineMicroserviceInfraestructure\DisciplineMicroserviceInfrastructure.csproj" />
+	</ItemGroup>
 
 </Project>
