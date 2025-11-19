@@ -8,6 +8,7 @@ builder.Services.AddHttpClient("Users", client =>
 {
     client.BaseAddress = new Uri("http://localhost:5089");
     client.DefaultRequestHeaders.Add("Accept", "application/json");
+});
 
 builder.Services.AddHttpClient("ClientAPI", client =>
 {
