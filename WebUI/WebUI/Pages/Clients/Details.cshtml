@@ -1,0 +1,60 @@
+@page "{id:int}"
+@model WebUI.Pages.Clients.DetailsModel
+@{
+    ViewData["Title"] = "Detalles del Cliente";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-header text-center">
+                <h2>Detalles del Cliente</h2>
+                <div class="text-muted">@Model.Client.Name @Model.Client.FirstLastname @Model.Client.SecondLastname</div>
+            </div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-4">CI</dt>
+                    <dd class="col-sm-8">@Model.Client.Ci</dd>
+
+                    <dt class="col-sm-4">Fecha de nacimiento</dt>
+                    <dd class="col-sm-8">@Model.Client.DateBirth?.ToString("d")</dd>
+
+                    <dt class="col-sm-4">Nivel</dt>
+                    <dd class="col-sm-8">@Model.Client.FitnessLevel</dd>
+
+                    <dt class="col-sm-4">Peso inicial (Kg)</dt>
+                    <dd class="col-sm-8">@Model.Client.InitialWeightKg</dd>
+
+                    <dt class="col-sm-4">Peso actual (Kg)</dt>
+                    <dd class="col-sm-8">@Model.Client.CurrentWeightKg</dd>
+
+                    <dt class="col-sm-4">Teléfono de emergencia</dt>
+                    <dd class="col-sm-8">@Model.Client.EmergencyContactPhone</dd>
+
+                    <dt class="col-sm-4">Registrado</dt>
+                    <dd class="col-sm-8">@Model.Client.CreatedAt?.ToString("g")</dd>
+
+                    <dt class="col-sm-4">Última modificación</dt>
+                    <dd class="col-sm-8">@Model.Client.LastModification?.ToString("g")</dd>
+
+                    <dt class="col-sm-4">Estado</dt>
+                    <dd class="col-sm-8">
+                        @if (Model.Client.IsActive)
+                        {
+                            <span class="badge bg-success">Activo</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">Inactivo</span>
+                        }
+                    </dd>
+                </dl>
+                <div class="d-grid gap-2 d-md-flex justify-content-md-center mt-4">
+                    <a asp-page="Edit" asp-route-id="@Model.Client.Id" class="btn btn-warning">Editar</a>
+                    <a asp-page="Index" class="btn btn-secondary">Volver</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
