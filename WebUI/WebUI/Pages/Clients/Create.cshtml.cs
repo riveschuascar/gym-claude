@@ -9,13 +9,13 @@ namespace WebUI.Pages.Clients;
 public class CreateModel : PageModel
 {
     private readonly HttpClient _http;
+
     [BindProperty]
     public ClientDto Client { get; set; } = new();
 
-    public CreateModel(IConfiguration configuration)
+    public CreateModel(IHttpClientFactory factory)
     {
-        var baseUrl = configuration["ClientApiBase"] ?? "http://localhost:5135";
-        _http = new HttpClient { BaseAddress = new Uri(baseUrl) };
+        _http = factory.CreateClient("ClientAPI");
     }
 
     public void OnGet() { }

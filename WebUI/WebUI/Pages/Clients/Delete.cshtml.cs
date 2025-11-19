@@ -7,13 +7,13 @@ namespace WebUI.Pages.Clients;
 public class DeleteModel : PageModel
 {
     private readonly HttpClient _http;
+
     [BindProperty]
     public ClientDto Client { get; set; } = new();
 
-    public DeleteModel(IConfiguration configuration)
+    public DeleteModel(IHttpClientFactory factory)
     {
-        var baseUrl = configuration["ClientApiBase"] ?? "http://localhost:5135";
-        _http = new HttpClient { BaseAddress = new Uri(baseUrl) };
+        _http = factory.CreateClient("ClientAPI");
     }
 
     public async Task<IActionResult> OnGetAsync(int id)
