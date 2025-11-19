@@ -1,0 +1,29 @@
+﻿@page
+@model WebUI.Pages.Memberships.DeleteModel
+
+@{
+    ViewData["Title"] = "Eliminar Membresía";
+}
+
+<div class="container mt-4">
+    <h1>@ViewData["Title"]</h1>
+    <hr />
+
+    <div class="alert alert-warning">
+        <strong>¿Está seguro que desea eliminar esta membresía?</strong>
+        <p>Nombre: @Model.Membership.Name</p>
+        <p>Precio: @Model.Membership.Price?.ToString("C")</p>
+        <p>Sesiones Mensuales: @Model.Membership.MonthlySessions</p>
+    </div>
+
+    <form method="post">
+        <div class="d-flex gap-2">
+            <button type="submit" asp-route-id="@Model.Membership.Id" class="btn btn-danger">
+                <i class="fas fa-trash"></i> Eliminar
+            </button>
+            <a asp-page="Index" class="btn btn-secondary">
+                <i class="fas fa-times"></i> Cancelar
+            </a>
+        </div>
+    </form>
+</div>
