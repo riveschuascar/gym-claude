@@ -18,4 +18,3 @@ public class Result<T>
 
     public static Result<T> Failure(string error) => new Result<T>(false, default, error);
 }
-

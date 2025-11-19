@@ -1,0 +1,52 @@
+@page "{id:int}"
+@model WebUI.Pages.Users.DeleteModel
+
+@{
+    ViewData["Title"] = "Eliminar Usuario";
+}
+
+<div class="row justify-content-center mt-5">
+    <div class="col-md-6">
+        <div class="card shadow-sm">
+            <div class="card-header bg-danger text-white text-center">
+                <h2 class="mb-0">Eliminar Usuario</h2>
+            </div>
+            <div class="card-body">
+                @if (ModelState.ContainsKey(string.Empty) && !ModelState.IsValid)
+                {
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        @ModelState[string.Empty]?.Errors.FirstOrDefault()?.ErrorMessage
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                }
+
+                <div class="alert alert-warning" role="alert">
+                    <h5 class="alert-heading"><i class="fas fa-exclamation-triangle"></i> ¡Advertencia!</h5>
+                    <p class="mb-0">
+                        ¿Está seguro que desea eliminar al usuario <strong>@Model.User.Name @Model.User.FirstLastname @Model.User.SecondLastname</strong>?
+                    </p>
+                    <hr />
+                    <p class="mb-0 small text-muted">
+                        <strong>CI:</strong> @Model.User.Ci | 
+                        <strong>Rol:</strong> @Model.User.UserRole
+                    </p>
+                </div>
+
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> Esta acción no se puede revertir.
+                </div>
+
+                <form method="post">
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash"></i> Eliminar
+                        </button>
+                        <a asp-page="Index" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Cancelar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
