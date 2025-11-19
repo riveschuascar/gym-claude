@@ -1,0 +1,49 @@
+﻿@page
+@model WebUI.Pages.Disciplines.EditModel
+@{
+    ViewData["Title"] = "Editar Disciplina";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Editar Disciplina</h1>
+    <p class="lead text-muted">Actualice los datos de la disciplina.</p>
+</div>
+
+@if (TempData["ErrorMessage"] is string err && !string.IsNullOrWhiteSpace(err))
+{
+    <div class="alert alert-danger mt-3">@err</div>
+}
+
+<form method="post" class="mt-4">
+    <input type="hidden" asp-for="Discipline.Id" />
+
+    <div class="mb-3">
+        <label asp-for="Discipline.Name" class="form-label">Nombre</label>
+        <input asp-for="Discipline.Name" class="form-control" />
+        <span asp-validation-for="Discipline.Name" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Discipline.StartTime" class="form-label">Hora de Inicio</label>
+        <input asp-for="Discipline.StartTime" type="time" class="form-control" />
+        <span asp-validation-for="Discipline.StartTime" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Discipline.EndTime" class="form-label">Hora de Fin</label>
+        <input asp-for="Discipline.EndTime" type="time" class="form-control" />
+        <span asp-validation-for="Discipline.EndTime" class="text-danger"></span>
+    </div>
+
+    <div class="form-check mb-3">
+        <input asp-for="Discipline.IsActive" class="form-check-input" type="checkbox" />
+        <label asp-for="Discipline.IsActive" class="form-check-label">Activo</label>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Actualizar Disciplina</button>
+    <a asp-page="Index" class="btn btn-secondary">Cancelar</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
