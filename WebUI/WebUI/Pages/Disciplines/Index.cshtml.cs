@@ -7,10 +7,13 @@ namespace WebUI.Pages.Disciplines;
 public class IndexModel : PageModel
 {
     private readonly HttpClient _disciplineHttp;
+
+    // Lista de disciplinas que se mostrará en la UI
     public List<DisciplineDTO> Disciplines { get; set; } = new();
 
     public IndexModel(IHttpClientFactory factory)
     {
+        // Asegúrate de que el HttpClient "Disciplines" tenga BaseAddress = http://localhost:5098
         _disciplineHttp = factory.CreateClient("Disciplines");
     }
 
@@ -18,7 +21,9 @@ public class IndexModel : PageModel
     {
         try
         {
-            var data = await _disciplineHttp.GetFromJsonAsync<List<DisciplineDTO>>("/api/Discipline");
+            // URL corregida: minúscula y coincidiendo con tu API
+            var data = await _disciplineHttp.GetFromJsonAsync<List<DisciplineDTO>>("/api/disciplines");
+
             Disciplines = (data ?? new List<DisciplineDTO>())
                 .OrderBy(d => d.Name)
                 .ThenBy(d => d.StartTime)
@@ -27,7 +32,7 @@ public class IndexModel : PageModel
         catch (Exception ex)
         {
             TempData["ErrorMessage"] = "Error al cargar las disciplinas.";
-            Console.WriteLine(ex.Message);
+            Console.WriteLine("Error al obtener disciplinas: " + ex.Message);
             Disciplines = new List<DisciplineDTO>();
         }
     }
@@ -36,16 +41,17 @@ public class IndexModel : PageModel
     {
         try
         {
-            var resp = await _disciplineHttp.DeleteAsync($"/api/Discipline/Eliminar/{id}");
+            var resp = await _disciplineHttp.DeleteAsync($"/api/disciplines/Eliminar/{id}");
             TempData[resp.IsSuccessStatusCode ? "SuccessMessage" : "ErrorMessage"] =
                 resp.IsSuccessStatusCode ? "Disciplina eliminada exitosamente." : "No se pudo eliminar la disciplina.";
         }
         catch (Exception ex)
         {
             TempData["ErrorMessage"] = "Error al conectar con el microservicio.";
-            Console.WriteLine(ex.Message);
+            Console.WriteLine("Error al eliminar disciplina: " + ex.Message);
         }
 
         return RedirectToPage();
     }
 }
+
