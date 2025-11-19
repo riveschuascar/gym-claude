@@ -24,32 +24,33 @@ namespace MembershipMicroservice.MembershipMicroserviceAPI.Controllers
             return result.IsSuccess ? Ok(result.Value) : BadRequest(result.Error);
         }
 
-    [HttpGet("{id}")]
-    public async Task<IActionResult> GetById(int id)
-    {
-        var result = await _membershipService.GetById(id);
-        return result.IsSuccess ? Ok(result.Value) : NotFound(result.Error);
-    }
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(int id)
+        {
+            var result = await _membershipService.GetById(id);
+            return result.IsSuccess ? Ok(result.Value) : NotFound(result.Error);
+        }
 
-    [HttpPost]
-    public async Task<IActionResult> Create([FromBody] Membership membership)
-    {
-        var result = await _membershipService.Create(membership);
-        return result.IsSuccess ? Ok(result.Value) : BadRequest(result.Error);
-    }
+        [HttpPost]
+        public async Task<IActionResult> Create([FromBody] Membership membership)
+        {
+            var result = await _membershipService.Create(membership);
+            return result.IsSuccess ? Ok(result.Value) : BadRequest(result.Error);
+        }
 
-    [HttpPut("{id}")]
-    public async Task<IActionResult> Update(int id, [FromBody] Membership membership)
-    {
-        membership.Id = (short)id;
-        var result = await _membershipService.Update(membership);
-        return result.IsSuccess ? Ok(result.Value) : BadRequest(result.Error);
-    }
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(int id, [FromBody] Membership membership)
+        {
+            membership.Id = (short)id;
+            var result = await _membershipService.Update(membership);
+            return result.IsSuccess ? Ok(result.Value) : BadRequest(result.Error);
+        }
 
-    [HttpDelete("{id}")]
-    public async Task<IActionResult> Delete(int id)
-    {
-        var result = await _membershipService.Delete(id);
-        return result.IsSuccess ? Ok(result.Value) : BadRequest(result.Error);
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var result = await _membershipService.Delete(id);
+            return result.IsSuccess ? Ok(result.Value) : BadRequest(result.Error);
+        }
     }
 }

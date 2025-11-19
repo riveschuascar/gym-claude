@@ -9,7 +9,7 @@ namespace MembershipMicroservice.MembershipMicroserviceDomain.Validators
         private static readonly Regex AllowedCharsRegex =
             new Regex("^[a-zA-Z0-9 ñáéíóúÁÉÍÓÚüÜ]+$", RegexOptions.Compiled);
 
-        public static Result<Membership> Validate(Membership membership)
+        public static Result<Membership> Validate(Membership membership, bool isUpdate)
         {
             if (membership is null)
             {

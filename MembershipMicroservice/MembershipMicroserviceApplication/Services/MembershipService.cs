@@ -43,7 +43,7 @@ namespace MembershipMicroservice.MembershipMicroserviceApplication.Services
 
         public async Task<Result<Membership>> Update(Membership membershipToUpdate)
         {
-            var validationResult = MembershipValidators.Validate(membershipToUpdate);
+            var validationResult = MembershipValidators.Validate(membershipToUpdate, isUpdate: true);
             if (validationResult.IsFailure)
             {
                 return Result<Membership>.Failure(validationResult.Error);
