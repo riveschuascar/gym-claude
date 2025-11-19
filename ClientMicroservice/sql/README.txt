@@ -1,0 +1,1 @@
+El script SQL debe ejecutarse en una DB llamada 'ClientMicroservice' 
