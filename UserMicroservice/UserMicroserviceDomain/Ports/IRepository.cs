@@ -7,8 +7,8 @@ namespace UserMicroservice.Domain.Ports
     {
         Task<Result<User>> GetById(int id);
         Task<Result<IEnumerable<User>>> GetAll();
-        Task<Result<User>> Create(User entity);
-        Task<Result<User>> Update(User entity);
+        Task<Result> Create(User entity);
+        Task<Result> Update(User entity);
         Task<Result> DeleteById(int id);
     }
 }

@@ -12,10 +12,10 @@
                 <h2 class="mb-0">Eliminar Usuario</h2>
             </div>
             <div class="card-body">
-                @if (TempData["ErrorMessage"] is string err && !string.IsNullOrWhiteSpace(err))
+                @if (ModelState.ContainsKey(string.Empty) && !ModelState.IsValid)
                 {
                     <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                        @err
+                        @ModelState[string.Empty]?.Errors.FirstOrDefault()?.ErrorMessage
                         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                     </div>
                 }
@@ -37,27 +37,16 @@
                 </div>
 
                 <form method="post">
-                    <input type="hidden" asp-for="User.Id" />
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash"></i> Eliminar
+                        </button>
+                        <a asp-page="Index" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Cancelar
+                        </a>
+                    </div>
                 </form>
-            </div>
-            <div class="card-footer text-end bg-light">
-                <button type="submit" form="deleteForm" class="btn btn-danger">
-                    <i class="fas fa-trash"></i> Eliminar
-                </button>
-                <a asp-page="Index" class="btn btn-secondary">
-                    <i class="fas fa-times"></i> Cancelar
-                </a>
             </div>
         </div>
     </div>
 </div>
-
-@section Scripts {
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const form = document.querySelector('form');
-            form.id = 'deleteForm';
-            form.method = 'POST';
-        });
-    </script>
-}

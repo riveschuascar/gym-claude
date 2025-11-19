@@ -18,72 +18,72 @@ namespace UserMicroservice.Application.Services
 
         public async Task<Result<IEnumerable<User>>> GetAll()
         {
-             return await repo.GetAll();
+            return await repo.GetAll();
         }
 
         public async Task<Result<User>> GetById(int id)
         {
-            var res = await repo.GetById(id);
-            if (!res.IsSuccess)
-            {
+            var validation = await repo.GetById(id);
+
+            if (!validation.IsSuccess)
                 return Result<User>.Failure($"No se encontró el usuario con ID {id}.");
-            }
-            return Result<User>.Success(res.Value!);
+
+            return Result<User>.Success(validation.Value!);
         }
 
-        public async Task<Result<User>> Create(User newUser)
+        public async Task<Result> Create(User newUser)
         {
-            var res = UserValidator.Validate(newUser);
-            if (!res.IsSuccess)
+            newUser.CreatedAt = DateTime.Now;
+            newUser.CreatePassword();
+
+            var validation = UserSpecification.Create(newUser);
+
+            if (!validation.IsSuccess)
             {
-                return res;
+                return Result.Failure(validation.Error!);
             }
 
-            res = await repo.Create(newUser);
-            return Result<User>.Success(res.Value!);
+            return await repo.Create(newUser);
         }
 
-        public async Task<Result<User>> Update(User userToUpdate)
+        public async Task<Result> Update(User userToUpdate)
         {
-            var res = UserValidator.Validate(userToUpdate);
-            if (!res.IsSuccess)
+            userToUpdate.LastModification = DateTime.Now;
+            var validation = UserSpecification.Update(userToUpdate);
+
+            if (!validation.IsSuccess)
             {
-                return res;
+                return Result.Failure(validation.Error!);
             }
 
-            var updatedUser = await repo.Update(userToUpdate);
-            if (updatedUser == null)
-            {
-                return Result<User>.Failure($"No se encontró el usuario con ID {userToUpdate.Id} para actualizar.");
-            }
-
-            return Result<User>.Success(updatedUser.Value!);
+            return await repo.Update(userToUpdate);
         }
 
-        public async Task<Result<bool>> Delete(int userId)
+        public async Task<Result> Delete(int userId)
         {
-            var res = await repo.DeleteById(userId);
-            if (!res.IsSuccess)
-            {
-                return Result<bool>.Failure($"No se pudo eliminar el usuario con ID {userId} (probablemente no se encontró).");
-            }
-            return Result<bool>.Success(true);
+            return await repo.DeleteById(userId);
         }
 
-        public async Task<Result<bool>> UpdatePassword(string userEmail, string currentPassword, string newPassword)
+        public async Task<Result<User>> GetByEmail(string email)
         {
-            var passwordres = UserRules.PasswordRules(newPassword);
-            if (!passwordres.IsSuccess)
+            var validation = UserRules.EmailRules(email);
+            
+            if (!validation.IsSuccess)
+                return Result<User>.Failure(validation.Error!);
+            
+            return await repo.GetByEmail(email);
+        }
+
+        public async Task<Result> UpdatePassword(int userId, string newPassword)
+        {
+            var validation = UserRules.PasswordRules(newPassword);
+
+            if (!validation.IsSuccess)
             {
-                return Result<bool>.Failure(passwordres.Error!);
+                return Result.Failure(validation.Error!);
             }
 
-            var res = await repo.UpdatePassword(userEmail, newPassword);
-            if (!res.IsSuccess)
-            {
-                return Result<bool>.Failure($"No se pudo actualizar la contraseña para el usuario con ID {userEmail}.");
-            }
-            return Result<bool>.Success(true);
+            return await repo.UpdatePassword(userId, newPassword);
         }
     }
 }

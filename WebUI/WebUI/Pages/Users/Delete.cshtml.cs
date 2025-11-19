@@ -18,49 +18,20 @@ public class DeleteModel : PageModel
 
     public async Task<IActionResult> OnGetAsync(int id)
     {
-        try
-        {
-            var user = await _userHttp.GetFromJsonAsync<UserDTO>($"/api/User/{id}");
-
-            if (user == null)
-            {
-                TempData["ErrorMessage"] = "Usuario no encontrado.";
-                return RedirectToPage("Index");
-            }
-
-            User = user;
-            return Page();
-        }
-        catch (Exception ex)
-        {
-            TempData["ErrorMessage"] = "No se pudo cargar el usuario. Intente nuevamente.";
-            Console.WriteLine($"Error: {ex.Message}");
-            return RedirectToPage("Index");
-        }
+        var user = await _userHttp.GetFromJsonAsync<UserDTO>($"/api/User/{id}");
+        if (user is null) return NotFound();
+        User = user;
+        return Page();
     }
 
-    public async Task<IActionResult> OnPostAsync()
+    public async Task<IActionResult> OnPostAsync(int id)
     {
-        try
+        var resp = await _userHttp.DeleteAsync($"/api/User/{id}");
+        if (!resp.IsSuccessStatusCode)
         {
-            var response = await _userHttp.DeleteAsync($"/api/User/Eliminar/{User.Id}");
-
-            if (response.IsSuccessStatusCode)
-            {
-                TempData["SuccessMessage"] = "Usuario eliminado exitosamente.";
-                return RedirectToPage("Index");
-            }
-            else
-            {
-                TempData["ErrorMessage"] = "No se pudo eliminar el usuario.";
-                return Page();
-            }
-        }
-        catch (Exception ex)
-        {
-            TempData["ErrorMessage"] = "Error al conectar con el microservicio.";
-            Console.WriteLine($"Error: {ex.Message}");
+            ModelState.AddModelError(string.Empty, $"Error al eliminar: {resp.StatusCode}");
             return Page();
         }
+        return RedirectToPage("Index");
     }
 }

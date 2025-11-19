@@ -12,6 +12,8 @@ public class UserDTO
     public DateTime? HireDate { get; set; }
     public decimal? MonthlySalary { get; set; }
     public string? Specialization { get; set; }
+    public string? Email { get; set; }
+    public string? Password { get; set; }
     public bool? MustChangePassword { get; set; }
     public DateTime? CreatedAt { get; set; }
     public DateTime? LastModification { get; set; }

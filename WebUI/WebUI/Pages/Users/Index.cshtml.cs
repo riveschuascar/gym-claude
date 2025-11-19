@@ -14,30 +14,23 @@ public class IndexModel : PageModel
         _userHttp = httpClientFactory.CreateClient("Users");
     }
 
-    public async Task OnGet()
+    public async Task OnGetAsync()
     {
         try
         {
-            // Deserializar directamente a List<UserDTO>
-            var data = await _userHttp.GetFromJsonAsync<List<UserDTO>>("/api/User");
+            var data = await _userHttp.GetFromJsonAsync<List<UserDTO>>("/api/user");
 
-            Users = (data ?? new List<UserDTO>())
-                .OrderBy(u => u.Name)
-                .ThenBy(u => u.FirstLastname)
-                .ThenBy(u => u.SecondLastname)
-                .ToList();
+            Users = data ?? [];               
         }
-        catch (HttpRequestException ex)
+        catch (HttpRequestException)
         {
             TempData["ErrorMessage"] = "No se pudo conectar con el microservicio de Usuarios. Verifique que esté en ejecución (puerto 5089).";
             Users = new List<UserDTO>();
-            Console.WriteLine($"Error de conexión: {ex.Message}");
         }
-        catch (System.Text.Json.JsonException ex)
+        catch (System.Text.Json.JsonException)
         {
             TempData["ErrorMessage"] = "Error al procesar los datos del microservicio.";
             Users = new List<UserDTO>();
-            Console.WriteLine($"Error de JSON: {ex.Message}");
         }
         catch (Exception ex)
         {
@@ -51,11 +44,15 @@ public class IndexModel : PageModel
     {
         try
         {
-            var resp = await _userHttp.DeleteAsync($"/api/User/Eliminar/{id}");
+            var response = await _userHttp.DeleteAsync($"/api/user/{id}");
 
-            if (resp.IsSuccessStatusCode)
+            if (response.IsSuccessStatusCode)
             {
                 TempData["SuccessMessage"] = "Usuario eliminado exitosamente.";
+            }
+            else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                TempData["ErrorMessage"] = "El usuario no existe.";
             }
             else
             {

@@ -2,7 +2,7 @@ CREATE SCHEMA IF NOT EXISTS users;
 
 CREATE TABLE users.user (
     Id SERIAL PRIMARY KEY,
-    name VARCHAR(50),
+    Name VARCHAR(50),
     FirstLastname VARCHAR(50),
     SecondLastname VARCHAR(50),
     DateOfBirth DATE,
@@ -13,8 +13,8 @@ CREATE TABLE users.user (
     Specialization VARCHAR(100),
     Password VARCHAR(255) NOT NULL,
     Email VARCHAR(100) UNIQUE,
+    
     MustChangePassword BOOLEAN DEFAULT true,
-
     CreatedAt TIMESTAMP DEFAULT now() NOT NULL,
     LastModification TIMESTAMP DEFAULT NULL,
     IsActive BOOLEAN DEFAULT true

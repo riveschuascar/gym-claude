@@ -8,72 +8,110 @@ namespace UserMicroservice.Api.Controllers
     [ApiController]
     public class UserController : ControllerBase
     {
-        private readonly UserService service;
+        private readonly UserService _service;
 
         public UserController(UserService service)
         {
-            this.service = service;
+            _service = service;
         }
 
-        [HttpGet("{id}")]
-        public async Task<IActionResult> SelectById(int id)
+        [HttpGet("id/{id}")]
+        public async Task<IActionResult> GetById(int id)
         {
-            var res = await service.GetById(id);
+            var result = await _service.GetById(id);
             
-            if (!res.IsSuccess)
-                return NotFound(new { error = res.Error });
+            if (!result.IsSuccess)
+                return NotFound(new { error = result.Error });
             
-            return Ok(res.Value);
+            return Ok(result.Value);
         }
 
         [HttpGet]
-        public async Task<IActionResult> Select()
+        public async Task<IActionResult> GetAll()
         {
-            var res = await service.GetAll();
+            var result = await _service.GetAll();
             
-            if (!res.IsSuccess)
-                return BadRequest(new { error = res.Error });
+            if (!result.IsSuccess)
+                return BadRequest(new { error = result.Error });
             
-            return Ok(res.Value);
+            return Ok(result.Value);
         }
 
-        [HttpPost("Crear")]
-        public async Task<IActionResult> Insert([FromBody] User usr)
+        [HttpPost]
+        public async Task<IActionResult> Create([FromBody] User user)
         {
-            if (usr == null)
-                return BadRequest(new { error = "El usuario no puede ser vacio" });
+            if (user == null)
+                return BadRequest(new { error = "El usuario no puede ser vacío" });
 
-            var res = await service.Create(usr);
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var result = await _service.Create(user);
             
-            if (!res.IsSuccess)
-                return BadRequest(new { error = res.Error });
+            if (!result.IsSuccess)
+                return BadRequest(new { error = result.Error });
             
-            return CreatedAtAction(nameof(SelectById), new { id = res.Value.Id }, res.Value);
+            return CreatedAtAction(nameof(GetById), new { id = user.Id }, user);
         }
 
-        [HttpPut("Modificar")]
-        public async Task<IActionResult> Update([FromBody] User usr)
+        [HttpPut]
+        public async Task<IActionResult> Update([FromBody] User user)
         {
-            if (usr == null)
+            if (user == null)
                 return BadRequest(new { error = "El usuario no puede ser nulo" });
 
-            var res = await service.Update(usr);
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var result = await _service.Update(user);
             
-            if (!res.IsSuccess)
-                return BadRequest(new { error = res.Error });
+            if (!result.IsSuccess)
+                return BadRequest(new { error = result.Error });
             
-            return Ok(res.Value);
+            return Ok(new { message = "Usuario actualizado exitosamente" });
         }
 
-        [HttpDelete("Eliminar/{id}")]
+        [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            var res = await service.Delete(id);
+            var result = await _service.Delete(id);
             
-            if (!res.IsSuccess)
-                return NotFound(new { error = res.Error });
+            if (!result.IsSuccess)
+                return NotFound(new { error = result.Error });
             
-            return NoContent(); // 204 No Content
+            return NoContent();
         }
+
+        [HttpGet("email/{email}")]
+        public async Task<IActionResult> GetByEmail(string email)
+        {
+            var result = await _service.GetByEmail(email);
+            if (!result.IsSuccess)
+                return NotFound(new { error = result.Error });
+            
+            return Ok(result.Value);
+        }
+
+        [HttpPost("change-password/{id}")]
+        public async Task<IActionResult> ChangePassword(int id, [FromBody] ChangePasswordRequest request)
+        {
+            if (request == null)
+                return BadRequest(new { error = "Datos de contraseña requeridos" });
+
+            if (string.IsNullOrWhiteSpace(request.NewPassword))
+                return BadRequest(new { error = "Nueva contraseña requerida" });
+
+            var result = await _service.UpdatePassword(id, request.NewPassword);
+
+            if (!result.IsSuccess)
+                return BadRequest(new { error = result.Error });
+
+            return Ok(new { message = "Contraseña actualizada exitosamente" });
+        }
+    }
+
+    public class ChangePasswordRequest
+    {
+        public string NewPassword { get; set; }
     }
 }

@@ -48,20 +48,15 @@
 
                 <div class="row mb-3">
                     <div class="col-md-6">
+                        <label asp-for="User.Email" class="form-label">Correo</label>
+                        <input asp-for="User.Email" class="form-control"
+                            placeholder="Ej: Nutrición, Cardio, etc." />
+                        <span asp-validation-for="User.Specialization" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
                         <label asp-for="User.DateOfBirth" class="form-label">Fecha de Nacimiento</label>
                         <input asp-for="User.DateOfBirth" type="date" class="form-control" />
                         <span asp-validation-for="User.DateOfBirth" class="text-danger"></span>
-                    </div>
-                    <div class="col-md-6">
-                        <label asp-for="User.UserRole" class="form-label">Rol</label>
-                        <select asp-for="User.UserRole" class="form-select">
-                            <option value="">-- Seleccione un rol --</option>
-                            <option value="Admin">Admin</option>
-                            <option value="Manager">Manager</option>
-                            <option value="Trainer">Trainer</option>
-                            <option value="Member">Member</option>
-                        </select>
-                        <span asp-validation-for="User.UserRole" class="text-danger"></span>
                     </div>
                 </div>
 
@@ -81,20 +76,19 @@
 
                 <div class="row mb-3">
                     <div class="col-md-6">
+                        <label asp-for="User.UserRole" class="form-label">Rol</label>
+                        <select asp-for="User.UserRole" class="form-select">
+                            <option value="">-- Seleccione un rol --</option>
+                            <option value="Admin">Admin</option>
+                            <option value="Entrenador">Entrenador</option>
+                        </select>
+                        <span asp-validation-for="User.UserRole" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
                         <label asp-for="User.Specialization" class="form-label">Especialización</label>
                         <input asp-for="User.Specialization" class="form-control"
                             placeholder="Ej: Nutrición, Cardio, etc." />
                         <span asp-validation-for="User.Specialization" class="text-danger"></span>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">&nbsp;</label>
-                        <div class="form-check mt-2">
-                            <input type="checkbox" name="User.MustChangePassword" class="form-check-input"
-                                id="MustChangePassword" />
-                            <label class="form-check-label" for="MustChangePassword">
-                                Debe cambiar contraseña en próximo login
-                            </label>
-                        </div>
                     </div>
                 </div>
 

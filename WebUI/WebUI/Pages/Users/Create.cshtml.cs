@@ -30,7 +30,6 @@ public class CreateModel : PageModel
 
         try
         {
-            // No enviar Id, CreatedAt, LastModification ni IsActive (se generan en el servidor)
             var userToCreate = new UserDTO
             {
                 Name = User.Name,
@@ -42,7 +41,7 @@ public class CreateModel : PageModel
                 HireDate = User.HireDate,
                 MonthlySalary = User.MonthlySalary,
                 Specialization = User.Specialization,
-                MustChangePassword = User.MustChangePassword ?? false
+                Email = User.Email
             };
 
             var response = await _userHttp.PostAsJsonAsync("/api/User", userToCreate);

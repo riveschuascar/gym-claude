@@ -2,8 +2,7 @@ namespace UserMicroservice.Domain.Entities
 {
     public class User
     {
-        #region Domain Attributes
-        public int Id { get; set; }
+        public int? Id { get; set; }
         public string Name { get; set; }
         public string FirstLastname { get; set; }
         public string SecondLastname { get; set; }
@@ -13,15 +12,21 @@ namespace UserMicroservice.Domain.Entities
         public DateTime HireDate { get; set; }
         public decimal MonthlySalary { get; set; }
         public string Specialization { get; set; }
-        public string Email { get; set; }
-        public string Password { get; set; }
-        public bool MustChangePassword { get; set; }
-        #endregion
-        
-        #region Audit Attributes
-        public DateTime CreatedAt { get; set; }
+        public string? Password { get; private set; }
+        public string? Email { get; set; }
+        public bool? MustChangePassword { get; set; }
+        public DateTime? CreatedAt { get; set; }
         public DateTime? LastModification { get; set; }
-        public bool IsActive { get; set; } = true;
-        #endregion
+        public bool? IsActive { get; set; }
+
+        public void UpdateModificationDate()
+        {
+            LastModification = DateTime.UtcNow;
+        }
+
+        public void CreatePassword()
+        {
+            Password = "GYMcl@ude" + Ci.ToString();
+        }
     }
 }

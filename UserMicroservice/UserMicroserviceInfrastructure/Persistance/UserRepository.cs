@@ -8,90 +8,65 @@ namespace UserMicroservice.Infrastructure.Persistence
 {
     public class UserRepository : IUserRepository
     {
-        private readonly IDbConnection _connection;
+        private readonly IDbConnection _conn;
 
-        public UserRepository(IDbConnection connection)
+        public UserRepository(IDbConnection conn)
         {
-            _connection = connection ?? throw new ArgumentNullException(nameof(connection));
+            _conn = conn ?? throw new ArgumentNullException(nameof(conn));
+            if (_conn.State == ConnectionState.Closed)
+                _conn.Open();
         }
 
         public async Task<Result<IEnumerable<User>>> GetAll()
         {
-            const string query = @"SELECT * FROM users.user WHERE IsActive = true;";
+            const string query = @"SELECT * FROM users.user WHERE IsActive = true ORDER BY FirstLastname, SecondLastname;";
 
-            try
-            {
-                var users = await _connection.QueryAsync<User>(query);
-                return Result<IEnumerable<User>>.Success(users);
-            }
-            catch (Exception ex)
-            {
-                return Result<IEnumerable<User>>.Failure($"Error al obtener usuarios: {ex.Message}");
-            }
+            var users = await _conn.QueryAsync<User>(query);
+
+            return users is null
+                ? Result<IEnumerable<User>>.Failure("Error al obtener usuarios")
+                : Result<IEnumerable<User>>.Success(users);
         }
 
         public async Task<Result<User>> GetById(int id)
         {
-            const string query = @"SELECT * FROM users.user WHERE IsActive = true AND Id = @Id;";
+            const string query = @"SELECT * FROM users.user WHERE IsActive = true AND Id = @Id ORDER BY FirstLastname, SecondLastname;";
 
-            try
-            {
-                var user = await _connection.QuerySingleOrDefaultAsync<User>(query, new { Id = id });
-                return user is null
-                    ? Result<User>.Failure("Usuario no encontrado.")
-                    : Result<User>.Success(user);
-            }
-            catch (Exception ex)
-            {
-                return Result<User>.Failure($"Error al obtener usuario: {ex.Message}");
-            }
+            var user = await _conn.QuerySingleOrDefaultAsync<User>(query, new { Id = id });
+
+            return user is null
+                ? Result<User>.Failure("Usuario no encontrado.")
+                : Result<User>.Success(user);
         }
 
-        public async Task<Result<User>> Create(User entity)
+        public async Task<Result> Create(User entity)
         {
-            using var transaction = _connection.BeginTransaction();
+            using var transaction = _conn.BeginTransaction();
 
-            try
-            {
-                entity.CreatedAt = DateTime.UtcNow;
-                entity.LastModification = DateTime.UtcNow;
-                entity.IsActive = true;
-
-                const string query = @"
+            const string query = @"
                 INSERT INTO users.user
-                    (Name, FirstLastname, SecondLastname, DateOfBirth, Ci, UserRole, HireDate, MonthlySalary, Specialization, Email, Password, MustChangePassword, CreatedAt, LastModification, IsActive)
+                    (Name, FirstLastname, SecondLastname, DateOfBirth, Ci, UserRole, HireDate, MonthlySalary, Specialization, Email, Password, CreatedAt)
                 VALUES 
-                    (@Name, @FirstLastname, @SecondLastname, @DateOfBirth, @Ci, @UserRole, @HireDate, @MonthlySalary, @Specialization, @Email, crypt(@Password, gen_salt('bf')), @MustChangePassword, @CreatedAt, @LastModification, @IsActive)
+                    (@Name, @FirstLastname, @SecondLastname, @DateOfBirth, @Ci, @UserRole, @HireDate, @MonthlySalary, @Specialization, @Email, crypt(@Password, gen_salt('bf')), @CreatedAt)
                 RETURNING Id;";
 
-                entity.Id = await _connection.ExecuteScalarAsync<int>(query, entity, transaction);
-                transaction.Commit();
+            entity.Id = await _conn.ExecuteScalarAsync<int>(query, entity, transaction);
 
-                return Result<User>.Success(entity);
-            }
-            catch (Exception ex)
+            if (entity.Id == 0)
             {
                 transaction.Rollback();
-                return Result<User>.Failure($"Error al crear usuario: {ex.Message}");
+                return Result.Failure("Error al crear usuario");
             }
+
+            transaction.Commit();
+            return Result.Success();
         }
 
-        public async Task<Result<User>> Update(User entity)
+        public async Task<Result> Update(User entity)
         {
-            using var transaction = _connection.BeginTransaction();
+            using var transaction = _conn.BeginTransaction();
 
-            try
-            {
-                if (string.IsNullOrWhiteSpace(entity.UserRole))
-                {
-                    const string existingRoleQuery = @"SELECT UserRole FROM users.user WHERE Id = @Id;";
-                    var existingRole = await _connection.ExecuteScalarAsync<string>(existingRoleQuery, new { Id = entity.Id }, transaction);
-                    entity.UserRole = existingRole;
-                }
-
-                entity.LastModification = DateTime.UtcNow;
-
-                const string updateQuery = @"
+            const string updateQuery = @"
                 UPDATE users.user
                 SET Name = @Name,
                     FirstLastname = @FirstLastname,
@@ -102,78 +77,52 @@ namespace UserMicroservice.Infrastructure.Persistence
                     HireDate = @HireDate,
                     MonthlySalary = @MonthlySalary,
                     Specialization = @Specialization,
-                    Email = @Email,
-                    LastModification = @LastModification,
-                    IsActive = @IsActive
+                    LastModification = @LastModification
                 WHERE Id = @Id;";
 
-                var affected = await _connection.ExecuteAsync(updateQuery, entity, transaction);
+            var affected = await _conn.ExecuteAsync(updateQuery, entity, transaction);
 
-                if (affected == 0)
-                {
-                    transaction.Rollback();
-                    return Result<User>.Failure("No se encontró el usuario para actualizar.");
-                }
-
-                transaction.Commit();
-                return Result<User>.Success(entity);
-            }
-            catch (Exception ex)
+            if (affected == 0)
             {
                 transaction.Rollback();
-                return Result<User>.Failure($"Error al actualizar usuario: {ex.Message}");
+                return Result.Failure("No se encontró el usuario para actualizar.");
             }
+
+            transaction.Commit();
+            return Result.Success();
         }
 
         public async Task<Result> DeleteById(int id)
         {
             const string query = @"UPDATE users.user SET IsActive = false, LastModification = @LastModification WHERE Id = @Id;";
 
-            try
-            {
-                var affected = await _connection.ExecuteAsync(query, new { Id = id, LastModification = DateTime.UtcNow });
-                return affected > 0
-                    ? Result.Success()
-                    : Result.Failure("No se encontró el usuario a eliminar.");
-            }
-            catch (Exception ex)
-            {
-                return Result.Failure($"Error al eliminar usuario: {ex.Message}");
-            }
+            var affected = await _conn.ExecuteAsync(query, new { Id = id, LastModification = DateTime.UtcNow });
+
+            return affected <= 0
+                ? Result.Failure("No se encontró el usuario a eliminar.")
+                : Result.Success();
         }
 
         public async Task<Result<User>> GetByEmail(string email)
         {
-            const string query = @"SELECT * FROM users.user WHERE IsActive = true AND Email = @Email";
+            const string query = @"SELECT * FROM users.user WHERE IsActive = true AND Email = @Email;";
 
-            try
-            {
-                var user = await _connection.QuerySingleOrDefaultAsync<User>(query, new { Email = email });
-                return user is null
-                    ? Result<User>.Failure("Usuario no encontrado con el correo electrónico.")
-                    : Result<User>.Success(user);
-            }
-            catch (Exception ex)
-            {
-                return Result<User>.Failure($"Error al buscar usuario con email: {ex.Message}");
-            }
+            var user = await _conn.QuerySingleOrDefaultAsync<User>(query, new { Email = email });
+
+            return user is null
+                ? Result<User>.Failure("Usuario no encontrado.")
+                : Result<User>.Success(user);
         }
 
-        public async Task<Result> UpdatePassword(string email, string password)
+        public async Task<Result> UpdatePassword(int id, string password)
         {
-            const string query = @"UPDATE users.user SET Password = @Password, MustChangePassword = false WHERE Id = @Id";
+            const string query = @"UPDATE users.user SET Password = crypt(@Password, gen_salt('bf')), MustChangePassword = false WHERE Id = @Id;";
 
-            try
-            {
-                var affected = await _connection.ExecuteAsync(query, new { Email = email, Password = password });
-                return affected > 0
-                    ? Result.Success()
-                    : Result.Failure("No se encontró el usuario para actualizar contraseña.");
-            }
-            catch (Exception ex)
-            {
-                return Result.Failure($"Error al actualizar contraseña: {ex.Message}");
-            }
+            var affected = await _conn.ExecuteAsync(query, new { Id = id, Password = password });
+
+            return affected <= 0
+                ? Result.Failure("Error al actualizar contraseña.")
+                : Result.Success();
         }
     }
 }
