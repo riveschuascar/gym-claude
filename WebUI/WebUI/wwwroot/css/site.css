@@ -16,7 +16,63 @@ html {
   position: relative;
   min-height: 100%;
 }
-
+@import url("https://fonts.googleapis.com/css?family=Barlow+Condensed:400,500,600,700|Montserrat|Poppins:400,500,600,700");
 body {
-  margin-bottom: 60px;
+    line-height: 1.8;
+    font-family: "Montserrat", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    font-size: 16px;
+    color: rgba(0, 0, 0, 0.6);
+}
+
+h1, .h1, h2, .h2, h3, .h3, h4, .h4, h5, .h5, h6, .h6 {
+    font-family: "Barlow Condensed", sans-serif;
+    font-weight: 700;
+    color: #232323;
+    letter-spacing: 0.5px;
+}
+
+h1, .h1 {
+    font-size: 48px;
+    text-transform: uppercase;
+}
+
+h2, .h2 {
+    font-size: 38px;
+    text-transform: uppercase;
+}
+
+h3, .h3 {
+    font-size: 28px;
+    line-height: 38px;
+    text-transform: uppercase;
+}
+
+h4, .h4 {
+    font-size: 22px;
+    line-height: 30px;
+}
+
+h5, .h5 {
+    font-size: 18px;
+    line-height: 24px;
+}
+
+h6, .h6 {
+    font-size: 16px;
+    text-transform: uppercase;
+    font-weight: 400;
+}
+
+.font-primary {
+    font-family: "Barlow Condensed", sans-serif;
+}
+
+.font-secondary {
+    font-family: "Montserrat", sans-serif;
+}
+
+html, body {
+    overflow-x: hidden;
+    width: 100%;
 }
