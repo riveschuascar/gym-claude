@@ -1,11 +1,13 @@
-﻿using System.Linq;
+using System.Linq;
 using UserMicroservice.Application.Services;
 using UserMicroservice.Domain.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using UserMicroservice.Api.Services;
 
 namespace UserMicroservice.Api.Controllers
 {
+    [Authorize(Roles = "Admin")]
     [Route("api/[controller]")]
     [ApiController]
     public class UserController : ControllerBase

@@ -40,9 +40,24 @@ public class EditModel : PageModel
 
         try
         {
-            var resp = await _disciplineHttp.PutAsJsonAsync($"/api/Discipline/{Discipline.Id}", Discipline);
-            TempData[resp.IsSuccessStatusCode ? "SuccessMessage" : "ErrorMessage"] =
-                resp.IsSuccessStatusCode ? "Disciplina actualizada exitosamente." : "No se pudo actualizar la disciplina.";
+            var resp = await _disciplineHttp.PutAsJsonAsync($"/api/Disciplines/{Discipline.Id}", Discipline);
+            if (resp.IsSuccessStatusCode)
+            {
+                TempData["SuccessMessage"] = "Disciplina actualizada exitosamente.";
+            }
+            else
+            {
+                var error = await resp.Content.ReadAsStringAsync();
+                TempData["ErrorMessage"] = string.IsNullOrWhiteSpace(error)
+                    ? "No se pudo actualizar la disciplina."
+                    : $"No se pudo actualizar la disciplina: {error}";
+                return Page();
+            }
+        }
+        catch (HttpRequestException)
+        {
+            TempData["ErrorMessage"] = "No se pudo conectar con el microservicio de Disciplinas.";
+            return Page();
         }
         catch (Exception ex)
         {

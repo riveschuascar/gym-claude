@@ -1,15 +1,25 @@
-using ClientMicroservice.Application.Services;
-using ClientMicroservice.Domain.Interfaces;
-using ClientMicroservice.Infrastructure.Repository;
+using System.Data;
+using System.Text;
+using LoginMicroservice.Application.Interfaces;
+using LoginMicroservice.Application.Services;
+using LoginMicroservice.Domain.Ports;
+using LoginMicroservice.Infrastructure.Persistence;
+using LoginMicroservice.Infrastructure.Security;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using System.Text;
+using Npgsql;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// DI
-builder.Services.AddScoped<IClientRepository, ClientRepository>();
-builder.Services.AddScoped<ClientService>();
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+builder.Services.AddScoped<IDbConnection>(_ =>
+    new NpgsqlConnection(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddScoped<ILoginRepository, LoginRepository>();
+builder.Services.AddScoped<ITokenProvider, JwtTokenProvider>();
+builder.Services.AddScoped<ILoginService, LoginService>();
 
 var jwtKey = builder.Configuration["Jwt:Key"] ?? throw new InvalidOperationException("Jwt:Key missing");
 var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
@@ -33,13 +43,6 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-builder.Services.AddAuthorization();
-
-// Controllers + Swagger
-builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -48,7 +51,10 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
+
 app.MapControllers();
+
 app.Run();
