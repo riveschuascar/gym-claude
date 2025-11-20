@@ -1,0 +1,15 @@
+﻿@page
+@model WebUI.Pages.Memberships.DeleteModel
+
+<h3>¿Está seguro que desea eliminar esta membresía?</h3>
+
+<form method="post">
+    <input type="hidden" asp-for="Id" />
+
+    <div class="alert alert-danger">
+        Esto eliminará la membresía con ID: <strong>@Model.Id</strong>
+    </div>
+
+    <button type="submit" class="btn btn-danger">Eliminar</button>
+    <a asp-page="./Index" class="btn btn-secondary">Cancelar</a>
+</form>

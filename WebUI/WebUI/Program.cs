@@ -1,7 +1,12 @@
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 builder.Services.AddRazorPages();
+
+builder.Services.AddHttpClient("Memberships", client =>
+{
+    var baseUrl = builder.Configuration["MembershipApiBase"] ?? "http://localhost:5292";
+    client.BaseAddress = new Uri(baseUrl);
+});
 
 // Registramos Microservicios
 builder.Services.AddHttpClient("Disciplines", client =>
@@ -24,7 +29,6 @@ builder.Services.AddHttpClient("ClientAPI", client =>
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error");
