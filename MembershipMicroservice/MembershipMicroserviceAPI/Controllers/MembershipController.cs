@@ -1,10 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using MembershipMicroservice.MembershipMicroserviceApplication.Interfaces;
 using MembershipMicroservice.MembershipMicroserviceDomain.Entities;
 
 namespace MembershipMicroservice.MembershipMicroserviceAPI.Controllers
 {
     [ApiController]
+    [Authorize(Roles = "Admin,Instructor")]
     [Route("api/[controller]")]
     public class MembershipsController : ControllerBase
     {

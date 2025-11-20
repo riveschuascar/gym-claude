@@ -39,7 +39,7 @@ builder.Services.AddHttpClient("Memberships", client =>
 {
     var baseUrl = builder.Configuration["MembershipApiBase"] ?? "http://localhost:5292";
     client.BaseAddress = new Uri(baseUrl);
-});
+}).AddHttpMessageHandler<TokenMessageHandler>();
 
 // Registramos Microservicios
 builder.Services.AddHttpClient("Disciplines", client =>
