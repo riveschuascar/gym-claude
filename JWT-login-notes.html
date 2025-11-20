@@ -19,8 +19,8 @@
     body {
       margin: 0;
       font-family: 'Segoe UI', 'Inter', system-ui, sans-serif;
-      background: radial-gradient(circle at 20% 15%, rgba(255,158,216,0.05), transparent 30%),
-                  radial-gradient(circle at 80% 0%, rgba(125,249,255,0.08), transparent 28%),
+      background: radial-gradient(circle at 20% 15%, rgba(255,158,216,0.06), transparent 30%),
+                  radial-gradient(circle at 80% 0%, rgba(125,249,255,0.10), transparent 28%),
                   linear-gradient(145deg, #0a0c16, #0f1222);
       color: var(--text);
       padding: 42px clamp(16px, 4vw, 80px);
@@ -66,7 +66,15 @@
     .panel h3 { color: var(--accent2); margin-top: 14px; }
     ul { margin: 6px 0 0 18px; color: var(--muted); }
     li { margin-bottom: 4px; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px,1fr)); gap: 12px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px,1fr)); gap: 16px; align-items: start; }
+    .card {
+      background: var(--panel2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+      box-shadow: var(--shadow);
+      word-break: break-word;
+    }
     .steps { counter-reset: s; padding-left: 0; }
     .steps li { list-style: none; counter-increment: s; margin: 10px 0; position: relative; padding-left: 36px; color: var(--text); }
     .steps li::before {
@@ -80,16 +88,6 @@
       text-align: center;
       line-height: 24px;
       font-weight: 700;
-    }
-    .pill {
-      display: inline-block;
-      padding: 2px 8px;
-      border-radius: 8px;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid var(--border);
-      color: var(--muted);
-      font-size: 12px;
-      margin-right: 6px;
     }
     a { color: var(--accent); text-decoration: none; }
   </style>
@@ -105,7 +103,7 @@
     <div class="panel">
       <h2>Mapa de proyectos</h2>
       <div class="grid">
-        <div>
+        <div class="card">
           <h3>LoginMicroservice (API JWT)</h3>
           <ul>
             <li><span class="path">LoginMicroservice/Controllers/LoginController.cs</span> → <code>POST /api/login</code></li>
@@ -113,7 +111,7 @@
             <li><span class="path">LoginMicroservice/appsettings.json</span> → <code>Jwt:{Key,Issuer,Audience,ExpiresMinutes}</code>, <code>ConnectionStrings</code></li>
           </ul>
         </div>
-        <div>
+        <div class="card">
           <h3>Capas de dominio</h3>
           <ul>
             <li><span class="path">...Application/Services/LoginService.cs</span> → valida credenciales y pide token</li>
@@ -121,7 +119,7 @@
             <li><span class="path">...Infrastructure/Security/JwtTokenProvider.cs</span> → firma HMAC-SHA256 con <code>Jwt:Key</code></li>
           </ul>
         </div>
-        <div>
+        <div class="card">
           <h3>WebUI (Razor)</h3>
           <ul>
             <li><span class="path">WebUI/Pages/Login/Index.cshtml(.cs)</span> → solicita token y crea cookie de auth</li>
@@ -157,7 +155,7 @@
       <h2>Secuencia de extremo a extremo</h2>
       <ol class="steps">
         <li>WebUI envía email/clave a <code>POST /api/login</code> (LoginMicroservice).</li>
-        <li>LoginService valida formato (min 5 chars) y consulta LoginRepository.</li>
+        <li>LoginService valida formato (mínimo 5 caracteres) y consulta LoginRepository.</li>
         <li>LoginRepository busca en <code>users.user</code> (email lowercase) y verifica hash bcrypt o SHA-256.</li>
         <li>JwtTokenProvider genera JWT con claims de identidad/rol y expiración.</li>
         <li>WebUI recibe el token, crea cookie de auth y guarda el token como claim.</li>
@@ -168,21 +166,21 @@
     <div class="panel">
       <h2>Setup rápido para demos</h2>
       <div class="grid">
-        <div>
+        <div class="card">
           <h3>Usuarios</h3>
           <ul>
             <li>BD de usuarios (UserMicroservice): usar <span class="path">populate.sql</span> (ej: <code>admin@gmail.com / admin</code>, hash SHA-256).</li>
             <li>Ajustar <span class="path">LoginMicroservice/appsettings.json</span> → <code>ConnectionStrings:DefaultConnection</code> y <code>Jwt:Key</code> segura.</li>
           </ul>
         </div>
-        <div>
-          <h3>Disciplines</h3>
+        <div class="card">
+          <h3>Disciplinas</h3>
           <ul>
             <li>Crear BD <code>DisciplineMicroserviceDB</code> y tabla <code>discipline</code> (ver script en <span class="path">DisciplineMicroservice/sql</span>).</li>
             <li>Levantar DisciplineMicroservice en <code>http://localhost:5098</code>.</li>
           </ul>
         </div>
-        <div>
+        <div class="card">
           <h3>WebUI</h3>
           <ul>
             <li><span class="path">appsettings.json</span>: <code>LoginApiBase</code>, <code>UserApiBase</code>, <code>DisciplineApiBase</code>, <code>ClientApiBase</code>.</li>
