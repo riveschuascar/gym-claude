@@ -21,14 +21,20 @@ namespace MembershipMicroservice.MembershipMicroserviceApplication.Services
 
         public async Task<Result<Membership>> GetById(int id)
         {
-            if (id <= 0)
-                return Result<Membership>.Failure("El Id debe ser mayor a cero.");
-
             var membershipResult = await _repo.GetById(id);
             if (!membershipResult.IsSuccess || membershipResult.Value == null)
                 return Result<Membership>.Failure($"No se encontró la membresía con ID {id}.");
 
             var membership = membershipResult.Value;
+
+            if (membership.DisciplineIds == null || !membership.DisciplineIds.Any())
+            {
+                membership.DisciplineIds = new List<int> { 2, 3, 4 }; // IDs de ejemplo
+            }
+
+            var disciplinesResult = await _disciplineClient.GetDisciplinesByIdsAsync(membership.DisciplineIds);
+            membership.Disciplines = disciplinesResult.Value?.ToList() ?? new List<Discipline>();
+
             return Result<Membership>.Success(membership);
         }
 
@@ -39,6 +45,20 @@ namespace MembershipMicroservice.MembershipMicroserviceApplication.Services
                 return Result<IEnumerable<Membership>>.Failure(result.Error!);
 
             var memberships = result.Value ?? new List<Membership>();
+
+            // Llenar disciplinas para cada membresía
+            foreach (var membership in memberships)
+            {
+                if (membership.DisciplineIds == null || !membership.DisciplineIds.Any())
+                {
+                    // Asignar IDs de ejemplo si no tiene
+                    membership.DisciplineIds = new List<int> { 2, 3, 4 };
+                }
+
+                var disciplinesResult = await _disciplineClient.GetDisciplinesByIdsAsync(membership.DisciplineIds);
+                membership.Disciplines = disciplinesResult.Value?.ToList() ?? new List<Discipline>();
+            }
+
             return Result<IEnumerable<Membership>>.Success(memberships);
         }
 
@@ -57,18 +77,15 @@ namespace MembershipMicroservice.MembershipMicroserviceApplication.Services
 
         public async Task<Result<Membership>> Update(Membership membershipToUpdate)
         {
-            if (membershipToUpdate == null)
-                return Result<Membership>.Failure("La membresía no puede ser nula.");
-
-            if (!membershipToUpdate.Id.HasValue || membershipToUpdate.Id.Value <= 0)
-                return Result<Membership>.Failure("El Id de la membresía debe ser mayor a cero.");
-
-            int id = membershipToUpdate.Id.Value; // <-- conversión segura
-
             // Validación
             var validation = MembershipValidators.Update(membershipToUpdate);
             if (validation.IsFailure)
                 return Result<Membership>.Failure(validation.Error!);
+
+            // Desempaquetamos nullable Id
+            var id = membershipToUpdate.Id ?? 0;
+            if (id <= 0)
+                return Result<Membership>.Failure("El Id de la membresía debe ser mayor a cero.");
 
             var existingMembership = await _repo.GetById(id);
             if (existingMembership == null)

@@ -52,5 +52,17 @@ namespace MembershipMicroservice.MembershipMicroserviceAPI.Controllers
             var result = await _membershipService.Delete(id);
             return result.IsSuccess ? Ok(result.Value) : BadRequest(result.Error);
         }
+
+        [HttpPost("byIds")]
+        public IActionResult GetByIds([FromBody] int[] ids)
+        {
+            var disciplines = ids.Select(id => new Discipline
+            {
+                Id = id,
+                Name = $"Disciplina {id}",
+                IsActive = true
+            });
+            return Ok(disciplines);
+        }
     }
 }
