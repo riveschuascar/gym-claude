@@ -1,9 +1,11 @@
-﻿using UserMicroservice.Application.Services;
+using UserMicroservice.Application.Services;
 using UserMicroservice.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace UserMicroservice.Api.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class UserController : ControllerBase

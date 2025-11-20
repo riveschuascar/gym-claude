@@ -1,9 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using DisciplineMicroservice.DisciplineMicroserviceApplication.Interfaces;
 using DisciplineMicroservice.DisciplineMicroserviceDomain.Entities;
 
-
 [ApiController]
+[Authorize]
 [Route("api/[controller]")]
 public class DisciplinesController : ControllerBase
 {
@@ -38,7 +39,7 @@ public class DisciplinesController : ControllerBase
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(int id, [FromBody] Discipline discipline)
     {
-        discipline.Id = (short)id; // conversión correcta
+        discipline.Id = (short)id;
         var result = await _disciplineService.Update(discipline);
         return result.IsSuccess ? Ok(result.Value) : BadRequest(result.Error);
     }

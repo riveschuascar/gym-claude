@@ -1,9 +1,11 @@
 using ClientMicroservice.Application.Services;
 using ClientMicroservice.Domain.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ClientMicroservice.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class ClientController : ControllerBase
@@ -53,4 +55,3 @@ public class ClientController : ControllerBase
         return NoContent();
     }
 }
-
