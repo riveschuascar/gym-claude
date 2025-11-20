@@ -8,12 +8,10 @@ public class IndexModel : PageModel
 {
     private readonly HttpClient _disciplineHttp;
 
-    // Lista de disciplinas que se mostrar� en la UI
     public List<DisciplineDTO> Disciplines { get; set; } = new();
 
     public IndexModel(IHttpClientFactory factory)
     {
-        // Aseg�rate de que el HttpClient "Disciplines" tenga BaseAddress = http://localhost:5098
         _disciplineHttp = factory.CreateClient("Disciplines");
     }
 
@@ -21,13 +19,17 @@ public class IndexModel : PageModel
     {
         try
         {
-            // URL corregida: min�scula y coincidiendo con tu API
             var data = await _disciplineHttp.GetFromJsonAsync<List<DisciplineDTO>>("/api/Disciplines");
 
             Disciplines = (data ?? new List<DisciplineDTO>())
                 .OrderBy(d => d.Name)
                 .ThenBy(d => d.StartTime)
                 .ToList();
+        }
+        catch (HttpRequestException)
+        {
+            TempData["ErrorMessage"] = "No se pudo conectar con el microservicio de Disciplinas (verifica que corre en http://localhost:5098).";
+            Disciplines = new List<DisciplineDTO>();
         }
         catch (Exception ex)
         {
@@ -54,4 +56,3 @@ public class IndexModel : PageModel
         return RedirectToPage();
     }
 }
-

@@ -1,0 +1,42 @@
+@page
+@model WebUI.Pages.Login.IndexModel
+@{
+    ViewData["Title"] = "Iniciar sesion";
+}
+
+<div class="row justify-content-center mt-5">
+    <div class="col-md-5">
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+                <h2 class="text-center mb-4">Bienvenido</h2>
+                <p class="text-center text-muted mb-4">Ingresa con tu correo corporativo para administrar Gym Claude.</p>
+
+                @if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
+                {
+                    <div class="alert alert-danger" role="alert">
+                        @Model.ErrorMessage
+                    </div>
+                }
+
+                <form method="post">
+                    <div class="mb-3">
+                        <label asp-for="Credentials.Email" class="form-label"></label>
+                        <input asp-for="Credentials.Email" class="form-control" autocomplete="email" />
+                        <span asp-validation-for="Credentials.Email" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="Credentials.Password" class="form-label"></label>
+                        <input asp-for="Credentials.Password" class="form-control" autocomplete="current-password" />
+                        <span asp-validation-for="Credentials.Password" class="text-danger"></span>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100">Ingresar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
