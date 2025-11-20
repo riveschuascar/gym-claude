@@ -3,7 +3,13 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddRazorPages();
 
-// Agregar HttpClientFactory para llamar a tu microservicio
+// Registramos Microservicios
+builder.Services.AddHttpClient("Disciplines", client =>
+{
+    var baseUrl = builder.Configuration["DisciplineApiBase"] ?? "http://localhost:5098";
+    client.BaseAddress = new Uri(baseUrl);
+});
+
 builder.Services.AddHttpClient("Users", client =>
 {
     client.BaseAddress = new Uri("http://localhost:5089");
@@ -12,7 +18,6 @@ builder.Services.AddHttpClient("Users", client =>
 
 builder.Services.AddHttpClient("ClientAPI", client =>
 {
-    // Usamos tu configuración original, o el puerto por defecto 5135
     var baseUrl = builder.Configuration["ClientApiBase"] ?? "http://localhost:5135";
     client.BaseAddress = new Uri(baseUrl);
 });

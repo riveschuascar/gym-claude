@@ -1,0 +1,49 @@
+﻿@page
+@model WebUI.Pages.Disciplines.DeleteModel
+@{
+    ViewData["Title"] = "Eliminar Disciplina";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Eliminar Disciplina</h1>
+    <p class="lead text-muted">Confirme si desea eliminar esta disciplina.</p>
+</div>
+
+<div class="card mt-4 shadow-sm">
+    <div class="card-body">
+        <dl class="row">
+            <dt class="col-sm-3">Nombre</dt>
+            <dd class="col-sm-9">@Model.Discipline.Name</dd>
+
+            <dt class="col-sm-3">Hora de Inicio</dt>
+            <dd class="col-sm-9">@Model.Discipline.StartTime?.ToString(@"hh\:mm")</dd>
+
+            <dt class="col-sm-3">Hora de Fin</dt>
+            <dd class="col-sm-9">@Model.Discipline.EndTime?.ToString(@"hh\:mm")</dd>
+
+            <dt class="col-sm-3">Duración</dt>
+            <dd class="col-sm-9">
+                @(Model.Discipline.StartTime.HasValue && Model.Discipline.EndTime.HasValue
+                                ? (Model.Discipline.EndTime.Value - Model.Discipline.StartTime.Value).ToString(@"hh\:mm")
+                                : "-")
+            </dd>
+
+            <dt class="col-sm-3">Activo</dt>
+            <dd class="col-sm-9">
+                @if (Model.Discipline.IsActive)
+                {
+                    <span class="badge bg-success">Sí</span>
+                }
+                else
+                {
+                    <span class="badge bg-secondary">No</span>
+                }
+            </dd>
+        </dl>
+
+        <form method="post">
+            <button type="submit" class="btn btn-danger">Eliminar</button>
+            <a asp-page="Index" class="btn btn-secondary">Cancelar</a>
+        </form>
+    </div>
+</div>
