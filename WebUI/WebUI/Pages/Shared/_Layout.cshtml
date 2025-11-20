@@ -67,8 +67,8 @@
                             <li class="nav-item d-flex align-items-center me-3">
                                 <span class="text-dark">
                                     <strong>@User.Identity.Name</strong><br />
-                                    <small
-                                        class="text-muted">@User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value</small>
+                                    <small class="text-muted">@User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value</small>
+                                    <div><a class="small text-decoration-none d-block mt-1" asp-page="/Account/ChangePassword">Cambiar contraseña</a></div>
                                 </span>
                             </li>
                             <li class="nav-item">
