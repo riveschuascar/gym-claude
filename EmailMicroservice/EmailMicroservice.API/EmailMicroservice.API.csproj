@@ -17,6 +17,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\EmailMicroservice.Application\EmailMicroservice.Application.csproj" />
+    <ProjectReference Include="..\EmailMicroservice.Infrastructure\EmailMicroservice.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

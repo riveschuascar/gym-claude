@@ -1,5 +1,6 @@
 using Grpc.Core;
 using EmailMicroservice.Application.Services;
+using EmailMicroservice.API;
 
 namespace EmailMicroservice.API.Services;
 
@@ -12,11 +13,20 @@ public class EmailGrpcService : EmailService.EmailServiceBase
         _useCase = useCase;
     }
 
-    public override async Task<SendEmailResponse> SendEmail(SendEmailRequest request, ServerCallContext context)
+    public override async Task<SendCredentialEmailResponse> SendCredentialEmail(SendCredentialEmailRequest request, ServerCallContext context)
     {
-        await _useCase.Execute(request.To, request.Subject, request.Body);
+        var subject = $"Credenciales - {request.Reason}";
 
-        return new SendEmailResponse
+        var body = $"Hola {request.UserFullName},\n\n" +
+                   $"Se te envían tus credenciales por el siguiente motivo: {request.Reason}\n\n" +
+                   $"Usuario: {request.Username}\n" +
+                   $"Contraseña: {request.Password}\n\n" +
+                   $"Recomendaciones de seguridad:\n{request.SecurityRecommendations}\n\n" +
+                   "Saludos.";
+
+        await _useCase.Execute(request.Email, subject, body);
+
+        return new SendCredentialEmailResponse
         {
             Success = true,
             Message = "Correo enviado exitosamente"
