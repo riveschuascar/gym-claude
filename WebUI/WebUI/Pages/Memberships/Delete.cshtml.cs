@@ -2,43 +2,52 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using WebUI.DTO;
 
-namespace WebUI.Pages.Memberships
+namespace WebUI.Pages.Memberships;
+
+public class DeleteModel : PageModel
 {
-    public class DeleteModel : PageModel
+    private readonly HttpClient _membershipHttp;
+
+    [BindProperty]
+    public MembershipDTO Membership { get; set; } = new();
+
+    public DeleteModel(IHttpClientFactory factory)
     {
-        private readonly HttpClient _membershipHttp;
+        _membershipHttp = factory.CreateClient("Memberships");
+    }
 
-        [BindProperty]
-        public MembershipDTO Membership { get; set; } = new();
-
-        public DeleteModel(IHttpClientFactory httpClientFactory)
+    public async Task<IActionResult> OnGetAsync(int id)
+    {
+        try
         {
-            _membershipHttp = httpClientFactory.CreateClient("Memberships");
+            var data = await _membershipHttp.GetFromJsonAsync<MembershipDTO>($"/api/Membership/{id}");
+            if (data == null) return RedirectToPage("Index");
+            Membership = data;
+        }
+        catch (Exception ex)
+        {
+            TempData["ErrorMessage"] = "Error al cargar la membresía.";
+            Console.WriteLine(ex.Message);
+            return RedirectToPage("Index");
         }
 
-        public async Task<IActionResult> OnGetAsync(short id)
+        return Page();
+    }
+
+    public async Task<IActionResult> OnPostAsync(int id)
+    {
+        try
         {
-            var membership = await _membershipHttp.GetFromJsonAsync<MembershipDTO>($"/api/Membership/{id}");
-
-            if (membership == null)
-                return RedirectToPage("Index");
-
-            Membership = membership;
-            return Page();
+            var resp = await _membershipHttp.DeleteAsync($"/api/Memberships/{id}");
+            TempData[resp.IsSuccessStatusCode ? "SuccessMessage" : "ErrorMessage"] =
+                resp.IsSuccessStatusCode ? "Membresía eliminada exitosamente." : "No se pudo eliminar la membresía.";
+        }
+        catch (Exception ex)
+        {
+            TempData["ErrorMessage"] = "Error al conectar con el microservicio.";
+            Console.WriteLine(ex.Message);
         }
 
-        public async Task<IActionResult> OnPostAsync(short id)
-        {
-            var response = await _membershipHttp.DeleteAsync($"/api/Membership/{id}");
-
-            if (response.IsSuccessStatusCode)
-            {
-                TempData["SuccessMessage"] = "Membresía eliminada correctamente.";
-                return RedirectToPage("Index");
-            }
-
-            TempData["ErrorMessage"] = $"Error al eliminar la membresía: {response.StatusCode}";
-            return Page();
-        }
+        return RedirectToPage("Index");
     }
 }

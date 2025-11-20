@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using WebUI.DTO;
 
@@ -18,13 +19,36 @@ namespace WebUI.Pages.Memberships
         {
             try
             {
-                Memberships = await _membershipHttp
-                    .GetFromJsonAsync<List<MembershipDTO>>("/api/Membership") ?? new();
+                var data = await _membershipHttp.GetFromJsonAsync<List<MembershipDTO>>("/api/Memberships");
+
+                Memberships = (data ?? new List<MembershipDTO>())
+                    .OrderBy(m => m.Name)         
+                    .ThenBy(m => m.Price ?? 0)    
+                    .ToList();
             }
-            catch
+            catch (Exception ex)
             {
-                Memberships = new();
+                TempData["ErrorMessage"] = "Error al cargar las membresías.";
+                Console.WriteLine("Error al obtener membresías: " + ex.Message);
+                Memberships = new List<MembershipDTO>();
             }
+        }
+
+        public async Task<IActionResult> OnPostDeleteAsync(short id)
+        {
+            try
+            {
+                var resp = await _membershipHttp.DeleteAsync($"/api/Memberships/Eliminar/{id}");
+                TempData[resp.IsSuccessStatusCode ? "SuccessMessage" : "ErrorMessage"] =
+                    resp.IsSuccessStatusCode ? "Membresía eliminada exitosamente." : "No se pudo eliminar la membresía.";
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "Error al conectar con el microservicio.";
+                Console.WriteLine("Error al eliminar membresía: " + ex.Message);
+            }
+
+            return RedirectToPage();
         }
     }
 }

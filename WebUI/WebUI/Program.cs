@@ -2,21 +2,19 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddRazorPages();
 
+builder.Services.AddHttpClient("Memberships", client =>
+{
+    var baseUrl = builder.Configuration["MembershipApiBase"] ?? "http://localhost:5292";
+    client.BaseAddress = new Uri(baseUrl);
+});
+
 builder.Services.AddHttpClient("Users", client =>
 {
     client.BaseAddress = new Uri("http://localhost:5089"); 
     client.DefaultRequestHeaders.Add("Accept", "application/json");
 });
-
-builder.Services.AddHttpClient("Memberships", client =>
-{
-    client.BaseAddress = new Uri("http://localhost:5090"); 
-    client.DefaultRequestHeaders.Add("Accept", "application/json");
-});
-
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error");

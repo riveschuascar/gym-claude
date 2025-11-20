@@ -1,6 +1,5 @@
 ﻿@page
 @model WebUI.Pages.Memberships.EditModel
-
 @{
     ViewData["Title"] = "Editar Membresía";
 }
@@ -9,53 +8,52 @@
     <h1>@ViewData["Title"]</h1>
     <hr />
 
+    @if (TempData["SuccessMessage"] != null)
+    {
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    }
+
     @if (TempData["ErrorMessage"] != null)
     {
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            @TempData["ErrorMessage"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
     }
 
     <form method="post">
-        <div class="row mb-3">
-            <div class="col-md-6">
-                <label asp-for="Membership.Name" class="form-label">Nombre</label>
-                <input asp-for="Membership.Name" class="form-control" />
-                <span asp-validation-for="Membership.Name" class="text-danger"></span>
-            </div>
-            <div class="col-md-6">
-                <label asp-for="Membership.Price" class="form-label">Precio</label>
-                <input asp-for="Membership.Price" type="number" step="0.01" class="form-control" />
-                <span asp-validation-for="Membership.Price" class="text-danger"></span>
-            </div>
+        <!-- Esto asegura que el Id se envíe correctamente -->
+        <input type="hidden" asp-for="Membership.Id" />
+
+        <div class="mb-3">
+            <label asp-for="Membership.Name" class="form-label"></label>
+            <input asp-for="Membership.Name" class="form-control" />
         </div>
 
-        <div class="row mb-3">
-            <div class="col-md-6">
-                <label asp-for="Membership.Description" class="form-label">Descripción</label>
-                <input asp-for="Membership.Description" class="form-control" />
-                <span asp-validation-for="Membership.Description" class="text-danger"></span>
-            </div>
-            <div class="col-md-6">
-                <label asp-for="Membership.MonthlySessions" class="form-label">Sesiones Mensuales</label>
-                <input asp-for="Membership.MonthlySessions" type="number" class="form-control" />
-                <span asp-validation-for="Membership.MonthlySessions" class="text-danger"></span>
-            </div>
+        <div class="mb-3">
+            <label asp-for="Membership.Price" class="form-label"></label>
+            <input asp-for="Membership.Price" class="form-control" type="number" step="0.01" />
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Membership.Description" class="form-label"></label>
+            <input asp-for="Membership.Description" class="form-control" />
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Membership.MonthlySessions" class="form-label"></label>
+            <input asp-for="Membership.MonthlySessions" class="form-control" type="number" />
         </div>
 
         <div class="form-check mb-3">
             <input asp-for="Membership.IsActive" class="form-check-input" />
-            <label asp-for="Membership.IsActive" class="form-check-label">Activo</label>
+            <label asp-for="Membership.IsActive" class="form-check-label"></label>
         </div>
 
-        <div class="d-flex gap-2">
-            <button type="submit" class="btn btn-primary">
-                <i class="fas fa-save"></i> Guardar Cambios
-            </button>
-            <a asp-page="Index" class="btn btn-secondary">
-                <i class="fas fa-times"></i> Cancelar
-            </a>
-        </div>
+        <button type="submit" class="btn btn-primary">Guardar</button>
+        <a asp-page="Index" class="btn btn-secondary">Cancelar</a>
     </form>
 </div>

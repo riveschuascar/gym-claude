@@ -2,62 +2,42 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using WebUI.DTO;
 
-namespace WebUI.Pages.Memberships
+namespace WebUI.Pages.Memberships;
+
+public class CreateModel : PageModel
 {
-    public class CreateModel : PageModel
+    private readonly HttpClient _membershipHttp;
+
+    [BindProperty]
+    public MembershipDTO Membership { get; set; } = new();
+
+    public CreateModel(IHttpClientFactory factory)
     {
-        private readonly HttpClient _membershipHttp;
+        _membershipHttp = factory.CreateClient("Memberships");
+    }
 
-        [BindProperty]
-        public MembershipDTO Membership { get; set; } = new();
+    public void OnGet() { }
 
-        public CreateModel(IHttpClientFactory httpClientFactory)
+    public async Task<IActionResult> OnPostAsync()
+    {
+        if (!ModelState.IsValid)
+            return Page();
+
+        try
         {
-            _membershipHttp = httpClientFactory.CreateClient("Memberships");
+            var resp = await _membershipHttp.PostAsJsonAsync("/api/Memberships", Membership);
+            if (resp.IsSuccessStatusCode)
+                TempData["SuccessMessage"] = "Membresía creada exitosamente.";
+            else
+                TempData["ErrorMessage"] = "No se pudo crear la membresía.";
+        }
+        catch (Exception ex)
+        {
+            TempData["ErrorMessage"] = "Error al conectar con el microservicio.";
+            Console.WriteLine(ex.Message);
+            return Page();
         }
 
-        public void OnGet()
-        {
-            // Página simplemente carga el formulario vacío
-        }
-
-        public async Task<IActionResult> OnPostAsync()
-        {
-            if (!ModelState.IsValid)
-            {
-                return Page();
-            }
-
-            try
-            {
-                var membershipToCreate = new MembershipDTO
-                {
-                    Name = Membership.Name,
-                    Price = Membership.Price,
-                    Description = Membership.Description,
-                    MonthlySessions = Membership.MonthlySessions
-                };
-
-                var response = await _membershipHttp.PostAsJsonAsync("/api/Membership", membershipToCreate);
-
-                if (response.IsSuccessStatusCode)
-                {
-                    TempData["SuccessMessage"] = "Membresía creada exitosamente.";
-                    return RedirectToPage("Index");
-                }
-                else
-                {
-                    var errorContent = await response.Content.ReadAsStringAsync();
-                    TempData["ErrorMessage"] = $"Error al crear la membresía: {response.StatusCode}";
-                    return Page();
-                }
-            }
-            catch (Exception ex)
-            {
-                TempData["ErrorMessage"] = "No se pudo conectar con el microservicio. Intente nuevamente.";
-                Console.WriteLine($"Error: {ex.Message}");
-                return Page();
-            }
-        }
+        return RedirectToPage("Index");
     }
 }
