@@ -26,7 +26,8 @@ namespace UserMicroservice.Domain.Entities
 
         public void CreatePassword()
         {
-            Password = "GYMcl@ude" + Ci.ToString();
+            var ciPart = string.IsNullOrWhiteSpace(Ci) ? "Temp123!" : Ci;
+            Password = "GYMcl@ude" + ciPart;
         }
     }
 }
