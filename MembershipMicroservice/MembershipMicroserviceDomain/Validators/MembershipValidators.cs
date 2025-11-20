@@ -1,6 +1,7 @@
 ﻿using MembershipMicroservice.MembershipMicroserviceDomain.Entities;
 using MembershipMicroservice.MembershipMicroserviceDomain.Shared;
 using System.Text.RegularExpressions;
+using MembershipMicroservice.MembershipMicroserviceDomain.Rules;
 
 namespace MembershipMicroservice.MembershipMicroserviceDomain.Validators
 {
@@ -9,51 +10,50 @@ namespace MembershipMicroservice.MembershipMicroserviceDomain.Validators
         private static readonly Regex AllowedCharsRegex =
             new Regex("^[a-zA-Z0-9 ñáéíóúÁÉÍÓÚüÜ]+$", RegexOptions.Compiled);
 
-        public static Result<Membership> Validate(Membership membership, bool isUpdate)
+        public static Result<Membership> Create(Membership membership)
         {
-            if (membership is null)
-            {
-                return Result<Membership>.Failure("La disciplina no puede quedar vacía.");
-            }
+            if (membership == null)
+                return Result<Membership>.Failure("La membresía no puede ser nula.");
 
-            if (membership.Id <= 0)
-            {
-                return Result<Membership>.Failure("El identificador de la membresía debe ser mayor a cero.");
-            }
+            var name = MembershipRules.NameRules(membership.Name);
+            if (name.IsFailure) return Result<Membership>.Failure(name.Error!);
 
-            if (string.IsNullOrWhiteSpace(membership.Name))
-                return Result<Membership>.Failure("El nombre de la disciplina es obligatorio.");
+            var price = MembershipRules.PriceRules(membership.Price);
+            if (price.IsFailure) return Result<Membership>.Failure(price.Error!);
 
-            else if (membership.Name.Length > 20)
-            {
-                return Result<Membership>.Failure("El nombre no puede exceder los 50 caracteres.");
-            }
+            var desc = MembershipRules.DescriptionRules(membership.Description);
+            if (desc.IsFailure) return Result<Membership>.Failure(desc.Error!);
 
-            if (!AllowedCharsRegex.IsMatch(membership.Name))
-                return Result<Membership>.Failure("El nombre contiene caracteres no permitidos.");
+            var sessionsResult = MembershipRules.MonthlySessionsRules(membership.MonthlySessions ?? 0);
+            if (!sessionsResult.IsSuccess)
+                return Result<Membership>.Failure(sessionsResult.Error!);
 
-            if (membership.Price is null)
-            {
-                return Result<Membership>.Failure("El precio de la membresía es obligatorio.");
-            }
-            else if (membership.Price <= 0)
-            {
-                return Result<Membership>.Failure("El precio de la membresía debe ser mayor a cero.");
-            }
+            return Result<Membership>.Success(membership);
+        }
 
-            if (string.IsNullOrWhiteSpace(membership.Description))
-            {
-                return Result<Membership>.Failure("La descripción de la membresía es obligatoria.");
-            }
+        public static Result<Membership> Update(Membership membership)
+        {
+            if (membership == null)
+                return Result<Membership>.Failure("La membresía no puede ser nula.");
 
-            if (membership.MonthlySessions is null)
-            {
-                return Result<Membership>.Failure("Las sesiones mensuales son obligatorias.");
-            }
-            else if (membership.MonthlySessions <= 0)
-            {
-                return Result<Membership>.Failure("Las sesiones mensuales deben ser mayores a cero.");
-            }
+            if ((membership.Id ?? 0) <= 0)
+                return Result<Membership>.Failure("El Id de la membresía debe ser mayor a cero.");
+
+            var nameResult = MembershipRules.NameRules(membership.Name);
+            if (!nameResult.IsSuccess)
+                return Result<Membership>.Failure(nameResult.Error!);
+
+            var priceResult = MembershipRules.PriceRules(membership.Price);
+            if (!priceResult.IsSuccess)
+                return Result<Membership>.Failure(priceResult.Error!);
+
+            var descriptionResult = MembershipRules.DescriptionRules(membership.Description);
+            if (!descriptionResult.IsSuccess)
+                return Result<Membership>.Failure(descriptionResult.Error!);
+
+            var sessionsResult = MembershipRules.MonthlySessionsRules(membership.MonthlySessions ?? 0);
+            if (!sessionsResult.IsSuccess)
+                return Result<Membership>.Failure(sessionsResult.Error!);
 
             return Result<Membership>.Success(membership);
         }

@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using System.Net.Http;
 using System.Net.Http.Json;
 using WebUI.DTO;
 
@@ -10,15 +9,13 @@ namespace WebUI.Pages.Memberships
     {
         private readonly HttpClient _membershipHttp;
 
-        public CreateModel(IHttpClientFactory factory)
+        public CreateModel(IHttpClientFactory httpFactory)
         {
-            _membershipHttp = factory.CreateClient("Memberships");
+            _membershipHttp = httpFactory.CreateClient("Memberships");
         }
 
         [BindProperty]
-        public MembershipDTO Membership { get; set; } = new();
-
-        public short? CreatedId { get; set; }
+        public MembershipDTO Membership { get; set; } = new MembershipDTO();
 
         public void OnGet()
         {
@@ -28,21 +25,37 @@ namespace WebUI.Pages.Memberships
         {
             try
             {
-                var resp = await _membershipHttp.PostAsJsonAsync("/api/Memberships", Membership);
+                // Preparar objeto para enviar sin Id
+                var membershipToSend = new
+                {
+                    Name = Membership.Name,
+                    Price = Membership.Price,
+                    Description = Membership.Description,
+                    MonthlySessions = Membership.MonthlySessions,
+                    IsActive = Membership.IsActive
+                };
+
+                var resp = await _membershipHttp.PostAsJsonAsync("/api/Memberships", membershipToSend);
 
                 if (resp.IsSuccessStatusCode)
                 {
-                    TempData["SuccessMessage"] = $"Membresía creada exitosamente. Id: {Membership.Id}";
+                    // Leer respuesta del microservicio
+                    var created = await resp.Content.ReadFromJsonAsync<MembershipDTO>();
+
+                    // Mostrar mensaje de éxito, Id puede ser null mientras el microservicio lo genere
+                    TempData["SuccessMessage"] = $"Membresía creada exitosamente. Id: {created?.Id ?? 0}";
+
                     return RedirectToPage("./Index");
                 }
 
+                // Leer error del microservicio
                 var errorContent = await resp.Content.ReadAsStringAsync();
-                ModelState.AddModelError(string.Empty, "No se pudo crear la membresía: " + errorContent);
+                TempData["ErrorMessage"] = "No se pudo crear la membresía: " + errorContent;
                 return Page();
             }
             catch (Exception ex)
             {
-                ModelState.AddModelError(string.Empty, "Error al conectar con el microservicio: " + ex.Message);
+                TempData["ErrorMessage"] = "Error al conectar con el microservicio: " + ex.Message;
                 return Page();
             }
         }
