@@ -106,7 +106,7 @@ namespace MembershipMicroservice.MembershipMicroserviceInfraestructure.Persisten
                 entity.IsActive = true;
 
                 var id = await conn.ExecuteScalarAsync<int>(query, entity);
-                entity.Id = (short)id;
+                entity.Id = id;
 
                 return Result<Membership>.Success(entity);
             }
@@ -174,5 +174,62 @@ namespace MembershipMicroservice.MembershipMicroserviceInfraestructure.Persisten
                 return Result.Failure("Error al eliminar membresía.");
             }
         }
+        public async Task<Result<bool>> UpdateMembershipDisciplines(int membershipId, IEnumerable<int> disciplineIds)
+        {
+            const string deleteQuery = @"
+        DELETE FROM MembershipDisciplines
+        WHERE MembershipId = @MembershipId;";
+
+            const string insertQuery = @"
+        INSERT INTO MembershipDisciplines (MembershipId, DisciplineId)
+        VALUES (@MembershipId, @DisciplineId);";
+
+            try
+            {
+                using var conn = CreateConnection();
+                await conn.OpenAsync();
+                using var transaction = await conn.BeginTransactionAsync();
+
+                // Borramos los existentes
+                await conn.ExecuteAsync(deleteQuery, new { MembershipId = membershipId }, transaction);
+
+                // Insertamos los nuevos
+                foreach (var disciplineId in disciplineIds)
+                {
+                    await conn.ExecuteAsync(insertQuery, new { MembershipId = membershipId, DisciplineId = disciplineId }, transaction);
+                }
+
+                await transaction.CommitAsync();
+                return Result<bool>.Success(true);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al actualizar MembershipDisciplines");
+                return Result<bool>.Failure("Error al actualizar las disciplinas de la membresía.");
+            }
+        }
+
+        public async Task<Result<IEnumerable<int>>> GetMembershipDisciplineIds(int membershipId)
+        {
+            const string query = @"
+        SELECT DisciplineId
+        FROM MembershipDisciplines
+        WHERE MembershipId = @MembershipId;";
+
+            try
+            {
+                using var conn = CreateConnection();
+                await conn.OpenAsync();
+
+                var ids = await conn.QueryAsync<int>(query, new { MembershipId = membershipId });
+                return Result<IEnumerable<int>>.Success(ids);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al obtener MembershipDisciplines");
+                return Result<IEnumerable<int>>.Failure("Error al obtener las disciplinas de la membresía.");
+            }
+        }
+
     }
 }

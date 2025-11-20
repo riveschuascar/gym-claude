@@ -27,10 +27,8 @@ namespace MembershipMicroservice.MembershipMicroserviceApplication.Services
 
             var membership = membershipResult.Value;
 
-            if (membership.DisciplineIds == null || !membership.DisciplineIds.Any())
-            {
-                membership.DisciplineIds = new List<int> { 2, 3, 4 }; // IDs de ejemplo
-            }
+            var disciplineIdsResult = await _repo.GetMembershipDisciplineIds(membership.Id!.Value);
+            membership.DisciplineIds = disciplineIdsResult.Value?.ToList() ?? new List<int>();
 
             var disciplinesResult = await _disciplineClient.GetDisciplinesByIdsAsync(membership.DisciplineIds);
             membership.Disciplines = disciplinesResult.Value?.ToList() ?? new List<Discipline>();
@@ -46,14 +44,10 @@ namespace MembershipMicroservice.MembershipMicroserviceApplication.Services
 
             var memberships = result.Value ?? new List<Membership>();
 
-            // Llenar disciplinas para cada membresía
             foreach (var membership in memberships)
             {
-                if (membership.DisciplineIds == null || !membership.DisciplineIds.Any())
-                {
-                    // Asignar IDs de ejemplo si no tiene
-                    membership.DisciplineIds = new List<int> { 2, 3, 4 };
-                }
+                var disciplineIdsResult = await _repo.GetMembershipDisciplineIds(membership.Id!.Value);
+                membership.DisciplineIds = disciplineIdsResult.Value?.ToList() ?? new List<int>();
 
                 var disciplinesResult = await _disciplineClient.GetDisciplinesByIdsAsync(membership.DisciplineIds);
                 membership.Disciplines = disciplinesResult.Value?.ToList() ?? new List<Discipline>();
@@ -72,17 +66,24 @@ namespace MembershipMicroservice.MembershipMicroserviceApplication.Services
             if (!created.IsSuccess)
                 return Result<Membership>.Failure(created.Error!);
 
-            return Result<Membership>.Success(created.Value!);
+            var membership = created.Value!;
+
+            if (membership.DisciplineIds != null && membership.DisciplineIds.Any())
+            {
+                var res = await _repo.UpdateMembershipDisciplines(membership.Id!.Value, membership.DisciplineIds);
+                if (!res.IsSuccess)
+                    return Result<Membership>.Failure("Error al guardar las disciplinas de la membresía.");
+            }
+
+            return Result<Membership>.Success(membership);
         }
 
         public async Task<Result<Membership>> Update(Membership membershipToUpdate)
         {
-            // Validación
             var validation = MembershipValidators.Update(membershipToUpdate);
             if (validation.IsFailure)
                 return Result<Membership>.Failure(validation.Error!);
 
-            // Desempaquetamos nullable Id
             var id = membershipToUpdate.Id ?? 0;
             if (id <= 0)
                 return Result<Membership>.Failure("El Id de la membresía debe ser mayor a cero.");
@@ -95,7 +96,20 @@ namespace MembershipMicroservice.MembershipMicroserviceApplication.Services
             if (!updated.IsSuccess)
                 return Result<Membership>.Failure(updated.Error!);
 
-            return Result<Membership>.Success(updated.Value!);
+            var membership = updated.Value!;
+
+            if (membership.DisciplineIds != null)
+            {
+                var res = await _repo.UpdateMembershipDisciplines(membership.Id!.Value, membership.DisciplineIds);
+                if (!res.IsSuccess)
+                    return Result<Membership>.Failure("Error al actualizar las disciplinas de la membresía.");
+            }
+
+            // 🔹 Aquí llenamos los nombres de las disciplinas antes de devolver la membresía
+            var disciplinesResult = await _disciplineClient.GetDisciplinesByIdsAsync(membership.DisciplineIds);
+            membership.Disciplines = disciplinesResult.Value?.ToList() ?? new List<Discipline>();
+
+            return Result<Membership>.Success(membership);
         }
 
         public async Task<Result<bool>> Delete(int id)
