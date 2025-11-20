@@ -19,10 +19,6 @@ namespace UserMicroservice.Domain.Validators
             if (!firstLastNameResult.IsSuccess)
                 return Result<User>.Failure(firstLastNameResult.Error!);
 
-            var secondLastNameResult = UserRules.LastNameRules(user.SecondLastname);
-            if (!secondLastNameResult.IsSuccess)
-                return Result<User>.Failure(secondLastNameResult.Error!);
-
             var ciResult = UserRules.CiRules(user.Ci);
             if (!ciResult.IsSuccess)
                 return Result<User>.Failure(ciResult.Error!);

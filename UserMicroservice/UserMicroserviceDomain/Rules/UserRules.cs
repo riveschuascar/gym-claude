@@ -42,7 +42,7 @@ namespace UserMicroservice.Domain.Rules
             if (string.IsNullOrWhiteSpace(ci))
                 return Result<string>.Failure("El CI es obligatorio.");
 
-            if (!Regex.IsMatch(ci, @"^[0-9A-Za-z]{8,}$"))
+            if (!Regex.IsMatch(ci, @"^[0-9A-Za-z]{6,}$"))
                 return Result<string>.Failure("El CI debe contener solo letras y números, mínimo 8 caracteres.");
 
             return Result<string>.Success(ci);
