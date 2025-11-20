@@ -6,15 +6,15 @@ builder.Services.AddRazorPages();
 // Registramos Microservicios
 builder.Services.AddHttpClient("Disciplines", client =>
 {
-    var baseUrl = builder.Configuration["DisciplineApiBase"] ?? "http://localhost:5089";
+    var baseUrl = builder.Configuration["DisciplineApiBase"] ?? "http://localhost:5098";
     client.BaseAddress = new Uri(baseUrl);
 });
 
-//builder.Services.AddHttpClient("Users", client =>
-//{
-//    client.BaseAddress = new Uri("http://localhost:5089");
-//    client.DefaultRequestHeaders.Add("Accept", "application/json");
-//});
+builder.Services.AddHttpClient("Users", client =>
+{
+    client.BaseAddress = new Uri("http://localhost:5089");
+    client.DefaultRequestHeaders.Add("Accept", "application/json");
+});
 
 builder.Services.AddHttpClient("ClientAPI", client =>
 {

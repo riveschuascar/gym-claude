@@ -1,1 +1,3 @@
-El script SQL debe ejecutarse en una DB llamada 'ClientMicroservice' 
+Se debe crea la base de datos con el nombre:
+'ClientMicroservice'
+Y ejecutar el script dentro de esta.
