@@ -25,32 +25,31 @@
     }
 
     <form method="post">
-        <!-- Esto asegura que el Id se envíe correctamente -->
         <input type="hidden" asp-for="Membership.Id" />
 
         <div class="mb-3">
-            <label asp-for="Membership.Name" class="form-label"></label>
-            <input asp-for="Membership.Name" class="form-control" />
+            <label asp-for="Membership.Name" class="form-label">Nombre</label>
+            <input asp-for="Membership.Name" class="form-control" placeholder="Ingrese el nombre de la membresía" />
         </div>
 
         <div class="mb-3">
-            <label asp-for="Membership.Price" class="form-label"></label>
-            <input asp-for="Membership.Price" class="form-control" type="number" step="0.01" />
+            <label asp-for="Membership.Price" class="form-label">Precio (Bs)</label>
+            <input asp-for="Membership.Price" class="form-control" type="number" step="0.01" placeholder="Ingrese el precio en Bs" />
         </div>
 
         <div class="mb-3">
-            <label asp-for="Membership.Description" class="form-label"></label>
-            <input asp-for="Membership.Description" class="form-control" />
+            <label asp-for="Membership.Description" class="form-label">Descripción</label>
+            <input asp-for="Membership.Description" class="form-control" placeholder="Ingrese la descripción de la membresía" />
         </div>
 
         <div class="mb-3">
-            <label asp-for="Membership.MonthlySessions" class="form-label"></label>
-            <input asp-for="Membership.MonthlySessions" class="form-control" type="number" />
+            <label asp-for="Membership.MonthlySessions" class="form-label">Sesiones Mensuales</label>
+            <input asp-for="Membership.MonthlySessions" class="form-control" type="number" placeholder="Ingrese la cantidad de sesiones mensuales" />
         </div>
 
         <div class="form-check mb-3">
             <input asp-for="Membership.IsActive" class="form-check-input" />
-            <label asp-for="Membership.IsActive" class="form-check-label"></label>
+            <label asp-for="Membership.IsActive" class="form-check-label">Activo</label>
         </div>
 
         <button type="submit" class="btn btn-primary">Guardar</button>
