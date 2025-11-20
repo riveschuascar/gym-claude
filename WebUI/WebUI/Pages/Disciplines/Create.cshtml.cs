@@ -24,7 +24,7 @@ public class CreateModel : PageModel
 
         try
         {
-            var resp = await _disciplineHttp.PostAsJsonAsync("/api/Discipline", Discipline);
+            var resp = await _disciplineHttp.PostAsJsonAsync("/api/Disciplines", Discipline);
             if (resp.IsSuccessStatusCode)
                 TempData["SuccessMessage"] = "Disciplina creada exitosamente.";
             else

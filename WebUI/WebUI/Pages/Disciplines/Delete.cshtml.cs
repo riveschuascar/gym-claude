@@ -19,7 +19,7 @@ public class DeleteModel : PageModel
     {
         try
         {
-            var data = await _disciplineHttp.GetFromJsonAsync<DisciplineDTO>($"/api/Discipline/{id}");
+            var data = await _disciplineHttp.GetFromJsonAsync<DisciplineDTO>($"/api/Disciplines/{id}");
             if (data == null) return RedirectToPage("Index");
             Discipline = data;
         }
@@ -37,7 +37,7 @@ public class DeleteModel : PageModel
     {
         try
         {
-            var resp = await _disciplineHttp.DeleteAsync($"/api/Discipline/Eliminar/{id}");
+            var resp = await _disciplineHttp.DeleteAsync($"/api/Disciplines/{id}");
             TempData[resp.IsSuccessStatusCode ? "SuccessMessage" : "ErrorMessage"] =
                 resp.IsSuccessStatusCode ? "Disciplina eliminada exitosamente." : "No se pudo eliminar la disciplina.";
         }

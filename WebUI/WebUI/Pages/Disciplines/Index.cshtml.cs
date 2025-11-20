@@ -8,12 +8,12 @@ public class IndexModel : PageModel
 {
     private readonly HttpClient _disciplineHttp;
 
-    // Lista de disciplinas que se mostrará en la UI
+    // Lista de disciplinas que se mostrarï¿½ en la UI
     public List<DisciplineDTO> Disciplines { get; set; } = new();
 
     public IndexModel(IHttpClientFactory factory)
     {
-        // Asegúrate de que el HttpClient "Disciplines" tenga BaseAddress = http://localhost:5098
+        // Asegï¿½rate de que el HttpClient "Disciplines" tenga BaseAddress = http://localhost:5098
         _disciplineHttp = factory.CreateClient("Disciplines");
     }
 
@@ -21,8 +21,8 @@ public class IndexModel : PageModel
     {
         try
         {
-            // URL corregida: minúscula y coincidiendo con tu API
-            var data = await _disciplineHttp.GetFromJsonAsync<List<DisciplineDTO>>("/api/disciplines");
+            // URL corregida: minï¿½scula y coincidiendo con tu API
+            var data = await _disciplineHttp.GetFromJsonAsync<List<DisciplineDTO>>("/api/Disciplines");
 
             Disciplines = (data ?? new List<DisciplineDTO>())
                 .OrderBy(d => d.Name)
@@ -41,7 +41,7 @@ public class IndexModel : PageModel
     {
         try
         {
-            var resp = await _disciplineHttp.DeleteAsync($"/api/disciplines/Eliminar/{id}");
+            var resp = await _disciplineHttp.DeleteAsync($"/api/Disciplines/{id}");
             TempData[resp.IsSuccessStatusCode ? "SuccessMessage" : "ErrorMessage"] =
                 resp.IsSuccessStatusCode ? "Disciplina eliminada exitosamente." : "No se pudo eliminar la disciplina.";
         }

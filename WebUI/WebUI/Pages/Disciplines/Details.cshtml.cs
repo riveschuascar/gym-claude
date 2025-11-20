@@ -18,7 +18,7 @@ public class DetailsModel : PageModel
     {
         try
         {
-            var data = await _disciplineHttp.GetFromJsonAsync<DisciplineDTO>($"/api/Discipline/{id}");
+            var data = await _disciplineHttp.GetFromJsonAsync<DisciplineDTO>($"/api/Disciplines/{id}");
             if (data == null) return RedirectToPage("Index");
             Discipline = data;
         }
