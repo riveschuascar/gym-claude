@@ -41,6 +41,14 @@ namespace UserMicroservice.Infrastructure.Persistence
 
         public async Task<Result> Create(User entity)
         {
+            // Validar duplicado de correo antes de intentar el insert
+            const string emailExistsQuery = @"SELECT 1 FROM users.user WHERE Email = @Email LIMIT 1;";
+            var emailExists = await _conn.ExecuteScalarAsync<int?>(emailExistsQuery, new { entity.Email });
+            if (emailExists.HasValue)
+            {
+                return Result.Failure("El correo ya está registrado.");
+            }
+
             using var transaction = _conn.BeginTransaction();
 
             const string query = @"
