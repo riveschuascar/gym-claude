@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+option csharp_namespace = "EmailMicroservice.API";
+
+package email;
+
+// Servicio principal
+service EmailService {
+  rpc SendCredentialEmail (SendCredentialEmailRequest) returns (SendCredentialEmailResponse);
+}
+
+// Petición para enviar un correo con credenciales
+message SendCredentialEmailRequest {
+  string email = 1;                  // Correo destinatario
+  string user_full_name = 2;         // Nombre completo para el saludo
+  string reason = 3;                 // Motivo por el cual se envía el correo
+  string security_recommendations = 4; // Recomendaciones de seguridad generadas por el sistema
+  string username = 5;               // Credencial de usuario
+  string password = 6;               // Contraseña generada
+}
+
+// Respuesta estándar
+message SendCredentialEmailResponse {
+  bool success = 1;
+  string message = 2;
+}
