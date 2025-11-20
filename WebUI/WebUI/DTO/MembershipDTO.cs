@@ -10,5 +10,8 @@
         public bool IsActive { get; set; }
         public DateTime? CreatedAt { get; set; }
         public DateTime? LastModification { get; set; }
+
+        public List<short> DisciplineIds { get; set; } = new();
+        public List<DisciplineDTO> Disciplines { get; set; } = new();
     }
 }

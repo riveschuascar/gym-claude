@@ -44,6 +44,22 @@
             <label asp-for="Membership.IsActive" class="form-check-label">Activo</label>
         </div>
 
+        <div class="mb-3">
+            <label class="form-label">Disciplinas Disponibles</label>
+            <div class="form-check">
+                @foreach (var discipline in Model.Disciplines)
+                {
+                <input class="form-check-input"
+                       type="checkbox"
+                       name="SelectedDisciplineIds"
+                       value="@discipline.Id"
+                       id="discipline_@discipline.Id" />
+                <label class="form-check-label" for="discipline_@discipline.Id">@discipline.Name</label>
+                <br />
+                }
+            </div>
+        </div>
+
         <button type="submit" class="btn btn-primary">
             <i class="fas fa-save"></i> Crear Membresía
         </button>
