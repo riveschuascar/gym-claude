@@ -2,6 +2,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\MembershipMicroserviceDomain\MembershipMicroserviceDomain.csproj" />
+		<ProjectReference Include="..\MembershipMicroserviceApplication\MembershipMicroserviceApplication.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>

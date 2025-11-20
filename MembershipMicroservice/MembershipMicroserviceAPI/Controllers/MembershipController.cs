@@ -41,7 +41,7 @@ namespace MembershipMicroservice.MembershipMicroserviceAPI.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] Membership membership)
         {
-            membership.Id = (short)id;
+            membership.Id = id;
             var result = await _membershipService.Update(membership);
             return result.IsSuccess ? Ok(result.Value) : BadRequest(result.Error);
         }

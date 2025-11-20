@@ -54,6 +54,9 @@ namespace MembershipMicroservice.MembershipMicroserviceInfraestructure.Persisten
 
         public async Task<Result<Membership>> GetById(int id)
         {
+            if (id <= 0)
+                return Result<Membership>.Failure("El Id debe ser mayor a cero.");
+
             const string query = @"
                 SELECT id AS Id,
                        name AS Name,
@@ -72,7 +75,6 @@ namespace MembershipMicroservice.MembershipMicroserviceInfraestructure.Persisten
                 await conn.OpenAsync();
 
                 var membership = await conn.QuerySingleOrDefaultAsync<Membership>(query, new { Id = id });
-
                 if (membership == null)
                     return Result<Membership>.Failure($"No se encontró la membresía con Id {id}");
 
@@ -133,7 +135,6 @@ namespace MembershipMicroservice.MembershipMicroserviceInfraestructure.Persisten
                 await conn.OpenAsync();
 
                 entity.LastModification = DateTime.UtcNow;
-
                 var affected = await conn.ExecuteAsync(query, entity);
 
                 if (affected == 0)
@@ -150,11 +151,14 @@ namespace MembershipMicroservice.MembershipMicroserviceInfraestructure.Persisten
 
         public async Task<Result> DeleteById(int id)
         {
+            if (id <= 0)
+                return Result.Failure("El Id debe ser mayor a cero.");
+
             const string query = @"
-        UPDATE membership
-        SET is_active = false,
-            last_modification = @LastModification
-        WHERE id = @Id;";
+                UPDATE membership
+                SET is_active = false,
+                    last_modification = @LastModification
+                WHERE id = @Id;";
 
             try
             {
@@ -162,7 +166,6 @@ namespace MembershipMicroservice.MembershipMicroserviceInfraestructure.Persisten
                 await conn.OpenAsync();
 
                 var affected = await conn.ExecuteAsync(query, new { Id = id, LastModification = DateTime.UtcNow });
-
                 return affected > 0 ? Result.Success() : Result.Failure("No se encontró la membresía para eliminar.");
             }
             catch (Exception ex)

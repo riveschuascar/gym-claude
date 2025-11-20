@@ -2,6 +2,7 @@
 using MembershipMicroservice.MembershipMicroserviceApplication.Services;
 using MembershipMicroservice.MembershipMicroserviceDomain.Ports;
 using MembershipMicroservice.MembershipMicroserviceInfraestructure.Persistence;
+using MembershipMicroservice.MembershipMicroserviceInfrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +16,12 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddHttpClient("Disciplines", client =>
+{
+    var baseUrl = builder.Configuration["DisciplineApiBase"] ?? "http://localhost:5098";
+    client.BaseAddress = new Uri(baseUrl);
+});
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend",
@@ -26,6 +33,7 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddScoped<IMembershipRepository, MembershipRepository>();
 builder.Services.AddScoped<IMembershipService, MembershipService>();
+builder.Services.AddScoped<IDisciplineServiceClient, DisciplineServiceClient>();
 
 var app = builder.Build();
 
