@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+
+		<!-- Información de ensamblado moderna -->
+		<Version>1.0.0</Version>
+		<AssemblyVersion>1.0.0.0</AssemblyVersion>
+		<FileVersion>1.0.0.0</FileVersion>
+		<Company>MiEmpresa</Company>
+		<!-- Aquí pones el nombre de tu empresa o tu nombre -->
+		<Product>DisciplineMicroserviceInfrastructure</Product>
+
+		<!--<GenerateAssemblyInfo>false</GenerateAssemblyInfo>-->
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Dapper" Version="2.1.66" />
+	</ItemGroup>
+
+</Project>

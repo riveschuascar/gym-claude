@@ -1,30 +1,99 @@
-﻿<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="es">
+
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - WebUI</title>
+    <title>@ViewData["Title"] - GYMPT</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/WebUI.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/icofont@1.0.1/dist/icofont.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
 </head>
+
 <body>
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container">
-                <a class="navbar-brand" asp-area="" asp-page="/Index">WebUI</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
+                <div class="text-center" style="max-width: 50px;">
+                    <img src="~/images/logo.jpeg" alt="Logo" class="img-fluid rounded"/>
+                </div>
+                <a class="navbar-brand" asp-area="" asp-page="/Index">GYMPT</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse"
+                    aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
+
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
+                    <ul class="navbar-nav flex-grow-1 align-items-center">
+
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Index">Home</a>
+                            <a class="nav-link text-dark" asp-area="" asp-page="/Privacy">Privacidad</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Privacy">Privacy</a>
+                            <a class="nav-link text-dark" asp-area="" asp-page="/Clients/Index">Clientes</a>
                         </li>
+
+                        @*Restricted roles users logic*@
+                        @if (User.Identity != null && User.Identity.IsAuthenticated)
+                        {
+                            // --- Rol: Admin (Se muestra TODO) ---
+                            if (User.IsInRole("Admin"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-page="/Memberships/Membership">Membres&iacute;as</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-page="/Disciplines/Discipline">Disciplinas</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-page="/DetailsMemberships/DetailsMemberships">Detalles de membres&iacute;as</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-page="/Reports/Reports">Reportes</a>
+                                </li>
+                            }
+
+                            // --- Rol: Instructor O Admin (Porque Admin ve todo) ---
+                            if (User.IsInRole("Instructor") || User.IsInRole("Admin"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-page="/Persons/Person">Personas</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-page="/DetailsUsers/DetailsUsers">Detalles de
+                                        usuarios</a>
+                                </li>
+                            }
+                        }
+
+                    </ul>
+                    <ul class="navbar-nav">
+                        @if (User.Identity != null && User.Identity.IsAuthenticated)
+                        {
+                            <li class="nav-item d-flex align-items-center me-3">
+                                <span class="text-dark">
+                                    <strong>@User.Identity.Name</strong><br />
+                                    <small
+                                        class="text-muted">@User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value</small>
+                                </span>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-danger" asp-page="/Login/Logout">
+                                    <i class="fas fa-sign-out-alt"></i> Cerrar sesión
+                                </a>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-page="/Login/Index">
+                                    <i class="fas fa-sign-in-alt"></i> Iniciar sesión
+                                </a>
+                            </li>
+                        }
                     </ul>
                 </div>
             </div>
@@ -36,9 +105,63 @@
         </main>
     </div>
 
-    <footer class="border-top footer text-muted">
+    <footer class="footer bg-black bg-opacity-50">
+        <!-- ... Tu footer se queda igual ... -->
         <div class="container">
-            &copy; 2025 - WebUI - <a asp-area="" asp-page="/Privacy">Privacy</a>
+            <div class="row flex-row flex-wrap align-items-start">
+
+                <div class="col-lg-4 col-md-6 mb-5 mb-lg-0">
+                    <h2 class="text-white mb-4">GymFit</h2>
+                    <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Voluptatibus illo ad quo sunt maiores,
+                        sint nostrum omnis eaque cumque dolorum.</p>
+                    <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit.</p>
+                </div>
+
+                <div class="col-lg-3 col-md-6 mb-5 mb-lg-0">
+                    <div class="footer-widget recent-blog">
+                        <h4 class="mb-4 text-white letter-spacing text-uppercase">Publicaciones recientes</h4>
+                        <div>
+                            <a href="blog-single.html" class="text-white">Claritas est etiam processus dynamicus</a>
+                            <p class="text-sm mt-2 text-white-50">12 de octubre, 2025</p>
+                        </div>
+                        <div class="mt-4">
+                            <a href="blog-single.html" class="text-white">Claritas est etiam processus dynamicus</a>
+                            <p class="text-sm mt-2 text-white-50">12 de octubre, 2025</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-2 col-md-6 mb-5 mb-lg-0">
+                    <div class="footer-widget">
+                        <h4 class="mb-4 text-white letter-spacing text-uppercase">Enlaces rápidos</h4>
+                        <ul class="list-unstyled footer-menu lh-40 mb-0">
+                            <li><a href=""><i class="ti-angle-double-right mr-2"></i>Acerca de nosotros</a></li>
+                            <li><a href=""><i class="ti-angle-double-right mr-2"></i>Servicios</a></li>
+                            <li><a href=""><i class="ti-angle-double-right mr-2"></i>Membres&iacute;as</a></li>
+                            <li><a href=""><i class="ti-angle-double-right mr-2"></i>Cursos</a></li>
+                            <li><a href=""><i class="ti-angle-double-right mr-2"></i>Contactáctanos</a></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="col-lg-3 col-md-6">
+                    <div class="footer-widget">
+                        <h4 class="mb-4 text-white letter-spacing text-uppercase">Nuestra ubicación</h4>
+                        <p>
+                            Cochabamba 6036 Tupuraya
+                            hwy., Cbba, CB BOL 22303
+                        </p>
+                        <span class="text-white d-block">+591 (555) 987–5874</span>
+                        <span class="text-white d-block">gympt@gg.bo</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row align-items-center mt-5 px-3 bg-black mx-1">
+                <div class="col-lg-4">
+                    <p class="text-white mt-3">GYMPT © 2025</p>
+                </div>
+            </div>
         </div>
     </footer>
 
@@ -46,6 +169,11 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
 
+    <!-- ===== 2. AÑADE ESTO para que funcionen los POP-UPS de alerta ===== -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     @await RenderSectionAsync("Scripts", required: false)
 </body>
+
 </html>
+

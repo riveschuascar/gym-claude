@@ -1,0 +1,26 @@
+@ClientMicroservice_HostAddress = http://localhost:5135
+
+GET {{ClientMicroservice_HostAddress}}/weatherforecast/
+Accept: application/json
+
+### Clients
+GET {{ClientMicroservice_HostAddress}}/api/Client
+Accept: application/json
+
+### Create Client
+POST {{ClientMicroservice_HostAddress}}/api/Client
+Content-Type: application/json
+
+{
+  "name": "Juan",
+  "firstLastname": "Pérez",
+  "secondLastname": "López",
+  "dateBirth": "1990-01-01",
+  "ci": "123456",
+  "fitnessLevel": "Beginner",
+  "initialWeightKg": 80.5,
+  "currentWeightKg": 80.5,
+  "emergencyContactPhone": "777-999"
+}
+
+###
