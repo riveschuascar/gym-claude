@@ -3,6 +3,7 @@ using WebUI.Common;
 
 var builder = WebApplication.CreateBuilder(args);
 
+
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddTransient<TokenMessageHandler>();
 
@@ -33,6 +34,14 @@ builder.Services.AddRazorPages(options =>
     options.Conventions.AllowAnonymousToPage("/Error");
 });
 
+
+builder.Services.AddHttpClient("Memberships", client =>
+{
+    var baseUrl = builder.Configuration["MembershipApiBase"] ?? "http://localhost:5292";
+    client.BaseAddress = new Uri(baseUrl);
+});
+
+// Registramos Microservicios
 builder.Services.AddHttpClient("Disciplines", client =>
 {
     var baseUrl = builder.Configuration["DisciplineApiBase"] ?? "http://localhost:5098";
