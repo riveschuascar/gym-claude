@@ -1,8 +1,6 @@
-﻿using System.Linq;
-using UserMicroservice.Application.Services;
+﻿using UserMicroservice.Application.Services;
 using UserMicroservice.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
-using UserMicroservice.Api.Services;
 
 namespace UserMicroservice.Api.Controllers
 {
@@ -11,12 +9,10 @@ namespace UserMicroservice.Api.Controllers
     public class UserController : ControllerBase
     {
         private readonly UserService _service;
-        private readonly IEmailClient _emailClient;
 
-        public UserController(UserService service, IEmailClient emailClient)
+        public UserController(UserService service)
         {
             _service = service;
-            _emailClient = emailClient;
         }
 
         [HttpGet("id/{id}")]
@@ -54,25 +50,7 @@ namespace UserMicroservice.Api.Controllers
             
             if (!result.IsSuccess)
                 return BadRequest(new { error = result.Error });
-
-            // Si la creación fue exitosa, enviar correo de credenciales vía gRPC (no bloquear fallo de negocio)
-            try
-            {
-                var fullName = string.Join(" ", new[] { user.Name, user.FirstLastname, user.SecondLastname }.Where(s => !string.IsNullOrWhiteSpace(s)));
-                await _emailClient.SendCredentialEmailAsync(
-                    user.Email ?? string.Empty,
-                    fullName,
-                    "Registro de usuario",
-                    "Por favor no comparta sus credenciales y cambie la contraseña al iniciar sesión.",
-                    user.Email ?? string.Empty,
-                    user.Password ?? string.Empty
-                );
-            }
-            catch
-            {
-                // Ignorar errores de envío de correo para no romper el flujo de creación.
-            }
-
+            
             return CreatedAtAction(nameof(GetById), new { id = user.Id }, user);
         }
 
@@ -134,6 +112,6 @@ namespace UserMicroservice.Api.Controllers
 
     public class ChangePasswordRequest
     {
-        public string? NewPassword { get; set; }
+        public string NewPassword { get; set; }
     }
 }
