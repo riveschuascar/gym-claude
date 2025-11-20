@@ -43,30 +43,36 @@
         <tbody>
             @foreach (var m in Model.Memberships)
             {
-            <tr>
-                <td>@m.Name</td>
-                <td>
-                    @if (m.Price.HasValue)
+                <tr>
+                    <td>@m.Name</td>
+                    <td>
+                        @if (m.Price.HasValue)
                         {
-                    @($"{m.Price.Value:N2} Bs")
+                            @($"{m.Price.Value:N2} Bs")
                         }
                         else
                         {
-                    @("-")
+                            @("-")
                         }
-                </td>
-                <td>@m.Description</td>
-                <td>@m.MonthlySessions</td>
-                <td>@(m.IsActive ? "Sí" : "No")</td>
-                <td>
-                    <a asp-page="Edit" asp-route-id="@m.Id" class="btn btn-sm btn-warning">
-                        <i class="fas fa-edit"></i> Editar
-                    </a>
-                    <a asp-page="Delete" asp-route-id="@m.Id" class="btn btn-sm btn-danger">
-                        <i class="fas fa-trash"></i> Eliminar
-                    </a>
-                </td>
-            </tr>
+                    </td>
+                    <td>@m.Description</td>
+                    <td>@m.MonthlySessions</td>
+                    <td>@(m.IsActive ? "Sí" : "No")</td>
+
+                    <td>
+                        <a asp-page="Details" asp-route-id="@m.Id" class="btn btn-sm btn-info">
+                            <i class="fas fa-eye"></i> Detalles
+                        </a>
+
+                        <a asp-page="Edit" asp-route-id="@m.Id" class="btn btn-sm btn-warning">
+                            <i class="fas fa-edit"></i> Editar
+                        </a>
+
+                        <a asp-page="Delete" asp-route-id="@m.Id" class="btn btn-sm btn-danger">
+                            <i class="fas fa-trash"></i> Eliminar
+                        </a>
+                    </td>
+                </tr>
             }
         </tbody>
     </table>

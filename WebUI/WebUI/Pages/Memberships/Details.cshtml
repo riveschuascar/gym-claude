@@ -1,0 +1,58 @@
+﻿@page "{id:int}"
+@model WebUI.Pages.Memberships.DetailsModel
+@{
+    ViewData["Title"] = "Detalle de Membresía";
+}
+
+<div class="container mt-4">
+    <h1>@ViewData["Title"]</h1>
+    <hr />
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="mb-3">
+        <strong>Nombre:</strong> @Model.Membership.Name
+    </div>
+
+    <div class="mb-3">
+        <strong>Precio:</strong> @(Model.Membership.Price?.ToString("0.00") ?? "0.00") Bs
+    </div>
+
+    <div class="mb-3">
+        <strong>Descripción:</strong> @Model.Membership.Description
+    </div>
+
+    <div class="mb-3">
+        <strong>Sesiones Mensuales:</strong> @Model.Membership.MonthlySessions
+    </div>
+
+    <div class="mb-3">
+        <strong>Activo:</strong> @(Model.Membership.IsActive ? "Sí" : "No")
+    </div>
+
+    <div class="mb-3">
+        <strong>Disciplinas Asociadas:</strong>
+        @if (Model.MembershipDisciplines.Any())
+        {
+            <ul>
+                @foreach (var d in Model.MembershipDisciplines)
+                {
+                    <li>@d.Name</li>
+                }
+            </ul>
+        }
+        else
+        {
+            <span>No hay disciplinas asignadas.</span>
+        }
+    </div>
+
+    <a asp-page="Index" class="btn btn-secondary">Volver</a>
+    <a asp-page="Edit" asp-route-id="@Model.Membership.Id" class="btn btn-primary">Editar</a>
+</div>
