@@ -18,42 +18,33 @@ namespace WebUI.Pages.Memberships
         [BindProperty]
         public MembershipDTO Membership { get; set; } = new();
 
+        public short? CreatedId { get; set; }
+
         public void OnGet()
         {
         }
 
         public async Task<IActionResult> OnPostAsync()
         {
-            Console.WriteLine("ENTRÓ A OnPostAsync");
-
-            if (!ModelState.IsValid)
-            {
-                Console.WriteLine("ModelState inválido");
-                return Page();
-            }
-
             try
             {
-                Console.WriteLine("Enviando POST al microservicio...");
-                Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(Membership));
-
                 var resp = await _membershipHttp.PostAsJsonAsync("/api/Memberships", Membership);
-                Console.WriteLine("StatusCode: " + resp.StatusCode);
 
                 if (resp.IsSuccessStatusCode)
-                    TempData["SuccessMessage"] = "Membresía creada exitosamente.";
-                else
-                    TempData["ErrorMessage"] = "No se pudo crear la membresía.";
+                {
+                    TempData["SuccessMessage"] = $"Membresía creada exitosamente. Id: {Membership.Id}";
+                    return RedirectToPage("./Index");
+                }
+
+                var errorContent = await resp.Content.ReadAsStringAsync();
+                ModelState.AddModelError(string.Empty, "No se pudo crear la membresía: " + errorContent);
+                return Page();
             }
             catch (Exception ex)
             {
-                TempData["ErrorMessage"] = "Error al conectar con el microservicio.";
-                Console.WriteLine("EXCEPCIÓN: " + ex.Message);
+                ModelState.AddModelError(string.Empty, "Error al conectar con el microservicio: " + ex.Message);
                 return Page();
             }
-
-            return RedirectToPage("Index");
         }
-
     }
 }

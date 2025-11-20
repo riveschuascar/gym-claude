@@ -1,6 +1,5 @@
 ﻿@page
 @model WebUI.Pages.Memberships.CreateModel
-
 @{
     ViewData["Title"] = "Crear Membresía";
 }
@@ -11,13 +10,25 @@
 
     @if (TempData["ErrorMessage"] != null)
     {
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+    <div class="alert alert-danger">
         @TempData["ErrorMessage"]
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    }
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+    <div class="alert alert-success">
+        @TempData["SuccessMessage"]
     </div>
     }
 
     <form method="post">
+        <div class="mb-3">
+            <label asp-for="Membership.Id" class="form-label">Id</label>
+            <input asp-for="Membership.Id" type="number" min="1" class="form-control" placeholder="Ingresa un Id válido" />
+            <span asp-validation-for="Membership.Id" class="text-danger"></span>
+        </div>
+
         <div class="mb-3">
             <label asp-for="Membership.Name" class="form-label">Nombre</label>
             <input asp-for="Membership.Name" class="form-control" placeholder="Membresía Gold" />
@@ -44,7 +55,7 @@
 
         <div class="form-check mb-3">
             <input asp-for="Membership.IsActive" class="form-check-input" />
-            <label asp-for="Membership.IsActive" class="form-check-label"></label>
+            <label asp-for="Membership.IsActive" class="form-check-label">Activo</label>
         </div>
 
         <button type="submit" class="btn btn-primary">
@@ -55,3 +66,7 @@
         </a>
     </form>
 </div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
