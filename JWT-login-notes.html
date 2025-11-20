@@ -1,70 +1,33 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>GYM-CLAUDE · Login + JWT</title>
+  <meta charset="UTF-8" />
+  <title>GYM-CLAUDE · Guía de Login y JWT</title>
   <style>
     :root {
-      --bg: #0d0f1a;
-      --panel: #11162a;
+      --bg: #0c0f1c;
+      --panel: #12182b;
+      --panel2: #161d35;
       --accent: #7df9ff;
-      --accent2: #ff7ad5;
-      --text: #e6eaf5;
+      --accent2: #ff9ed8;
+      --text: #e8ecf7;
       --muted: #9ca8c0;
-      --border: #1e2640;
-      --glow: 0 0 25px rgba(125, 249, 255, 0.4);
+      --border: #1f2845;
+      --shadow: 0 10px 40px rgba(0,0,0,0.35);
     }
     * { box-sizing: border-box; }
     body {
       margin: 0;
       font-family: 'Segoe UI', 'Inter', system-ui, sans-serif;
-      background: radial-gradient(circle at 15% 20%, rgba(255,122,213,0.08), transparent 28%),
-                  radial-gradient(circle at 80% 10%, rgba(125,249,255,0.12), transparent 32%),
-                  linear-gradient(145deg, #0a0c16, #0f1223);
+      background: radial-gradient(circle at 20% 15%, rgba(255,158,216,0.05), transparent 30%),
+                  radial-gradient(circle at 80% 0%, rgba(125,249,255,0.08), transparent 28%),
+                  linear-gradient(145deg, #0a0c16, #0f1222);
       color: var(--text);
-      line-height: 1.6;
-      padding: 40px clamp(16px, 4vw, 72px);
+      padding: 42px clamp(16px, 4vw, 80px);
+      line-height: 1.65;
     }
-    .deck {
-      display: grid;
-      gap: 18px;
-      max-width: 1100px;
-      margin: 0 auto;
-    }
-    .hero {
-      padding: 28px;
-      background: linear-gradient(135deg, rgba(125,249,255,0.08), rgba(255,122,213,0.06));
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      box-shadow: var(--glow);
-    }
-    h1 { margin: 0 0 10px; letter-spacing: 0.5px; }
-    h1 span { color: var(--accent); }
-    p.lead { margin: 0; color: var(--muted); }
-    .panel {
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 18px;
-      position: relative;
-      overflow: hidden;
-    }
-    .panel::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background: radial-gradient(circle at 10% 20%, rgba(125,249,255,0.06), transparent 30%),
-                  radial-gradient(circle at 80% 10%, rgba(255,122,213,0.06), transparent 30%);
-      pointer-events: none;
-    }
-    .panel h2 {
-      margin: 0 0 10px;
-      color: var(--accent);
-      letter-spacing: 0.3px;
-    }
-    .panel h3 { margin: 14px 0 6px; color: var(--accent2); }
-    ul { margin: 8px 0 0 18px; color: var(--muted); }
-    li { margin-bottom: 4px; }
+    h1,h2,h3 { margin: 0 0 10px; letter-spacing: 0.4px; }
+    p { margin: 0 0 10px; }
     code, .path {
       background: rgba(255,255,255,0.05);
       border: 1px solid var(--border);
@@ -73,39 +36,60 @@
       font-family: 'Cascadia Code','JetBrains Mono',monospace;
       color: var(--accent);
     }
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 14px;
+    .deck { max-width: 1180px; margin: 0 auto; display: grid; gap: 18px; }
+    .hero {
+      background: linear-gradient(120deg, rgba(125,249,255,0.16), rgba(255,158,216,0.12));
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 26px;
+      box-shadow: var(--shadow);
     }
     .badge {
       display: inline-block;
-      padding: 3px 10px;
+      padding: 4px 12px;
       border-radius: 999px;
       background: rgba(125,249,255,0.12);
       border: 1px solid rgba(125,249,255,0.35);
       color: var(--accent);
       font-size: 12px;
-      letter-spacing: 0.2px;
+      letter-spacing: 0.3px;
+      margin-bottom: 10px;
     }
-    .steps { counter-reset: step; }
-    .steps li {
-      counter-increment: step;
-      list-style: none;
-      position: relative;
-      padding-left: 34px;
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 18px;
+      box-shadow: var(--shadow);
     }
+    .panel h2 { color: var(--accent); }
+    .panel h3 { color: var(--accent2); margin-top: 14px; }
+    ul { margin: 6px 0 0 18px; color: var(--muted); }
+    li { margin-bottom: 4px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px,1fr)); gap: 12px; }
+    .steps { counter-reset: s; padding-left: 0; }
+    .steps li { list-style: none; counter-increment: s; margin: 10px 0; position: relative; padding-left: 36px; color: var(--text); }
     .steps li::before {
-      content: counter(step);
+      content: counter(s);
       position: absolute; left: 0; top: 2px;
-      width: 22px; height: 22px;
+      width: 24px; height: 24px;
       border-radius: 50%;
       border: 1px solid var(--border);
-      background: rgba(125,249,255,0.12);
+      background: rgba(125,249,255,0.14);
       color: var(--accent);
       text-align: center;
-      line-height: 22px;
-      font-weight: 600;
+      line-height: 24px;
+      font-weight: 700;
+    }
+    .pill {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 12px;
+      margin-right: 6px;
     }
     a { color: var(--accent); text-decoration: none; }
   </style>
@@ -114,90 +98,107 @@
   <div class="deck">
     <div class="hero">
       <div class="badge">GYM-CLAUDE</div>
-      <h1>Login + <span>JWT</span></h1>
-      <p class="lead">Mapa rápido de cómo se autentica el sistema: generación de token, rutas clave y cómo WebUI reenvía el JWT.</p>
+      <h1>Guía de Login y JWT</h1>
+      <p>Hoja de ruta para explicar cómo se autenticó el sistema: dónde vive cada pieza, cómo se firma el JWT y cómo WebUI lo consume.</p>
     </div>
 
     <div class="panel">
-      <h2>Capas y rutas clave</h2>
+      <h2>Mapa de proyectos</h2>
       <div class="grid">
         <div>
-          <h3>LoginMicroservice (API)</h3>
+          <h3>LoginMicroservice (API JWT)</h3>
           <ul>
             <li><span class="path">LoginMicroservice/Controllers/LoginController.cs</span> → <code>POST /api/login</code></li>
-            <li><span class="path">LoginMicroservice/Program.cs</span> → DI, Npgsql, JWT auth</li>
-            <li><span class="path">LoginMicroservice/appsettings.json</span> → <code>Jwt:{Key,Issuer,Audience}</code>, <code>ConnectionStrings</code></li>
+            <li><span class="path">LoginMicroservice/Program.cs</span> → DI (Repo + TokenProvider), Npgsql, JWT auth</li>
+            <li><span class="path">LoginMicroservice/appsettings.json</span> → <code>Jwt:{Key,Issuer,Audience,ExpiresMinutes}</code>, <code>ConnectionStrings</code></li>
           </ul>
         </div>
         <div>
-          <h3>Aplicación/Infra</h3>
+          <h3>Capas de dominio</h3>
           <ul>
-            <li><span class="path">...Application/Services/LoginService.cs</span> → valida credenciales, emite token</li>
-            <li><span class="path">...Infrastructure/Persistence/LoginRepository.cs</span> → verifica bcrypt ó SHA-256 en <code>users.user</code></li>
-            <li><span class="path">...Infrastructure/Security/JwtTokenProvider.cs</span> → firma HMAC-SHA256</li>
+            <li><span class="path">...Application/Services/LoginService.cs</span> → valida credenciales y pide token</li>
+            <li><span class="path">...Infrastructure/Persistence/LoginRepository.cs</span> → consulta <code>users.user</code> y verifica bcrypt o SHA-256</li>
+            <li><span class="path">...Infrastructure/Security/JwtTokenProvider.cs</span> → firma HMAC-SHA256 con <code>Jwt:Key</code></li>
           </ul>
         </div>
         <div>
-          <h3>WebUI (front)</h3>
+          <h3>WebUI (Razor)</h3>
           <ul>
-            <li><span class="path">WebUI/Pages/Login/Index.cshtml(.cs)</span> → pide token y guarda cookie (claims + token)</li>
-            <li><span class="path">WebUI/Common/TokenMessageHandler.cs</span> → adjunta <code>Authorization: Bearer</code> en HttpClient</li>
-            <li><span class="path">WebUI/Program.cs</span> → auth por cookies; HttpClients: LoginAPI, Users, Disciplines, ClientAPI</li>
-            <li><span class="path">WebUI/Pages/Shared/_Layout.cshtml</span> → menú por rol</li>
+            <li><span class="path">WebUI/Pages/Login/Index.cshtml(.cs)</span> → solicita token y crea cookie de auth</li>
+            <li><span class="path">WebUI/Common/TokenMessageHandler.cs</span> → agrega <code>Authorization: Bearer</code> a HttpClients</li>
+            <li><span class="path">WebUI/Program.cs</span> → auth por cookies, HttpClients (LoginAPI, Users, Disciplines, ClientAPI)</li>
+            <li><span class="path">WebUI/Pages/Shared/_Layout.cshtml</span> → menú filtrado por rol</li>
           </ul>
         </div>
       </div>
     </div>
 
     <div class="panel">
-      <h2>Flujo de autenticación</h2>
-      <ul class="steps">
-        <li>WebUI envía <code>{ email, password }</code> a <code>POST /api/login</code> (LoginAPI).</li>
-        <li>LoginService valida formato (mín 5 chars) y llama al repositorio.</li>
-        <li>LoginRepository busca en <code>users.user</code> (email lowercase) y verifica: <code>crypt</code> (bcrypt) o <code>encode(digest(sha256))</code>.</li>
-        <li>JwtTokenProvider crea el token con claims: <code>sub</code>(Id), <code>unique_name</code>, <code>email</code>, <code>role</code>; vence en <code>Jwt:ExpiresMinutes</code>.</li>
-        <li>WebUI recibe <code>{ token, expiresAt, user }</code>, crea cookie de auth y guarda el token como claim.</li>
-        <li>TokenMessageHandler añade <code>Bearer &lt;token&gt;</code> en cada HttpClient (Users, Disciplines, ClientAPI).</li>
+      <h2>Cómo se genera y valida el JWT</h2>
+      <ul>
+        <li><strong>Entrada:</strong> JSON <code>{ email, password }</code> al endpoint <code>/api/login</code>.</li>
+        <li><strong>Contraseña:</strong> se compara contra <code>users.user</code> usando <code>crypt</code> (bcrypt) o el hash SHA-256 heredado (seed).</li>
+        <li><strong>Claims emitidos:</strong> <code>sub</code> (Id), <code>unique_name</code> (Nombre), <code>email</code>, <code>role</code>.</li>
+        <li><strong>Firma:</strong> clave simétrica <code>Jwt:Key</code>, algoritmo HMAC-SHA256, expiración <code>Jwt:ExpiresMinutes</code>.</li>
+        <li><strong>Configuración:</strong> <span class="path">LoginMicroservice/appsettings.json</span> (Issuer/Audience/Key) y <span class="path">LoginMicroservice/Program.cs</span> (JwtBearerOptions).</li>
       </ul>
     </div>
 
     <div class="panel">
-      <h2>Configuración mínima</h2>
+      <h2>Cómo WebUI usa el token</h2>
+      <ul>
+        <li><strong>Login Page:</strong> <span class="path">/Login/Index</span> llama a LoginAPI y recibe <code>{ token, expiresAt, user }</code>; crea cookie de autenticación con claims + token.</li>
+        <li><strong>Reenvío:</strong> <span class="path">TokenMessageHandler</span> lee el claim <code>token</code> y lo envía como <code>Bearer</code> en cada HttpClient (Users, Disciplines, ClientAPI).</li>
+        <li><strong>Autorización UI:</strong> en <span class="path">Program.cs</span> se protegen carpetas (Clients, Disciplines, Users, Memberships). Layout muestra enlaces según <code>role</code>.</li>
+      </ul>
+    </div>
+
+    <div class="panel">
+      <h2>Secuencia de extremo a extremo</h2>
+      <ol class="steps">
+        <li>WebUI envía email/clave a <code>POST /api/login</code> (LoginMicroservice).</li>
+        <li>LoginService valida formato (min 5 chars) y consulta LoginRepository.</li>
+        <li>LoginRepository busca en <code>users.user</code> (email lowercase) y verifica hash bcrypt o SHA-256.</li>
+        <li>JwtTokenProvider genera JWT con claims de identidad/rol y expiración.</li>
+        <li>WebUI recibe el token, crea cookie de auth y guarda el token como claim.</li>
+        <li>Cada llamada de WebUI a Users/Disciplines/Clients lleva <code>Authorization: Bearer &lt;token&gt;</code> gracias al handler.</li>
+      </ol>
+    </div>
+
+    <div class="panel">
+      <h2>Setup rápido para demos</h2>
       <div class="grid">
         <div>
-          <h3>LoginMicroservice</h3>
+          <h3>Usuarios</h3>
           <ul>
-            <li><code>ConnectionStrings:DefaultConnection</code> → BD usuarios</li>
-            <li><code>Jwt:Key</code> → clave larga y secreta</li>
-            <li><code>Jwt:Issuer/Audience</code> → debe coincidir con WebUI</li>
+            <li>BD de usuarios (UserMicroservice): usar <span class="path">populate.sql</span> (ej: <code>admin@gmail.com / admin</code>, hash SHA-256).</li>
+            <li>Ajustar <span class="path">LoginMicroservice/appsettings.json</span> → <code>ConnectionStrings:DefaultConnection</code> y <code>Jwt:Key</code> segura.</li>
+          </ul>
+        </div>
+        <div>
+          <h3>Disciplines</h3>
+          <ul>
+            <li>Crear BD <code>DisciplineMicroserviceDB</code> y tabla <code>discipline</code> (ver script en <span class="path">DisciplineMicroservice/sql</span>).</li>
+            <li>Levantar DisciplineMicroservice en <code>http://localhost:5098</code>.</li>
           </ul>
         </div>
         <div>
           <h3>WebUI</h3>
           <ul>
-            <li><code>LoginApiBase</code> (p.ej. <code>http://localhost:5289</code>)</li>
-            <li><code>UserApiBase</code>, <code>DisciplineApiBase</code>, <code>ClientApiBase</code></li>
-          </ul>
-        </div>
-        <div>
-          <h3>BD y seed</h3>
-          <ul>
-            <li>Usuarios seed: <span class="path">UserMicroservice/populate.sql</span> (ej: <code>admin@gmail.com / admin</code> SHA-256)</li>
-            <li>Disciplinas: crear BD <code>DisciplineMicroserviceDB</code> y tabla <code>discipline</code></li>
+            <li><span class="path">appsettings.json</span>: <code>LoginApiBase</code>, <code>UserApiBase</code>, <code>DisciplineApiBase</code>, <code>ClientApiBase</code>.</li>
+            <li>Levantar LoginMicroservice (p. ej. <code>http://localhost:5289</code>) antes de iniciar sesión.</li>
           </ul>
         </div>
       </div>
     </div>
 
     <div class="panel">
-      <h2>Rutas útiles (resumen)</h2>
+      <h2>Chequeos rápidos</h2>
       <ul>
-        <li><code>Login API</code>: <span class="path">/api/login</span></li>
-        <li><code>Users API</code>: <span class="path">/api/user</span> (microservicio de usuarios)</li>
-        <li><code>Disciplines API</code>: <span class="path">/api/Disciplines</span></li>
-        <li><code>WebUI Login</code>: <span class="path">/Login/Index</span></li>
+        <li>¿No loguea admin? confirma email exacto (<code>admin@gmail.com</code>), BD poblada y clave cumple mínimo 5 caracteres.</li>
+        <li>¿Disciplines falla? verifica BD <code>DisciplineMicroserviceDB</code> existe y <code>/api/Disciplines</code> responde en <code>http://localhost:5098</code>.</li>
+        <li>Seguridad: mover <code>Jwt:Key</code> a variables de entorno y forzar HTTPS en despliegue.</li>
       </ul>
-      <p style="color:var(--muted); margin-top:10px;">Recomendación: mover <code>Jwt:Key</code> a variables de entorno y forzar HTTPS en despliegue.</p>
     </div>
   </div>
 </body>
