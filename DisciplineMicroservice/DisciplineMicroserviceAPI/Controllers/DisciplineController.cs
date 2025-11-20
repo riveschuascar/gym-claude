@@ -4,7 +4,7 @@ using DisciplineMicroservice.DisciplineMicroserviceApplication.Interfaces;
 using DisciplineMicroservice.DisciplineMicroserviceDomain.Entities;
 
 [ApiController]
-[Authorize]
+[Authorize(Roles = "Admin")]
 [Route("api/[controller]")]
 public class DisciplinesController : ControllerBase
 {
