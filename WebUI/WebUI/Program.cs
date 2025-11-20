@@ -14,14 +14,18 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.AccessDeniedPath = "/Login/Index";
         options.ExpireTimeSpan = TimeSpan.FromHours(1);
     });
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
+    options.AddPolicy("AdminOrInstructor", policy => policy.RequireRole("Admin", "Instructor"));
+});
 
 builder.Services.AddRazorPages(options =>
 {
-    options.Conventions.AuthorizeFolder("/Clients");
-    options.Conventions.AuthorizeFolder("/Disciplines");
-    options.Conventions.AuthorizeFolder("/Memberships");
-    options.Conventions.AuthorizeFolder("/Users");
+    options.Conventions.AuthorizeFolder("/Clients", "AdminOrInstructor");
+    options.Conventions.AuthorizeFolder("/Memberships", "AdminOrInstructor");
+    options.Conventions.AuthorizeFolder("/Disciplines", "AdminOnly");
+    options.Conventions.AuthorizeFolder("/Users", "AdminOnly");
     options.Conventions.AllowAnonymousToPage("/Index");
     options.Conventions.AllowAnonymousToPage("/Privacy");
     options.Conventions.AllowAnonymousToPage("/Login/Index");

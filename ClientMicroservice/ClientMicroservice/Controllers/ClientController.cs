@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ClientMicroservice.Controllers;
 
-[Authorize]
+[Authorize(Roles = "Admin,Instructor")]
 [ApiController]
 [Route("api/[controller]")]
 public class ClientController : ControllerBase
