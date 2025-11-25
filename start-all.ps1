@@ -24,10 +24,12 @@ function Start-DotnetService {
     if ($LaunchProfile) { $args += @("--launch-profile", $LaunchProfile) }
 
     Write-Host "-> Iniciando $Name ($ProjectPath) ..."
-    Start-Process -FilePath "dotnet" `
-                  -ArgumentList ($args -join " ") `
+    # Abrimos cmd para que la ventana permanezca si el proceso termina (ver logs de arranque/errores)
+    $cmdArgs = '/k', 'dotnet', ($args -join " ")
+    Start-Process -FilePath "cmd.exe" `
+                  -ArgumentList $cmdArgs `
                   -WorkingDirectory (Split-Path $fullPath -Parent) `
-                  -WindowStyle Minimized
+                  -WindowStyle Normal
 }
 
 $services = @(
