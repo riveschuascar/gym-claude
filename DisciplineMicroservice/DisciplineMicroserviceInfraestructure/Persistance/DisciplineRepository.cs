@@ -110,8 +110,9 @@ namespace DisciplineMicroservice.DisciplineMicroserviceInfraestructure.Persistan
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error en Create: " + ex.Message);
-                return Result<Discipline>.Failure($"Error al crear disciplina: {ex.Message}");
+                Console.WriteLine("Error en Create: " + ex);
+                var msg = ex.InnerException?.Message ?? ex.Message;
+                return Result<Discipline>.Failure($"Error al crear disciplina: {msg}");
             }
         }
 

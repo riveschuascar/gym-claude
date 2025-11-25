@@ -30,9 +30,14 @@ public class CreateModel : PageModel
             else
             {
                 var error = await resp.Content.ReadAsStringAsync();
-                TempData["ErrorMessage"] = string.IsNullOrWhiteSpace(error)
-                    ? "No se pudo crear la disciplina."
-                    : $"No se pudo crear la disciplina: {error}";
+                if (string.IsNullOrWhiteSpace(error))
+                {
+                    TempData["ErrorMessage"] = $"No se pudo crear la disciplina. Código HTTP: {(int)resp.StatusCode} ({resp.StatusCode}).";
+                }
+                else
+                {
+                    TempData["ErrorMessage"] = $"No se pudo crear la disciplina: {error}";
+                }
                 return Page();
             }
         }
