@@ -56,7 +56,6 @@ namespace UserMicroservice.Domain.Validators
             var passwordResult = UserRules.PasswordRules(user.Password);
             if (!passwordResult.IsSuccess)
                 return Result<User>.Failure(passwordResult.Error!);
-            user.Password = passwordResult.Value;
 
             return Result<User>.Success(user);
         }
