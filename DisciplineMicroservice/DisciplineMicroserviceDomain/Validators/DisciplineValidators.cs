@@ -7,7 +7,7 @@ namespace DisciplineMicroservice.DisciplineMicroserviceDomain.Validators
 {
     public static class DisciplineValidators
     {
-        private static readonly Regex AllowedNameRegex = new("^[A-Za-z?-?0-9'\- ]+$", RegexOptions.Compiled);
+        private static readonly Regex AllowedNameRegex = new(@"^[\p{L}0-9'\- ]+$", RegexOptions.Compiled);
 
         public static Result<Discipline> Validate(Discipline discipline)
         {
