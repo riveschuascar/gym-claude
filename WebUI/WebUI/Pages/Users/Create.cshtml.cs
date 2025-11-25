@@ -54,7 +54,7 @@ public class CreateModel : PageModel
             else
             {
                 var errorContent = await response.Content.ReadAsStringAsync();
-                TempData["ErrorMessage"] = $"Error al crear el usuario: {response.StatusCode}";
+                TempData["ErrorMessage"] = $"Error: {errorContent}";
                 return Page();
             }
         }

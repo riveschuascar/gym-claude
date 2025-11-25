@@ -49,14 +49,13 @@ namespace UserMicroservice.Api.Controllers
             if (user == null)
                 return BadRequest(new { error = "El usuario no puede ser vacío" });
 
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
             var result = await _service.Create(user);
             
             if (!result.IsSuccess)
-                return BadRequest(new { error = result.Error });
-
+            {
+                string errorMessage = result.Error;
+                return BadRequest(new { error = errorMessage });
+            }
             // Si la creación fue exitosa, enviar correo de credenciales vía gRPC (no bloquear fallo de negocio)
             try
             {
@@ -83,9 +82,6 @@ namespace UserMicroservice.Api.Controllers
         {
             if (user == null)
                 return BadRequest(new { error = "El usuario no puede ser nulo" });
-
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
 
             var result = await _service.Update(user);
             
