@@ -34,17 +34,31 @@ public class ClientController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<Client>> Create([FromBody] Client client)
     {
-        var created = await _service.CreateAsync(client);
-        return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
+        try
+        {
+            var created = await _service.CreateAsync(client);
+            return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
     }
 
     [HttpPut("{id:int}")]
     public async Task<ActionResult<Client>> Update(int id, [FromBody] Client client)
     {
         if (id != client.Id) return BadRequest("ID de ruta y cuerpo no coinciden");
-        var updated = await _service.UpdateAsync(client);
-        if (updated is null) return NotFound();
-        return Ok(updated);
+        try
+        {
+            var updated = await _service.UpdateAsync(client);
+            if (updated is null) return NotFound();
+            return Ok(updated);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
     }
 
     [HttpDelete("{id:int}")]

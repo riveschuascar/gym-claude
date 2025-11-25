@@ -14,18 +14,22 @@ namespace UserMicroservice.Domain.Validators
             var nameResult = UserRules.NameRules(user.Name);
             if (!nameResult.IsSuccess)
                 return Result<User>.Failure(nameResult.Error!);
+            user.Name = nameResult.Value;
 
             var firstLastNameResult = UserRules.LastNameRules(user.FirstLastname);
             if (!firstLastNameResult.IsSuccess)
                 return Result<User>.Failure(firstLastNameResult.Error!);
+            user.FirstLastname = firstLastNameResult.Value ?? user.FirstLastname;
 
             var secondLastNameResult = UserRules.LastNameRules(user.SecondLastname);
             if (!secondLastNameResult.IsSuccess)
                 return Result<User>.Failure(secondLastNameResult.Error!);
+            user.SecondLastname = secondLastNameResult.Value ?? user.SecondLastname;
 
             var ciResult = UserRules.CiRules(user.Ci);
             if (!ciResult.IsSuccess)
                 return Result<User>.Failure(ciResult.Error!);
+            user.Ci = ciResult.Value;
 
             var dobResult = UserRules.DateOfBirthRules(user.DateOfBirth);
             if (!dobResult.IsSuccess)
@@ -38,6 +42,7 @@ namespace UserMicroservice.Domain.Validators
             var specializationResult = UserRules.SpecializationRules(user.Specialization);
             if (!specializationResult.IsSuccess)
                 return Result<User>.Failure(specializationResult.Error!);
+            user.Specialization = specializationResult.Value;
 
             var salaryResult = UserRules.MonthlySalaryRules(user.MonthlySalary);
             if (!salaryResult.IsSuccess)
@@ -46,10 +51,12 @@ namespace UserMicroservice.Domain.Validators
             var emailResult = UserRules.EmailRules(user.Email);
             if (!emailResult.IsSuccess)
                 return Result<User>.Failure(emailResult.Error!);
+            user.Email = emailResult.Value;
 
             var passwordResult = UserRules.PasswordRules(user.Password);
             if (!passwordResult.IsSuccess)
                 return Result<User>.Failure(passwordResult.Error!);
+            user.Password = passwordResult.Value;
 
             return Result<User>.Success(user);
         }
@@ -62,18 +69,22 @@ namespace UserMicroservice.Domain.Validators
             var nameResult = UserRules.NameRules(user.Name);
             if (!nameResult.IsSuccess)
                 return Result<User>.Failure(nameResult.Error!);
+            user.Name = nameResult.Value;
 
             var firstLastNameResult = UserRules.LastNameRules(user.FirstLastname);
             if (!firstLastNameResult.IsSuccess)
                 return Result<User>.Failure(firstLastNameResult.Error!);
+            user.FirstLastname = firstLastNameResult.Value ?? user.FirstLastname;
 
             var secondLastNameResult = UserRules.LastNameRules(user.SecondLastname);
             if (!secondLastNameResult.IsSuccess)
                 return Result<User>.Failure(secondLastNameResult.Error!);
+            user.SecondLastname = secondLastNameResult.Value ?? user.SecondLastname;
 
             var ciResult = UserRules.CiRules(user.Ci);
             if (!ciResult.IsSuccess)
                 return Result<User>.Failure(ciResult.Error!);
+            user.Ci = ciResult.Value;
 
             var dobResult = UserRules.DateOfBirthRules(user.DateOfBirth);
             if (!dobResult.IsSuccess)
@@ -82,10 +93,12 @@ namespace UserMicroservice.Domain.Validators
             var specializationResult = UserRules.SpecializationRules(user.Specialization);
             if (!specializationResult.IsSuccess)
                 return Result<User>.Failure(specializationResult.Error!);
+            user.Specialization = specializationResult.Value;
 
             var salaryResult = UserRules.MonthlySalaryRules(user.MonthlySalary);
             if (!salaryResult.IsSuccess)
                 return Result<User>.Failure(salaryResult.Error!);
+            user.MonthlySalary = salaryResult.Value;
 
             return Result<User>.Success(user);
         }

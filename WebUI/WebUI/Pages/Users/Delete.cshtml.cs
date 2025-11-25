@@ -18,7 +18,7 @@ public class DeleteModel : PageModel
 
     public async Task<IActionResult> OnGetAsync(int id)
     {
-        var user = await _userHttp.GetFromJsonAsync<UserDTO>($"/api/User/{id}");
+        var user = await _userHttp.GetFromJsonAsync<UserDTO>($"/api/User/id/{id}");
         if (user is null) return NotFound();
         User = user;
         return Page();

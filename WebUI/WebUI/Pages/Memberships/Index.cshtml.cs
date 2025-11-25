@@ -38,7 +38,7 @@ namespace WebUI.Pages.Memberships
         {
             try
             {
-                var resp = await _membershipHttp.DeleteAsync($"/api/Memberships/Eliminar/{id}");
+                var resp = await _membershipHttp.DeleteAsync($"/api/Memberships/{id}");
                 TempData[resp.IsSuccessStatusCode ? "SuccessMessage" : "ErrorMessage"] =
                     resp.IsSuccessStatusCode ? "Membresía eliminada exitosamente." : "No se pudo eliminar la membresía.";
             }

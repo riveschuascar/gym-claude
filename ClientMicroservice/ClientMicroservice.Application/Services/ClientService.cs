@@ -14,6 +14,10 @@ public class ClientService
 
     public async Task<Client> CreateAsync(Client client)
     {
+        var validation = Domain.Validators.ClientValidator.Validate(client);
+        if (!validation.IsValid)
+            throw new ArgumentException(validation.Error);
+
         client.CreatedAt = DateTime.UtcNow;
         client.IsActive = true;
         return await _repo.CreateAsync(client);
@@ -25,6 +29,10 @@ public class ClientService
 
     public Task<Client?> UpdateAsync(Client client)
     {
+        var validation = Domain.Validators.ClientValidator.Validate(client);
+        if (!validation.IsValid)
+            throw new ArgumentException(validation.Error);
+
         return _repo.UpdateAsync(client);
     }
 

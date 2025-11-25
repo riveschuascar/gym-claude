@@ -10,13 +10,15 @@ namespace LoginMicroservice.Domain.Rules
 
         public static Result<string> Email(string? email)
         {
+            email = email?.Trim();
+
             if (string.IsNullOrWhiteSpace(email))
                 return Result<string>.Failure("Email is required.");
 
             if (!EmailRegex().IsMatch(email))
                 return Result<string>.Failure("Email format is not valid.");
 
-            return Result<string>.Success(email);
+            return Result<string>.Success(email.ToLowerInvariant());
         }
 
         public static Result<string> Password(string? password)
