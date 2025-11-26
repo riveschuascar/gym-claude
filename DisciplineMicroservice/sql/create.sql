@@ -65,3 +65,11 @@
 --    ('Pilates',    6, '15:00', '16:30');
 
 --COMMIT;
+
+-- Ajustar horario permitido para disciplinas a 06:00-22:00 en base existente
+ALTER TABLE public.discipline
+    DROP CONSTRAINT IF EXISTS chk_discipline_opening_hours;
+
+ALTER TABLE public.discipline
+    ADD CONSTRAINT chk_discipline_opening_hours
+        CHECK (start_time >= INTERVAL '06:00' AND end_time <= INTERVAL '22:00');
