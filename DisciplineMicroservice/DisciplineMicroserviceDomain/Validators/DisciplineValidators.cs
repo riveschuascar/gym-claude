@@ -57,12 +57,12 @@ namespace DisciplineMicroservice.DisciplineMicroserviceDomain.Validators
             if (duration > TimeSpan.FromHours(2))
                 return Result<Discipline>.Failure("La disciplina no puede durar m?s de 2 horas.");
 
-            // Horario del gimnasio: 18:00 a 22:00
-            var horaApertura = new TimeSpan(18, 0, 0);
+            // Horario del gimnasio: 06:00 a 22:00
+            var horaApertura = new TimeSpan(6, 0, 0);
             var horaCierre = new TimeSpan(22, 0, 0);
 
             if (start < horaApertura || end > horaCierre)
-                return Result<Discipline>.Failure("La disciplina debe realizarse entre las 18:00 y las 22:00.");
+                return Result<Discipline>.Failure("La disciplina debe realizarse entre las 06:00 y las 22:00.");
 
             return Result<Discipline>.Success(discipline);
         }
