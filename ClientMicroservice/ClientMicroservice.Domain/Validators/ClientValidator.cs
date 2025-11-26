@@ -68,8 +68,6 @@ public static class ClientValidator
             return (false, "El peso actual es obligatorio.");
         if (client.CurrentWeightKg <= 0 || client.CurrentWeightKg > 300)
             return (false, "El peso actual debe ser mayor que 0 y no exceder los 300 kg.");
-        if (client.InitialWeightKg is not null && client.CurrentWeightKg < client.InitialWeightKg)
-            return (false, "El peso actual no puede ser menor al peso inicial.");
 
         if (string.IsNullOrWhiteSpace(client.EmergencyContactPhone))
             return (false, "El teléfono de emergencia es obligatorio.");
