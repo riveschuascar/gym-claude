@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using System.Net;
+using System.Text.Json;
 using WebUI.DTO;
 
 namespace WebUI.Pages.Disciplines;
@@ -26,18 +28,13 @@ public class CreateModel : PageModel
         {
             var resp = await _disciplineHttp.PostAsJsonAsync("/api/Disciplines", Discipline);
             if (resp.IsSuccessStatusCode)
+            {
                 TempData["SuccessMessage"] = "Disciplina creada exitosamente.";
+            }
             else
             {
                 var error = await resp.Content.ReadAsStringAsync();
-                if (string.IsNullOrWhiteSpace(error))
-                {
-                    TempData["ErrorMessage"] = $"No se pudo crear la disciplina. Código HTTP: {(int)resp.StatusCode} ({resp.StatusCode}).";
-                }
-                else
-                {
-                    TempData["ErrorMessage"] = $"No se pudo crear la disciplina: {error}";
-                }
+                TempData["ErrorMessage"] = ExtractErrorMessage(error, resp.StatusCode, "crear la disciplina");
                 return Page();
             }
         }
@@ -50,4 +47,27 @@ public class CreateModel : PageModel
 
         return RedirectToPage("Index");
     }
+
+    private static string ExtractErrorMessage(string raw, HttpStatusCode status, string action)
+    {
+        if (!string.IsNullOrWhiteSpace(raw))
+        {
+            try
+            {
+                using var doc = JsonDocument.Parse(raw);
+                if (doc.RootElement.TryGetProperty("error", out var err) && err.ValueKind == JsonValueKind.String)
+                {
+                    return err.GetString() ?? $"No se pudo {action}.";
+                }
+            }
+            catch (JsonException)
+            {
+                // ignorar parseo, usar texto crudo
+            }
+            return $"No se pudo {action}: {raw}";
+        }
+
+        return $"No se pudo {action}. Código HTTP: {(int)status} ({status}).";
+    }
 }
+
