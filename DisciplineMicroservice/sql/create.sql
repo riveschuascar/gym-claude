@@ -46,8 +46,8 @@
 --    ),
 
 --    CONSTRAINT chk_discipline_opening_hours CHECK (
---        start_time >= INTERVAL '08:00' AND 
---        end_time   <= INTERVAL '19:00'
+--        start_time >= INTERVAL '06:00' AND 
+--        end_time   <= INTERVAL '22:00'
 --    )
 --);
 
