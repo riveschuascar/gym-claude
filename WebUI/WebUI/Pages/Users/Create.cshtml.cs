@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using WebUI.DTO;
+using System.Text.Json;
 
 namespace WebUI.Pages.Users;
 
@@ -54,7 +55,8 @@ public class CreateModel : PageModel
             else
             {
                 var errorContent = await response.Content.ReadAsStringAsync();
-                TempData["ErrorMessage"] = $"Error: {errorContent}";
+                string errorMessage = ExtractErrorMessage(errorContent);
+                TempData["ErrorMessage"] = $"Error: {errorMessage}";
                 return Page();
             }
         }
@@ -63,6 +65,29 @@ public class CreateModel : PageModel
             TempData["ErrorMessage"] = "No se pudo conectar con el microservicio. Intente nuevamente.";
             Console.WriteLine($"Error: {ex.Message}");
             return Page();
+        }
+    }
+
+    private string ExtractErrorMessage(string jsonResponse)
+    {
+        try
+        {
+            using var jsonDoc = JsonDocument.Parse(jsonResponse);
+            var root = jsonDoc.RootElement;
+
+            // Intenta obtener la propiedad "error"
+            if (root.TryGetProperty("error", out var errorElement))
+            {
+                return errorElement.GetString() ?? "Error desconocido";
+            }
+
+            // Si no existe "error", retorna el JSON completo
+            return jsonResponse;
+        }
+        catch
+        {
+            // Si no es un JSON válido, retorna el contenido tal cual
+            return jsonResponse;
         }
     }
 }

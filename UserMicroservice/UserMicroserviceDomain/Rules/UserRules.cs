@@ -30,7 +30,7 @@ namespace UserMicroservice.Domain.Rules
             secondLastName = secondLastName?.Trim();
 
             if (string.IsNullOrWhiteSpace(secondLastName))
-                return Result<string?>.Success(null);
+                return Result<string?>.Failure("El Apellido no puede estar vacio.");
 
             if (secondLastName.Length < 2 || secondLastName.Length > 60)
                 return Result<string?>.Failure("Debe tener entre 2 y 60 caracteres.");
@@ -49,7 +49,7 @@ namespace UserMicroservice.Domain.Rules
                 return Result<string>.Failure("El CI es obligatorio.");
 
             if (!Regex.IsMatch(ci, @"^[0-9A-Za-z\-]{5,20}$"))
-                return Result<string>.Failure("El CI debe contener solo letras, n?meros y guiones, con longitud entre 5 y 20 caracteres.");
+                return Result<string>.Failure("El CI debe contener solo letras, números y guiones, con longitud entre 5 y 20 caracteres.");
 
             return Result<string>.Success(ci);
         }
@@ -76,8 +76,8 @@ namespace UserMicroservice.Domain.Rules
 
         public static Result<DateTime> HireDateRules(DateTime? hireDate, DateTime? birthDate)
         {
-            if (!hireDate.HasValue || !birthDate.HasValue)
-                return Result<DateTime>.Failure("Las fechas de contrataci?n y nacimiento son obligatorias.");
+            if (!hireDate.HasValue)
+                return Result<DateTime>.Failure("Las fechas de contratación es obligatoria.");
 
             if (hireDate > DateTime.Today)
                 return Result<DateTime>.Failure("La fecha de contrataci?n no puede ser futura.");
@@ -159,6 +159,19 @@ namespace UserMicroservice.Domain.Rules
                 return Result<string>.Failure("La contrase?a debe contener al menos un car?cter especial.");
 
             return Result<string>.Success(password);
+        }
+
+        public static Result<string> UserRoleRules(string? role)
+        {
+            if (string.IsNullOrWhiteSpace(role))
+                return Result<string>.Failure("El rol es obligatorio.");
+
+            var validRoles = new[] { "Entrenador", "Admin" };
+
+            if (!validRoles.Contains(role))
+                return Result<string>.Failure("El rol debe ser 'Entrenador' o 'Admin'.");
+
+            return Result<string>.Success(role);
         }
     }
 }

@@ -39,14 +39,18 @@ namespace UserMicroservice.Domain.Validators
             if (!hireDateResult.IsSuccess)
                 return Result<User>.Failure(hireDateResult.Error!);
 
+            var salaryResult = UserRules.MonthlySalaryRules(user.MonthlySalary);
+            if (!salaryResult.IsSuccess)
+                return Result<User>.Failure(salaryResult.Error!);
+
             var specializationResult = UserRules.SpecializationRules(user.Specialization);
             if (!specializationResult.IsSuccess)
                 return Result<User>.Failure(specializationResult.Error!);
             user.Specialization = specializationResult.Value;
 
-            var salaryResult = UserRules.MonthlySalaryRules(user.MonthlySalary);
-            if (!salaryResult.IsSuccess)
-                return Result<User>.Failure(salaryResult.Error!);
+            var rolResult = UserRules.UserRoleRules(user.UserRole);
+            if (!rolResult.IsSuccess)
+                return Result<User>.Failure(rolResult.Error!);
 
             var emailResult = UserRules.EmailRules(user.Email);
             if (!emailResult.IsSuccess)
