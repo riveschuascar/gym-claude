@@ -42,15 +42,15 @@ namespace WebUI.Pages.Memberships
                     // Leer respuesta del microservicio
                     var created = await resp.Content.ReadFromJsonAsync<MembershipDTO>();
 
-                    // Mostrar mensaje de éxito, Id puede ser null mientras el microservicio lo genere
-                    TempData["SuccessMessage"] = $"Membresía creada exitosamente. Id: {created?.Id ?? 0}";
+                    // Mostrar mensaje de ï¿½xito, Id puede ser null mientras el microservicio lo genere
+                    TempData["SuccessMessage"] = $"MembresÃ­a creada exitosamente.";
 
                     return RedirectToPage("./Index");
                 }
 
                 // Leer error del microservicio
                 var errorContent = await resp.Content.ReadAsStringAsync();
-                TempData["ErrorMessage"] = "No se pudo crear la membresía: " + errorContent;
+                TempData["ErrorMessage"] = "No se pudo crear la membresÃ­a: " + errorContent;
                 return Page();
             }
             catch (Exception ex)

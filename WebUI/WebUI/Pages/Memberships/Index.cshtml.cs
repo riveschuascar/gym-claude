@@ -28,8 +28,8 @@ namespace WebUI.Pages.Memberships
             }
             catch (Exception ex)
             {
-                TempData["ErrorMessage"] = "Error al cargar las membresías.";
-                Console.WriteLine("Error al obtener membresías: " + ex.Message);
+                TempData["ErrorMessage"] = "Error al cargar las membresÃ­as.";
+                Console.WriteLine("Error al obtener membresÃ­as: " + ex.Message);
                 Memberships = new List<MembershipDTO>();
             }
         }
@@ -40,12 +40,12 @@ namespace WebUI.Pages.Memberships
             {
                 var resp = await _membershipHttp.DeleteAsync($"/api/Memberships/{id}");
                 TempData[resp.IsSuccessStatusCode ? "SuccessMessage" : "ErrorMessage"] =
-                    resp.IsSuccessStatusCode ? "Membresía eliminada exitosamente." : "No se pudo eliminar la membresía.";
+                    resp.IsSuccessStatusCode ? "MembresÃ­a eliminada exitosamente." : "No se pudo eliminar la membresÃ­a.";
             }
             catch (Exception ex)
             {
                 TempData["ErrorMessage"] = "Error al conectar con el microservicio.";
-                Console.WriteLine("Error al eliminar membresía: " + ex.Message);
+                Console.WriteLine("Error al eliminar membresÃ­a: " + ex.Message);
             }
 
             return RedirectToPage();

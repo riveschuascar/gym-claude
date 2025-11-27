@@ -26,7 +26,7 @@ public class EditModel : PageModel
         }
         catch (Exception ex)
         {
-            TempData["ErrorMessage"] = "Error al cargar la membresÌa.";
+            TempData["ErrorMessage"] = "Error al cargar la membres√≠a.";
             Console.WriteLine(ex.Message);
             return RedirectToPage("Index");
         }
@@ -41,8 +41,8 @@ public class EditModel : PageModel
 
         try
         {
-            // AquÌ agregamos el debug
-            Console.WriteLine("Datos que se enviar·n a la API:");
+            // Aqu√≠ agregamos el debug
+            Console.WriteLine("Datos que se enviar√≥n a la API:");
             Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(Membership));
 
             var resp = await _membershipHttp.PutAsJsonAsync($"/api/Memberships/{Membership.Id}", Membership);
@@ -50,7 +50,7 @@ public class EditModel : PageModel
             Console.WriteLine("Status Code de la API: " + resp.StatusCode);
 
             TempData[resp.IsSuccessStatusCode ? "SuccessMessage" : "ErrorMessage"] =
-                resp.IsSuccessStatusCode ? "MembresÌa actualizada exitosamente." : "No se pudo actualizar la membresÌa.";
+                resp.IsSuccessStatusCode ? "Membres√≠a actualizada exitosamente." : "No se pudo actualizar la membres√≠a.";
         }
         catch (Exception ex)
         {

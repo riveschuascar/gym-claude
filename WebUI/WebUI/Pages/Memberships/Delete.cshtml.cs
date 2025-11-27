@@ -23,7 +23,7 @@ namespace WebUI.Pages.Memberships
 
         public async Task<IActionResult> OnPostAsync()
         {
-            Console.WriteLine($"Intentando eliminar ID: {Id}");
+            Console.WriteLine($"Esta seguro que quiere eliminar la membresía?");
 
             var resp = await _membershipHttp.DeleteAsync($"/api/Memberships/{Id}");
 
@@ -33,7 +33,7 @@ namespace WebUI.Pages.Memberships
             if (resp.IsSuccessStatusCode)
                 return RedirectToPage("./Index");
 
-            ModelState.AddModelError(string.Empty, "Error eliminando la membres�a.");
+            ModelState.AddModelError(string.Empty, "Error eliminando la membresía.");
             return Page();
         }
     }
