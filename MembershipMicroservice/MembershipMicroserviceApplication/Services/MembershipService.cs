@@ -29,21 +29,21 @@ namespace MembershipMicroservice.MembershipMicroserviceApplication.Services
             return await _repo.GetAll();
         }
 
-        public async Task<Result<Membership>> Create(Membership newMembership)
+        public async Task<Result<Membership>> Create(Membership newMembership, string? userEmail = null)
         {
             // Validación
             var validation = MembershipValidators.Create(newMembership);
             if (validation.IsFailure)
                 return Result<Membership>.Failure(validation.Error!);
 
-            var created = await _repo.Create(newMembership);
+            var created = await _repo.Create(newMembership, userEmail);
             if (!created.IsSuccess)
                 return Result<Membership>.Failure(created.Error!);
 
             return Result<Membership>.Success(created.Value!);
         }
 
-        public async Task<Result<Membership>> Update(Membership membershipToUpdate)
+        public async Task<Result<Membership>> Update(Membership membershipToUpdate, string? userEmail = null)
         {
             // Validación
             var validation = MembershipValidators.Update(membershipToUpdate);
@@ -59,16 +59,16 @@ namespace MembershipMicroservice.MembershipMicroserviceApplication.Services
             if (existingMembership == null)
                 return Result<Membership>.Failure($"No se encontró la membresía con ID {id} para actualizar.");
 
-            var updated = await _repo.Update(membershipToUpdate);
+            var updated = await _repo.Update(membershipToUpdate, userEmail);
             if (!updated.IsSuccess)
                 return Result<Membership>.Failure(updated.Error!);
 
             return Result<Membership>.Success(updated.Value!);
         }
 
-        public async Task<Result<bool>> Delete(int id)
+        public async Task<Result<bool>> Delete(int id, string? userEmail = null)
         {
-            var res = await _repo.DeleteById(id);
+            var res = await _repo.DeleteById(id, userEmail);
             if (!res.IsSuccess)
                 return Result<bool>.Failure($"No se pudo eliminar la membresía con ID {id}.");
 

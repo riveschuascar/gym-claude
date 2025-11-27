@@ -57,4 +57,3 @@ VALUES
     ('Valeria', 'Campos',    'Paredes',    DATE '1999-02-27', 'C-012345', TRUE, NOW(), 'system', NULL, 'Principiante', 64.30, 63.90, '777-000');
 
 COMMIT;
-sele

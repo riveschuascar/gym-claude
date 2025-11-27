@@ -85,13 +85,13 @@ namespace MembershipMicroservice.MembershipMicroserviceInfraestructure.Persisten
             }
         }
 
-        public async Task<Result<Membership>> Create(Membership entity)
+        public async Task<Result<Membership>> Create(Membership entity, string? userEmail = null)
         {
             const string query = @"
                 INSERT INTO membership
-                    (name, price, description, monthly_sessions, created_at, last_modification, is_active)
+                    (name, price, description, monthly_sessions, created_at, last_modification, is_active, created_by)
                 VALUES
-                    (@Name, @Price, @Description, @MonthlySessions, @CreatedAt, @LastModification, @IsActive)
+                    (@Name, @Price, @Description, @MonthlySessions, @CreatedAt, @LastModification, @IsActive, @CreatedBy)
                 RETURNING id;";
 
             try
@@ -103,7 +103,19 @@ namespace MembershipMicroservice.MembershipMicroserviceInfraestructure.Persisten
                 entity.LastModification = DateTime.UtcNow;
                 entity.IsActive = true;
 
-                var id = await conn.ExecuteScalarAsync<int>(query, entity);
+                var parameters = new
+                {
+                    entity.Name,
+                    entity.Price,
+                    entity.Description,
+                    entity.MonthlySessions,
+                    entity.CreatedAt,
+                    entity.LastModification,
+                    entity.IsActive,
+                    CreatedBy = userEmail
+                };
+
+                var id = await conn.ExecuteScalarAsync<int>(query, parameters);
                 entity.Id = (short)id;
 
                 return Result<Membership>.Success(entity);
@@ -115,7 +127,7 @@ namespace MembershipMicroservice.MembershipMicroserviceInfraestructure.Persisten
             }
         }
 
-        public async Task<Result<Membership>> Update(Membership entity)
+        public async Task<Result<Membership>> Update(Membership entity, string? userEmail = null)
         {
             const string query = @"
                 UPDATE membership
@@ -124,7 +136,8 @@ namespace MembershipMicroservice.MembershipMicroserviceInfraestructure.Persisten
                     description = @Description,
                     monthly_sessions = @MonthlySessions,
                     last_modification = @LastModification,
-                    is_active = @IsActive
+                    is_active = @IsActive,
+                    modified_by = @ModifiedBy
                 WHERE id = @Id;";
 
             try
@@ -134,7 +147,19 @@ namespace MembershipMicroservice.MembershipMicroserviceInfraestructure.Persisten
 
                 entity.LastModification = DateTime.UtcNow;
 
-                var affected = await conn.ExecuteAsync(query, entity);
+                var parameters = new
+                {
+                    entity.Id,
+                    entity.Name,
+                    entity.Price,
+                    entity.Description,
+                    entity.MonthlySessions,
+                    entity.LastModification,
+                    entity.IsActive,
+                    ModifiedBy = userEmail
+                };
+
+                var affected = await conn.ExecuteAsync(query, parameters);
 
                 if (affected == 0)
                     return Result<Membership>.Failure("No se encontró la membresía para actualizar.");
@@ -148,20 +173,28 @@ namespace MembershipMicroservice.MembershipMicroserviceInfraestructure.Persisten
             }
         }
 
-        public async Task<Result> DeleteById(int id)
+        public async Task<Result> DeleteById(int id, string? userEmail = null)
         {
             const string query = @"
-        UPDATE membership
-        SET is_active = false,
-            last_modification = @LastModification
-        WHERE id = @Id;";
+                UPDATE membership
+                SET is_active = false,
+                    last_modification = @LastModification,
+                    modified_by = @ModifiedBy
+                WHERE id = @Id;";
 
             try
             {
                 using var conn = CreateConnection();
                 await conn.OpenAsync();
 
-                var affected = await conn.ExecuteAsync(query, new { Id = id, LastModification = DateTime.UtcNow });
+                var parameters = new
+                {
+                    Id = id,
+                    LastModification = DateTime.UtcNow,
+                    ModifiedBy = userEmail
+                };
+
+                var affected = await conn.ExecuteAsync(query, parameters);
 
                 return affected > 0 ? Result.Success() : Result.Failure("No se encontró la membresía para eliminar.");
             }
