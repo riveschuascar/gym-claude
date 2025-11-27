@@ -12,7 +12,7 @@ namespace DisciplineMicroservice.DisciplineMicroserviceDomain.Validators
         public static Result<Discipline> Validate(Discipline discipline)
         {
             if (discipline == null)
-                return Result<Discipline>.Failure("La disciplina no puede quedar vac?a.");
+                return Result<Discipline>.Failure("La disciplina no puede quedar vacía.");
 
             discipline.Name = discipline.Name?.Trim();
 
@@ -29,10 +29,10 @@ namespace DisciplineMicroservice.DisciplineMicroserviceDomain.Validators
             int digitCount = discipline.Name.Count(char.IsDigit);
 
             if (digitCount > 2)
-                return Result<Discipline>.Failure("El nombre no puede contener m?s de 2 n?meros.");
+                return Result<Discipline>.Failure("El nombre no puede contener más de 2 números.");
 
             if (digitCount > 0 && letterCount < 5)
-                return Result<Discipline>.Failure("Si el nombre contiene n?meros, debe tener al menos 5 letras.");
+                return Result<Discipline>.Failure("Si el nombre contiene números, debe tener al menos 5 letras.");
 
             if (letterCount < 3)
                 return Result<Discipline>.Failure("El nombre debe contener al menos 3 letras.");
@@ -44,10 +44,10 @@ namespace DisciplineMicroservice.DisciplineMicroserviceDomain.Validators
             var end = discipline.EndTime.Value;
 
             if (end < start)
-                return Result<Discipline>.Failure("La hora de finalizaci?n no puede ser anterior a la de inicio.");
+                return Result<Discipline>.Failure("La hora de finalizaciín no puede ser anterior a la de inicio.");
 
             if (end == start)
-                return Result<Discipline>.Failure("La hora de inicio y finalizaci?n no pueden ser iguales.");
+                return Result<Discipline>.Failure("La hora de inicio y finalizaciín no pueden ser iguales.");
 
             var duration = end - start;
 
@@ -55,7 +55,7 @@ namespace DisciplineMicroservice.DisciplineMicroserviceDomain.Validators
                 return Result<Discipline>.Failure("La disciplina debe durar al menos 1 hora.");
 
             if (duration > TimeSpan.FromHours(2))
-                return Result<Discipline>.Failure("La disciplina no puede durar m?s de 2 horas.");
+                return Result<Discipline>.Failure("La disciplina no puede durar más de 2 horas.");
 
             // Horario del gimnasio: 06:00 a 22:00
             var horaApertura = new TimeSpan(6, 0, 0);
