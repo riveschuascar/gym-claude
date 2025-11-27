@@ -85,13 +85,13 @@ namespace DisciplineMicroservice.DisciplineMicroserviceInfraestructure.Persistan
         }
 
         // Crear nueva disciplina
-        public async Task<Result<Discipline>> Create(Discipline entity)
+        public async Task<Result<Discipline>> Create(Discipline entity, string? userEmail = null)
         {
             const string query = @"
             INSERT INTO discipline
-                (name, start_time, end_time, created_at, last_modification, is_active)
+                (name, start_time, end_time, created_at, last_modification, is_active, created_by)
             VALUES
-                (@Name, @StartTime, @EndTime, @CreatedAt, @LastModification, @IsActive)
+                (@Name, @StartTime, @EndTime, @CreatedAt, @LastModification, @IsActive, @CreatedBy)
             RETURNING id;";
 
             try
@@ -103,7 +103,18 @@ namespace DisciplineMicroservice.DisciplineMicroserviceInfraestructure.Persistan
                 entity.LastModification = DateTime.UtcNow;
                 entity.IsActive = true;
 
-                var id = await conn.ExecuteScalarAsync<int>(query, entity);
+                var parameters = new
+                {
+                    entity.Name,
+                    entity.StartTime,
+                    entity.EndTime,
+                    entity.CreatedAt,
+                    entity.LastModification,
+                    entity.IsActive,
+                    CreatedBy = userEmail
+                };
+
+                var id = await conn.ExecuteScalarAsync<int>(query, parameters);
                 entity.Id = (short)id;
 
                 return Result<Discipline>.Success(entity);
@@ -117,7 +128,7 @@ namespace DisciplineMicroservice.DisciplineMicroserviceInfraestructure.Persistan
         }
 
         // Actualizar disciplina
-        public async Task<Result<Discipline>> Update(Discipline entity)
+        public async Task<Result<Discipline>> Update(Discipline entity, string? userEmail = null)
         {
             const string query = @"
             UPDATE discipline
@@ -125,7 +136,8 @@ namespace DisciplineMicroservice.DisciplineMicroserviceInfraestructure.Persistan
                 start_time = @StartTime,
                 end_time = @EndTime,
                 last_modification = @LastModification,
-                is_active = @IsActive
+                is_active = @IsActive,
+                modified_by = @ModifiedBy
             WHERE id = @Id;";
 
             try
@@ -135,7 +147,18 @@ namespace DisciplineMicroservice.DisciplineMicroserviceInfraestructure.Persistan
 
                 entity.LastModification = DateTime.UtcNow;
 
-                var affected = await conn.ExecuteAsync(query, entity);
+                var parameters = new
+                {
+                    entity.Id,
+                    entity.Name,
+                    entity.StartTime,
+                    entity.EndTime,
+                    entity.LastModification,
+                    entity.IsActive,
+                    ModifiedBy = userEmail
+                };
+
+                var affected = await conn.ExecuteAsync(query, parameters);
 
                 if (affected == 0)
                     return Result<Discipline>.Failure("No se encontró la disciplina para actualizar.");
@@ -150,12 +173,13 @@ namespace DisciplineMicroservice.DisciplineMicroserviceInfraestructure.Persistan
         }
 
         // Eliminar disciplina (marcar como inactiva)
-        public async Task<Result> DeleteById(int id)
+        public async Task<Result> DeleteById(int id, string? userEmail = null)
         {
             const string query = @"
             UPDATE discipline
             SET is_active = false,
-                last_modification = @LastModification
+                last_modification = @LastModification,
+                modified_by = @ModifiedBy
             WHERE id = @Id;";
 
             try
@@ -163,7 +187,14 @@ namespace DisciplineMicroservice.DisciplineMicroserviceInfraestructure.Persistan
                 using var conn = CreateConnection();
                 await conn.OpenAsync();
 
-                var affected = await conn.ExecuteAsync(query, new { Id = id, LastModification = DateTime.UtcNow });
+                var parameters = new
+                {
+                    Id = id,
+                    LastModification = DateTime.UtcNow,
+                    ModifiedBy = userEmail
+                };
+
+                var affected = await conn.ExecuteAsync(query, parameters);
 
                 return affected > 0 ? Result.Success() : Result.Failure("No se encontró la disciplina para eliminar.");
             }

@@ -5,8 +5,6 @@ using DisciplineMicroservice.DisciplineMicroserviceDomain.Ports;
 using DisciplineMicroservice.DisciplineMicroserviceDomain.Shared;
 using DisciplineMicroservice.DisciplineMicroserviceDomain.Validators;
 
-//using Microsoft.AspNetCore.Identity;
-
 namespace DisciplineMicroservice.DisciplineMicroserviceApplication.Services
 {
     public class DisciplineService : IDisciplineService
@@ -18,7 +16,7 @@ namespace DisciplineMicroservice.DisciplineMicroserviceApplication.Services
             repo = disciplineRepository;
         }
 
-        public async Task<Result<Discipline>> Create(Discipline newDiscipline)
+        public async Task<Result<Discipline>> Create(Discipline newDiscipline, string? userEmail = null)
         {
             var res = DisciplineValidators.Validate(newDiscipline);
 
@@ -27,7 +25,7 @@ namespace DisciplineMicroservice.DisciplineMicroserviceApplication.Services
                 return res;
             }
 
-            res = await repo.Create(newDiscipline);
+            res = await repo.Create(newDiscipline, userEmail);
             if (!res.IsSuccess)
             {
                 return Result<Discipline>.Failure(res.Error ?? "No se pudo crear la disciplina.");
@@ -36,7 +34,7 @@ namespace DisciplineMicroservice.DisciplineMicroserviceApplication.Services
             return Result<Discipline>.Success(res.Value!);
         }
 
-        public async Task<Result<Discipline>> Update(Discipline disciplineToUpdate)
+        public async Task<Result<Discipline>> Update(Discipline disciplineToUpdate, string? userEmail = null)
         {
             var validationResult = DisciplineValidators.Validate(disciplineToUpdate);
             if (validationResult.IsFailure)
@@ -50,7 +48,7 @@ namespace DisciplineMicroservice.DisciplineMicroserviceApplication.Services
                 return Result<Discipline>.Failure($"No se encontró la disciplina con ID {disciplineToUpdate.Id} para actualizar.");
             }
 
-            var updatedDiscipline = await repo.Update(disciplineToUpdate);
+            var updatedDiscipline = await repo.Update(disciplineToUpdate, userEmail);
 
             if (!updatedDiscipline.IsSuccess || updatedDiscipline.Value is null)
             {
@@ -70,15 +68,16 @@ namespace DisciplineMicroservice.DisciplineMicroserviceApplication.Services
             return Result<Discipline>.Success(discipline.Value!);
         }
 
-        public async Task<Result<bool>> Delete(int id)
+        public async Task<Result<bool>> Delete(int id, string? userEmail = null)
         {
-            var res = await repo.DeleteById(id);
+            var res = await repo.DeleteById(id, userEmail);
             if (!res.IsSuccess)
             {
                 return Result<bool>.Failure($"No se pudo eliminar la disciplina con ID {id}.");
             }
             return Result<bool>.Success(true);
         }
+
         public async Task<Result<IEnumerable<Discipline>>> GetAll()
         {
             return await repo.GetAll();

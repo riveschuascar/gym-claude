@@ -8,6 +8,9 @@ CREATE TABLE public.discipline (
     last_modification   TIMESTAMPTZ,
     is_active           BOOLEAN NOT NULL DEFAULT TRUE,
 
+    created_by          VARCHAR(150),
+    modified_by         VARCHAR(150),
+
     name                VARCHAR(50) NOT NULL,
 
     id_user             BIGINT,
@@ -54,14 +57,14 @@ CREATE INDEX idx_discipline_is_active ON public.discipline(is_active);
 CREATE INDEX idx_discipline_name      ON public.discipline(name);
 
 INSERT INTO public.discipline
-    (name, id_user, start_time, end_time)
+    (name, id_user, start_time, end_time, created_by)
 VALUES
-    ('Zumba',      1, '08:00', '09:30'),
-    ('Crossfit1',  2, '09:00', '10:30'),
-    ('YogaFit99',  3, '17:00', '18:00'),
-    ('Aerobicos',  4, '10:00', '11:00'),
-    ('BoxeoPro',   5, '18:00', '19:00'),
-    ('Pilates',    6, '15:00', '16:30');
+    ('Zumba',      1, '08:00', '09:30', 'system'),
+    ('Crossfit1',  2, '09:00', '10:30', 'system'),
+    ('YogaFit99',  3, '17:00', '18:00', 'system'),
+    ('Aerobicos',  4, '10:00', '11:00', 'system'),
+    ('BoxeoPro',   5, '18:00', '19:00', 'system'),
+    ('Pilates',    6, '15:00', '16:30', 'system');
 
 COMMIT;
 
