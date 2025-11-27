@@ -2,6 +2,7 @@ using ClientMicroservice.Application.Services;
 using ClientMicroservice.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace ClientMicroservice.Controllers;
 
@@ -11,9 +12,28 @@ namespace ClientMicroservice.Controllers;
 public class ClientController : ControllerBase
 {
     private readonly ClientService _service;
+    
     public ClientController(ClientService service)
     {
         _service = service;
+    }
+
+    private string? GetEmailFromClaims()
+    {
+        var email = User.FindFirst(ClaimTypes.Email)?.Value;
+        
+        // Debug: Si no encuentra el email con ClaimTypes.Email, intenta con el nombre literal
+        if (string.IsNullOrEmpty(email))
+        {
+            email = User.FindFirst("email")?.Value;
+        }
+        
+        // Debug: Log de todos los claims
+        var allClaims = User.Claims.Select(c => $"{c.Type}: {c.Value}").ToList();
+        System.Diagnostics.Debug.WriteLine($"All claims: {string.Join(", ", allClaims)}");
+        System.Diagnostics.Debug.WriteLine($"Email extracted: {email}");
+        
+        return email;
     }
 
     [HttpGet]
@@ -36,7 +56,8 @@ public class ClientController : ControllerBase
     {
         try
         {
-            var created = await _service.CreateAsync(client);
+            var email = GetEmailFromClaims();
+            var created = await _service.CreateAsync(client, email);
             return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
         }
         catch (ArgumentException ex)
@@ -51,7 +72,8 @@ public class ClientController : ControllerBase
         if (id != client.Id) return BadRequest("ID de ruta y cuerpo no coinciden");
         try
         {
-            var updated = await _service.UpdateAsync(client);
+            var email = GetEmailFromClaims();
+            var updated = await _service.UpdateAsync(client, email);
             if (updated is null) return NotFound();
             return Ok(updated);
         }
@@ -64,7 +86,8 @@ public class ClientController : ControllerBase
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id)
     {
-        var ok = await _service.DeleteByIdAsync(id);
+        var email = GetEmailFromClaims();
+        var ok = await _service.DeleteByIdAsync(id, email);
         if (!ok) return NotFound();
         return NoContent();
     }

@@ -15,7 +15,7 @@ public class ClientRepository : IClientRepository
             ?? throw new InvalidOperationException("Connection string 'PostgresGymDB' not found.");
     }
 
-    public async Task<Client> CreateAsync(Client client)
+    public async Task<Client> CreateAsync(Client client, string? userEmail = null)
     {
         await using var conn = new NpgsqlConnection(_connectionString);
         await conn.OpenAsync();
@@ -24,9 +24,11 @@ public class ClientRepository : IClientRepository
         {
             const string clientSql = @"
                 INSERT INTO public.client (name, first_lastname, second_lastname, date_birth, ci, is_active, created_at,
-                                           fitness_level, initial_weight_kg, current_weight_kg, emergency_contact_phone)
+                                           fitness_level, initial_weight_kg, current_weight_kg, emergency_contact_phone,
+                                           created_by)
                 VALUES (@name, @first_lastname, @second_lastname, @date_birth, @ci, @is_active, @created_at,
-                        @fitness_level, @initial_weight_kg, @current_weight_kg, @emergency_contact_phone)
+                        @fitness_level, @initial_weight_kg, @current_weight_kg, @emergency_contact_phone,
+                        @created_by)
                 RETURNING id;";
 
             await using (var cmd = new NpgsqlCommand(clientSql, conn, tx))
@@ -42,6 +44,8 @@ public class ClientRepository : IClientRepository
                 cmd.Parameters.AddWithValue("initial_weight_kg", (object?)client.InitialWeightKg ?? DBNull.Value);
                 cmd.Parameters.AddWithValue("current_weight_kg", (object?)client.CurrentWeightKg ?? DBNull.Value);
                 cmd.Parameters.AddWithValue("emergency_contact_phone", (object?)client.EmergencyContactPhone ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("created_by", (object?)userEmail ?? DBNull.Value);
+                
                 var id = (int)(await cmd.ExecuteScalarAsync()!);
                 client.Id = id;
             }
@@ -96,7 +100,7 @@ public class ClientRepository : IClientRepository
         return null;
     }
 
-    public async Task<Client?> UpdateAsync(Client client)
+    public async Task<Client?> UpdateAsync(Client client, string? userEmail = null)
     {
         client.LastModification = DateTime.UtcNow;
         const string sql = @"
@@ -109,7 +113,8 @@ public class ClientRepository : IClientRepository
                    last_modification = @last_modification,
                    fitness_level = @fitness_level,
                    current_weight_kg = @current_weight_kg,
-                   emergency_contact_phone = @emergency_contact_phone
+                   emergency_contact_phone = @emergency_contact_phone,
+                   modified_by = @modified_by
              WHERE id = @id;";
 
         await using var conn = new NpgsqlConnection(_connectionString);
@@ -125,14 +130,18 @@ public class ClientRepository : IClientRepository
         cmd.Parameters.AddWithValue("fitness_level", (object?)client.FitnessLevel ?? DBNull.Value);
         cmd.Parameters.AddWithValue("current_weight_kg", (object?)client.CurrentWeightKg ?? DBNull.Value);
         cmd.Parameters.AddWithValue("emergency_contact_phone", (object?)client.EmergencyContactPhone ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("modified_by", (object?)userEmail ?? DBNull.Value);
+        
         var affected = await cmd.ExecuteNonQueryAsync();
-        // Two commands in one batch may count differently; assume success if >=1
         return affected >= 1 ? client : null;
     }
 
-    public async Task<bool> DeleteByIdAsync(int id)
+    public async Task<bool> DeleteByIdAsync(int id, string? userEmail = null)
     {
-        const string sql = "DELETE FROM public.client WHERE id = @id;";
+        const string sql = @"
+            DELETE FROM public.client
+            WHERE id = @id;";
+            
         await using var conn = new NpgsqlConnection(_connectionString);
         await conn.OpenAsync();
         await using var cmd = new NpgsqlCommand(sql, conn);

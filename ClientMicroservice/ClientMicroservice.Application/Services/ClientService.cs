@@ -12,7 +12,7 @@ public class ClientService
         _repo = repo;
     }
 
-    public async Task<Client> CreateAsync(Client client)
+    public async Task<Client> CreateAsync(Client client, string? userEmail)
     {
         var validation = Domain.Validators.ClientValidator.Validate(client);
         if (!validation.IsValid)
@@ -20,21 +20,21 @@ public class ClientService
 
         client.CreatedAt = DateTime.UtcNow;
         client.IsActive = true;
-        return await _repo.CreateAsync(client);
+        return await _repo.CreateAsync(client, userEmail);
     }
 
     public Task<IEnumerable<Client>> GetAllAsync() => _repo.GetAllAsync();
 
     public Task<Client?> GetByIdAsync(int id) => _repo.GetByIdAsync(id);
 
-    public Task<Client?> UpdateAsync(Client client)
+    public async Task<Client?> UpdateAsync(Client client, string? userEmail)
     {
         var validation = Domain.Validators.ClientValidator.Validate(client);
         if (!validation.IsValid)
             throw new ArgumentException(validation.Error);
 
-        return _repo.UpdateAsync(client);
+        return await _repo.UpdateAsync(client, userEmail);
     }
 
-    public Task<bool> DeleteByIdAsync(int id) => _repo.DeleteByIdAsync(id);
+    public Task<bool> DeleteByIdAsync(int id, string? userEmail) => _repo.DeleteByIdAsync(id, userEmail);
 }
