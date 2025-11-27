@@ -59,7 +59,7 @@
                                 }
                             </td>
                             <td>@(user.HireDate?.ToString("d"))</td>
-                            <td>@(user.MonthlySalary?.ToString("C"))</td>
+                            <td>@(user.MonthlySalary?.ToString("N2") ?? "-") Bs.</td>
                             <td>@user.Specialization</td>
                             <td class="text-center">
                                 <div class="btn-group" role="group">
