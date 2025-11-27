@@ -20,7 +20,7 @@ namespace UserMicroservice.Domain.Rules
                 return Result<string>.Failure("El nombre completo debe tener entre 2 y 60 caracteres.");
 
             if (!LettersAndSpacesRegex.IsMatch(name))
-                return Result<string>.Failure("El nombre solo puede contener letras, espacios, ap?strofos o guiones.");
+                return Result<string>.Failure("El nombre solo puede contener letras, espacios, apóstrofos o guiones.");
 
             return Result<string>.Success(name);
         }
@@ -36,7 +36,7 @@ namespace UserMicroservice.Domain.Rules
                 return Result<string?>.Failure("Debe tener entre 2 y 60 caracteres.");
 
             if (!LettersAndSpacesRegex.IsMatch(secondLastName))
-                return Result<string?>.Failure("Solo puede contener letras, espacios, ap?strofos o guiones.");
+                return Result<string?>.Failure("Solo puede contener letras, espacios, apóstrofos o guiones.");
 
             return Result<string?>.Success(secondLastName);
         }
@@ -66,10 +66,10 @@ namespace UserMicroservice.Domain.Rules
             if (birthDate.Value.AddYears(age) > DateTime.Today) age--;
 
             if (age < 18)
-                return Result<DateTime>.Failure("El usuario debe tener al menos 18 a?os.");
+                return Result<DateTime>.Failure("El usuario debe tener al menos 18 años.");
 
             if (age > 80)
-                return Result<DateTime>.Failure("El usuario no puede tener m?s de 80 a?os.");
+                return Result<DateTime>.Failure("El usuario no puede tener más de 80 años.");
 
             return Result<DateTime>.Success(birthDate.Value);
         }
@@ -80,16 +80,16 @@ namespace UserMicroservice.Domain.Rules
                 return Result<DateTime>.Failure("Las fechas de contratación es obligatoria.");
 
             if (hireDate > DateTime.Today)
-                return Result<DateTime>.Failure("La fecha de contrataci?n no puede ser futura.");
+                return Result<DateTime>.Failure("La fecha de contratación no puede ser futura.");
 
             if (hireDate <= birthDate)
-                return Result<DateTime>.Failure("La fecha de contrataci?n debe ser posterior a la fecha de nacimiento.");
+                return Result<DateTime>.Failure("La fecha de contratación debe ser posterior a la fecha de nacimiento.");
 
             int age = hireDate.Value.Year - birthDate.Value.Year;
             if (hireDate.Value < birthDate.Value.AddYears(age)) age--;
 
             if (age < 18)
-                return Result<DateTime>.Failure("El empleado debe tener al menos 18 a?os al ser contratado.");
+                return Result<DateTime>.Failure("El empleado debe tener al menos 18 años al ser contratado.");
 
             return Result<DateTime>.Success(hireDate.Value);
         }
@@ -99,13 +99,13 @@ namespace UserMicroservice.Domain.Rules
             specialization = specialization?.Trim();
 
             if (string.IsNullOrWhiteSpace(specialization))
-                return Result<string>.Failure("La especializaci?n es obligatoria.");
+                return Result<string>.Failure("La especialización es obligatoria.");
 
             if (specialization.Length < 3 || specialization.Length > 80)
-                return Result<string>.Failure("La especializaci?n debe tener entre 3 y 80 caracteres.");
+                return Result<string>.Failure("La especialización debe tener entre 3 y 80 caracteres.");
 
             if (!LettersAndSpacesRegex.IsMatch(specialization))
-                return Result<string>.Failure("La especializaci?n solo puede contener letras, espacios, ap?strofos o guiones.");
+                return Result<string>.Failure("La especialización solo puede contener letras, espacios, apóstrofos o guiones.");
 
             return Result<string>.Success(specialization);
         }
@@ -129,11 +129,11 @@ namespace UserMicroservice.Domain.Rules
             email = email?.Trim();
 
             if (string.IsNullOrWhiteSpace(email))
-                return Result<string>.Failure("El correo electr?nico es obligatorio.");
+                return Result<string>.Failure("El correo electrónico es obligatorio.");
 
             var emailPattern = @"^[^@\s]+@[^@\s]+\.[^@\s]+$";
             if (!Regex.IsMatch(email, emailPattern))
-                return Result<string>.Failure("El formato del correo electr?nico no es v?lido.");
+                return Result<string>.Failure("El formato del correo electrónico no es válido.");
 
             return Result<string>.Success(email.ToLowerInvariant());
         }
@@ -141,22 +141,22 @@ namespace UserMicroservice.Domain.Rules
         public static Result<string> PasswordRules(string? password)
         {
             if (string.IsNullOrWhiteSpace(password))
-                return Result<string>.Failure("El campo de contrase?a no puede estar vac?o.");
+                return Result<string>.Failure("El campo de contraseña no puede estar vacía.");
 
             if (password.Length < 8)
-                return Result<string>.Failure("La contrase?a debe tener al menos 8 caracteres.");
+                return Result<string>.Failure("La contraseña debe tener al menos 8 caracteres.");
 
             if (!Regex.IsMatch(password, @"[A-Z]"))
-                return Result<string>.Failure("La contrase?a debe contener al menos una letra may?scula.");
+                return Result<string>.Failure("La contraseña debe contener al menos una letra mayúscula.");
 
             if (!Regex.IsMatch(password, @"[a-z]"))
-                return Result<string>.Failure("La contrase?a debe contener al menos una letra min?scula.");
+                return Result<string>.Failure("La contraseña debe contener al menos una letra minúscula.");
 
             if (!Regex.IsMatch(password, @"[0-9]"))
-                return Result<string>.Failure("La contrase?a debe contener al menos un n?mero.");
+                return Result<string>.Failure("La contraseña debe contener al menos un número.");
 
             if (!Regex.IsMatch(password, @"[\W_]"))
-                return Result<string>.Failure("La contrase?a debe contener al menos un car?cter especial.");
+                return Result<string>.Failure("La contraseña debe contener al menos un carácter especial.");
 
             return Result<string>.Success(password);
         }

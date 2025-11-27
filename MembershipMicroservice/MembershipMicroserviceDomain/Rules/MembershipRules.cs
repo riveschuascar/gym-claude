@@ -31,7 +31,7 @@ namespace MembershipMicroservice.MembershipMicroserviceDomain.Rules
                 return Result<decimal>.Failure("El precio es obligatorio.");
 
             if (price.Value <= 0 || price.Value > 100000)
-                return Result<decimal>.Failure("El precio debe ser mayor a 0 y menor a 100000.");
+                return Result<decimal>.Failure("El precio debe ser mayor a 0 y menor a 100,000.0");
 
             return Result<decimal>.Success(price.Value);
         }
@@ -41,10 +41,10 @@ namespace MembershipMicroservice.MembershipMicroserviceDomain.Rules
             description = description?.Trim();
 
             if (string.IsNullOrWhiteSpace(description))
-                return Result<string>.Failure("La descripci?n es obligatoria.");
+                return Result<string>.Failure("La descripción es obligatoria.");
 
             if (description.Length < 10 || description.Length > 400)
-                return Result<string>.Failure("La descripci?n debe tener entre 10 y 400 caracteres.");
+                return Result<string>.Failure("La descripción debe tener entre 10 y 400 caracteres.");
 
             return Result<string>.Success(description);
         }

@@ -44,7 +44,7 @@ namespace DisciplineMicroservice.DisciplineMicroserviceDomain.Validators
             var end = discipline.EndTime.Value;
 
             if (end < start)
-                return Result<Discipline>.Failure("La hora de finalizaciín no puede ser anterior a la de inicio.");
+                return Result<Discipline>.Failure("La hora de finalización no puede ser anterior a la de inicio.");
 
             if (end == start)
                 return Result<Discipline>.Failure("La hora de inicio y finalizaciín no pueden ser iguales.");
