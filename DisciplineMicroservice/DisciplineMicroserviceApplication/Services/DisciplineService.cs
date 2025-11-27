@@ -28,6 +28,11 @@ namespace DisciplineMicroservice.DisciplineMicroserviceApplication.Services
             }
 
             res = await repo.Create(newDiscipline);
+            if (!res.IsSuccess)
+            {
+                return Result<Discipline>.Failure(res.Error ?? "No se pudo crear la disciplina.");
+            }
+
             return Result<Discipline>.Success(res.Value!);
         }
 
@@ -40,20 +45,25 @@ namespace DisciplineMicroservice.DisciplineMicroserviceApplication.Services
             }
 
             var existingDiscipline = await repo.GetById(disciplineToUpdate.Id);
-            if (existingDiscipline == null)
+            if (!existingDiscipline.IsSuccess || existingDiscipline.Value is null)
             {
                 return Result<Discipline>.Failure($"No se encontró la disciplina con ID {disciplineToUpdate.Id} para actualizar.");
             }
 
             var updatedDiscipline = await repo.Update(disciplineToUpdate);
 
-            return Result<Discipline>.Success(updatedDiscipline.Value!);
+            if (!updatedDiscipline.IsSuccess || updatedDiscipline.Value is null)
+            {
+                return Result<Discipline>.Failure(updatedDiscipline.Error ?? "No se pudo actualizar la disciplina.");
+            }
+
+            return Result<Discipline>.Success(updatedDiscipline.Value);
         }
 
         public async Task<Result<Discipline>> GetById(int id)
         {
             var discipline = await repo.GetById(id);
-            if (discipline == null)
+            if (!discipline.IsSuccess || discipline.Value is null)
             {
                 return Result<Discipline>.Failure($"No se encontró la disciplina con ID {id}.");
             }

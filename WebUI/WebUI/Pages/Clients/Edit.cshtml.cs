@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using WebUI.Common;
+using System.Net;
+using System.Text.Json;
 using WebUI.DTO;
-using WebUI.Validation;
 
 namespace WebUI.Pages.Clients;
 
@@ -31,31 +31,18 @@ public class EditModel : PageModel
         if (!ModelState.IsValid)
             return Page();
 
-        Result<ClientDto> validation = ClientValidationRules.Validate(Client);
-        if (validation.IsFailure)
-        {
-            ModelState.AddModelError(string.Empty, validation.Error);
-            return Page();
-        }
-
         var resp = await _http.PutAsJsonAsync($"/api/Client/{Client.Id}", Client);
         if (!resp.IsSuccessStatusCode)
         {
             var body = await resp.Content.ReadAsStringAsync();
             string message;
-            if (resp.StatusCode == System.Net.HttpStatusCode.NotFound)
+            if (resp.StatusCode == HttpStatusCode.NotFound)
             {
                 message = $"No se encontró el cliente con ID {Client.Id} para actualizar.";
             }
-            else if (resp.StatusCode == System.Net.HttpStatusCode.BadRequest && !string.IsNullOrWhiteSpace(body))
-            {
-                message = $"Error de validación al actualizar: {body}";
-            }
             else
             {
-                message = string.IsNullOrWhiteSpace(body)
-                    ? $"Error al actualizar el cliente. Código HTTP: {resp.StatusCode}."
-                    : $"Error al actualizar el cliente: {body}";
+                message = ExtractErrorMessage(body, resp.StatusCode, "actualizar el cliente");
             }
 
             ModelState.AddModelError(string.Empty, message);
@@ -64,4 +51,28 @@ public class EditModel : PageModel
 
         return RedirectToPage("Index");
     }
+
+    private static string ExtractErrorMessage(string raw, HttpStatusCode status, string action)
+    {
+        if (!string.IsNullOrWhiteSpace(raw))
+        {
+            try
+            {
+                using var doc = JsonDocument.Parse(raw);
+                if (doc.RootElement.TryGetProperty("error", out var err) && err.ValueKind == JsonValueKind.String)
+                {
+                    return err.GetString() ?? $"Error al {action}.";
+                }
+            }
+            catch (JsonException)
+            {
+                // ignoramos parseo, usamos texto crudo
+            }
+
+            return $"Error al {action}: {raw}";
+        }
+
+        return $"Error al {action}. Código HTTP: {(int)status} ({status}).";
+    }
 }
+

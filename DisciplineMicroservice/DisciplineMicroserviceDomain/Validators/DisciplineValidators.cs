@@ -1,36 +1,38 @@
-﻿using DisciplineMicroservice.DisciplineMicroserviceDomain.Entities;
+using DisciplineMicroservice.DisciplineMicroserviceDomain.Entities;
 using DisciplineMicroservice.DisciplineMicroserviceDomain.Shared;
 using System.Text.RegularExpressions;
+using System.Linq;
 
 namespace DisciplineMicroservice.DisciplineMicroserviceDomain.Validators
 {
     public static class DisciplineValidators
     {
-        private static readonly Regex AllowedCharsRegex =
-            new Regex("^[a-zA-Z0-9 ñáéíóúÁÉÍÓÚüÜ]+$", RegexOptions.Compiled);
+        private static readonly Regex AllowedNameRegex = new(@"^[\p{L}0-9'\- ]+$", RegexOptions.Compiled);
 
         public static Result<Discipline> Validate(Discipline discipline)
         {
             if (discipline == null)
-                return Result<Discipline>.Failure("La disciplina no puede quedar vacía.");
+                return Result<Discipline>.Failure("La disciplina no puede quedar vac?a.");
+
+            discipline.Name = discipline.Name?.Trim();
 
             if (string.IsNullOrWhiteSpace(discipline.Name))
                 return Result<Discipline>.Failure("El nombre de la disciplina es obligatorio.");
 
-            if (discipline.Name.Length > 20)
-                return Result<Discipline>.Failure("El nombre no puede exceder los 20 caracteres.");
+            if (discipline.Name.Length < 3 || discipline.Name.Length > 50)
+                return Result<Discipline>.Failure("El nombre debe tener entre 3 y 50 caracteres.");
 
-            if (!AllowedCharsRegex.IsMatch(discipline.Name))
+            if (!AllowedNameRegex.IsMatch(discipline.Name))
                 return Result<Discipline>.Failure("El nombre contiene caracteres no permitidos.");
 
             int letterCount = discipline.Name.Count(char.IsLetter);
             int digitCount = discipline.Name.Count(char.IsDigit);
 
             if (digitCount > 2)
-                return Result<Discipline>.Failure("El nombre no puede contener más de 2 números.");
+                return Result<Discipline>.Failure("El nombre no puede contener m?s de 2 n?meros.");
 
             if (digitCount > 0 && letterCount < 5)
-                return Result<Discipline>.Failure("Si el nombre contiene números, debe tener al menos 5 letras.");
+                return Result<Discipline>.Failure("Si el nombre contiene n?meros, debe tener al menos 5 letras.");
 
             if (letterCount < 3)
                 return Result<Discipline>.Failure("El nombre debe contener al menos 3 letras.");
@@ -42,10 +44,10 @@ namespace DisciplineMicroservice.DisciplineMicroserviceDomain.Validators
             var end = discipline.EndTime.Value;
 
             if (end < start)
-                return Result<Discipline>.Failure("La hora de finalización no puede ser anterior a la de inicio.");
+                return Result<Discipline>.Failure("La hora de finalizaci?n no puede ser anterior a la de inicio.");
 
             if (end == start)
-                return Result<Discipline>.Failure("La hora de inicio y finalización no pueden ser iguales.");
+                return Result<Discipline>.Failure("La hora de inicio y finalizaci?n no pueden ser iguales.");
 
             var duration = end - start;
 
@@ -53,13 +55,14 @@ namespace DisciplineMicroservice.DisciplineMicroserviceDomain.Validators
                 return Result<Discipline>.Failure("La disciplina debe durar al menos 1 hora.");
 
             if (duration > TimeSpan.FromHours(2))
-                return Result<Discipline>.Failure("La disciplina no puede durar más de 2 horas.");
+                return Result<Discipline>.Failure("La disciplina no puede durar m?s de 2 horas.");
 
-            var horaApertura = new TimeSpan(8, 0, 0);
-            var horaCierre = new TimeSpan(19, 0, 0);
+            // Horario del gimnasio: 06:00 a 22:00
+            var horaApertura = new TimeSpan(6, 0, 0);
+            var horaCierre = new TimeSpan(22, 0, 0);
 
             if (start < horaApertura || end > horaCierre)
-                return Result<Discipline>.Failure("La disciplina debe realizarse entre las 08:00 AM y las 07:00 PM.");
+                return Result<Discipline>.Failure("La disciplina debe realizarse entre las 06:00 y las 22:00.");
 
             return Result<Discipline>.Success(discipline);
         }
