@@ -39,9 +39,8 @@ namespace UserMicroservice.Infrastructure.Persistence
                 : Result<User>.Success(user);
         }
 
-        public async Task<Result> Create(User entity)
+        public async Task<Result> Create(User entity, string? userEmail = null)
         {
-            // Validar duplicado de correo antes de intentar el insert
             const string emailExistsQuery = @"SELECT 1 FROM users.user WHERE Email = @Email LIMIT 1;";
             var emailExists = await _conn.ExecuteScalarAsync<int?>(emailExistsQuery, new { entity.Email });
             if (emailExists.HasValue)
@@ -53,12 +52,27 @@ namespace UserMicroservice.Infrastructure.Persistence
 
             const string query = @"
                 INSERT INTO users.user
-                    (Name, FirstLastname, SecondLastname, DateOfBirth, Ci, UserRole, HireDate, MonthlySalary, Specialization, Email, Password, CreatedAt)
+                    (Name, FirstLastname, SecondLastname, DateOfBirth, Ci, UserRole, HireDate, MonthlySalary, Specialization, Email, Password, CreatedAt, created_by)
                 VALUES 
-                    (@Name, @FirstLastname, @SecondLastname, @DateOfBirth, @Ci, @UserRole, @HireDate, @MonthlySalary, @Specialization, @Email, crypt(@Password, gen_salt('bf')), @CreatedAt)
+                    (@Name, @FirstLastname, @SecondLastname, @DateOfBirth, @Ci, @UserRole, @HireDate, @MonthlySalary, @Specialization, @Email, crypt(@Password, gen_salt('bf')), @CreatedAt, @created_by)
                 RETURNING Id;";
 
-            entity.Id = await _conn.ExecuteScalarAsync<int>(query, entity, transaction);
+            var parameters = new DynamicParameters();
+            parameters.Add("@Name", entity.Name);
+            parameters.Add("@FirstLastname", entity.FirstLastname);
+            parameters.Add("@SecondLastname", entity.SecondLastname);
+            parameters.Add("@DateOfBirth", entity.DateOfBirth);
+            parameters.Add("@Ci", entity.Ci);
+            parameters.Add("@UserRole", entity.UserRole);
+            parameters.Add("@HireDate", entity.HireDate);
+            parameters.Add("@MonthlySalary", entity.MonthlySalary);
+            parameters.Add("@Specialization", entity.Specialization);
+            parameters.Add("@Email", entity.Email);
+            parameters.Add("@Password", entity.Password);
+            parameters.Add("@CreatedAt", entity.CreatedAt);
+            parameters.Add("@created_by", userEmail);
+
+            entity.Id = await _conn.ExecuteScalarAsync<int>(query, parameters, transaction);
 
             if (entity.Id == 0)
             {
@@ -70,7 +84,7 @@ namespace UserMicroservice.Infrastructure.Persistence
             return Result.Success();
         }
 
-        public async Task<Result> Update(User entity)
+        public async Task<Result> Update(User entity, string? userEmail = null)
         {
             using var transaction = _conn.BeginTransaction();
 
@@ -85,10 +99,25 @@ namespace UserMicroservice.Infrastructure.Persistence
                     HireDate = @HireDate,
                     MonthlySalary = @MonthlySalary,
                     Specialization = @Specialization,
-                    LastModification = @LastModification
+                    LastModification = @LastModification,
+                    modified_by = @modified_by
                 WHERE Id = @Id;";
 
-            var affected = await _conn.ExecuteAsync(updateQuery, entity, transaction);
+            var parameters = new DynamicParameters();
+            parameters.Add("@Id", entity.Id);
+            parameters.Add("@Name", entity.Name);
+            parameters.Add("@FirstLastname", entity.FirstLastname);
+            parameters.Add("@SecondLastname", entity.SecondLastname);
+            parameters.Add("@DateOfBirth", entity.DateOfBirth);
+            parameters.Add("@Ci", entity.Ci);
+            parameters.Add("@UserRole", entity.UserRole);
+            parameters.Add("@HireDate", entity.HireDate);
+            parameters.Add("@MonthlySalary", entity.MonthlySalary);
+            parameters.Add("@Specialization", entity.Specialization);
+            parameters.Add("@LastModification", entity.LastModification);
+            parameters.Add("@modified_by", userEmail);
+
+            var affected = await _conn.ExecuteAsync(updateQuery, parameters, transaction);
 
             if (affected == 0)
             {
@@ -100,11 +129,18 @@ namespace UserMicroservice.Infrastructure.Persistence
             return Result.Success();
         }
 
-        public async Task<Result> DeleteById(int id)
+        public async Task<Result> DeleteById(int id, string? userEmail = null)
         {
-            const string query = @"UPDATE users.user SET IsActive = false, LastModification = @LastModification WHERE Id = @Id;";
+            const string query = @"UPDATE users.user 
+                                   SET IsActive = false, LastModification = @LastModification, modified_by = @modified_by 
+                                   WHERE Id = @Id;";
 
-            var affected = await _conn.ExecuteAsync(query, new { Id = id, LastModification = DateTime.UtcNow });
+            var parameters = new DynamicParameters();
+            parameters.Add("@Id", id);
+            parameters.Add("@LastModification", DateTime.UtcNow);
+            parameters.Add("@modified_by", userEmail);
+
+            var affected = await _conn.ExecuteAsync(query, parameters);
 
             return affected <= 0
                 ? Result.Failure("No se encontró el usuario a eliminar.")
@@ -122,11 +158,23 @@ namespace UserMicroservice.Infrastructure.Persistence
                 : Result<User>.Success(user);
         }
 
-        public async Task<Result> UpdatePassword(int id, string password)
+        public async Task<Result> UpdatePassword(int id, string password, string? userEmail = null)
         {
-            const string query = @"UPDATE users.user SET Password = crypt(@Password, gen_salt('bf')), MustChangePassword = false WHERE Id = @Id;";
+            const string query = @"
+                UPDATE users.user
+                SET Password = crypt(@Password, gen_salt('bf')),
+                    MustChangePassword = false,
+                    LastModification = @LastModification,
+                    modified_by = @modified_by
+                WHERE Id = @Id;";
 
-            var affected = await _conn.ExecuteAsync(query, new { Id = id, Password = password });
+            var parameters = new DynamicParameters();
+            parameters.Add("@Id", id);
+            parameters.Add("@Password", password);
+            parameters.Add("@LastModification", DateTime.UtcNow);
+            parameters.Add("@modified_by", userEmail);
+
+            var affected = await _conn.ExecuteAsync(query, parameters);
 
             return affected <= 0
                 ? Result.Failure("Error al actualizar contraseña.")

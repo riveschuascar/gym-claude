@@ -31,7 +31,7 @@ namespace UserMicroservice.Application.Services
             return Result<User>.Success(validation.Value!);
         }
 
-        public async Task<Result> Create(User newUser)
+        public async Task<Result> Create(User newUser, string? userEmail = null)
         {
             newUser.CreatedAt = DateTime.Now;
             newUser.CreatePassword();
@@ -43,10 +43,10 @@ namespace UserMicroservice.Application.Services
                 return Result.Failure(validation.Error!);
             }
 
-            return await repo.Create(newUser);
+            return await repo.Create(newUser, userEmail);
         }
 
-        public async Task<Result> Update(User userToUpdate)
+        public async Task<Result> Update(User userToUpdate, string? userEmail = null)
         {
             userToUpdate.LastModification = DateTime.Now;
             var validation = UserSpecification.Update(userToUpdate);
@@ -56,12 +56,12 @@ namespace UserMicroservice.Application.Services
                 return Result.Failure(validation.Error!);
             }
 
-            return await repo.Update(userToUpdate);
+            return await repo.Update(userToUpdate, userEmail);
         }
 
-        public async Task<Result> Delete(int userId)
+        public async Task<Result> Delete(int userId, string? userEmail = null)
         {
-            return await repo.DeleteById(userId);
+            return await repo.DeleteById(userId, userEmail);
         }
 
         public async Task<Result<User>> GetByEmail(string email)
@@ -74,7 +74,7 @@ namespace UserMicroservice.Application.Services
             return await repo.GetByEmail(email);
         }
 
-        public async Task<Result> UpdatePassword(int userId, string newPassword)
+        public async Task<Result> UpdatePassword(int userId, string newPassword, string? userEmail = null)
         {
             var validation = UserRules.PasswordRules(newPassword);
 
@@ -83,7 +83,7 @@ namespace UserMicroservice.Application.Services
                 return Result.Failure(validation.Error!);
             }
 
-            return await repo.UpdatePassword(userId, newPassword);
+            return await repo.UpdatePassword(userId, newPassword, userEmail);
         }
     }
 }
