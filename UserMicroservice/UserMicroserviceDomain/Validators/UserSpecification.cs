@@ -21,11 +21,14 @@ namespace UserMicroservice.Domain.Validators
                 return Result<User>.Failure(firstLastNameResult.Error!);
             user.FirstLastname = firstLastNameResult.Value ?? user.FirstLastname;
 
-            var secondLastNameResult = UserRules.LastNameRules(user.SecondLastname);
-            if (!secondLastNameResult.IsSuccess)
-                return Result<User>.Failure(secondLastNameResult.Error!);
-            user.SecondLastname = secondLastNameResult.Value ?? user.SecondLastname;
-
+            if (!string.IsNullOrWhiteSpace(user.SecondLastname))
+            {
+                var secondLastNameResult = UserRules.LastNameRules(user.SecondLastname);
+                if (!secondLastNameResult.IsSuccess)
+                    return Result<User>.Failure(secondLastNameResult.Error!);
+                user.SecondLastname = secondLastNameResult.Value ?? user.SecondLastname;
+            }
+            
             var ciResult = UserRules.CiRules(user.Ci);
             if (!ciResult.IsSuccess)
                 return Result<User>.Failure(ciResult.Error!);
