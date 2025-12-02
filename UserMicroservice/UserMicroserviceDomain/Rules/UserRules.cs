@@ -30,7 +30,7 @@ namespace UserMicroservice.Domain.Rules
             secondLastName = secondLastName?.Trim();
 
             if (string.IsNullOrWhiteSpace(secondLastName))
-                return Result<string?>.Failure("El Apellido no puede estar vacio.");
+                return Result<string?>.Success(secondLastName);
 
             if (secondLastName.Length < 2 || secondLastName.Length > 60)
                 return Result<string?>.Failure("Debe tener entre 2 y 60 caracteres.");
