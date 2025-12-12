@@ -21,20 +21,56 @@
         </div>
     }
 
+    <form method="get" class="card shadow-sm mb-3">
+        <div class="card-body">
+            <div class="row g-2 align-items-end">
+                <div class="col-md-5">
+                    <label class="form-label">Buscar cliente</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-search"></i></span>
+                        <input asp-for="ClientSearch" class="form-control" placeholder="Nombre, email o CI/NIT" />
+                    </div>
+                </div>
+                <div class="col-md-5">
+                    <label class="form-label">Buscar membresía</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-filter"></i></span>
+                        <input asp-for="MembershipSearch" class="form-control" placeholder="Nombre o descripción" />
+                    </div>
+                </div>
+                <div class="col-md-2 d-grid">
+                    <button type="submit" class="btn btn-secondary">
+                        <i class="fas fa-search"></i> Filtrar
+                    </button>
+                </div>
+            </div>
+            <div class="d-flex justify-content-between align-items-center mt-2">
+                <div class="text-muted small">Si no encuentras resultados, crea el registro y vuelve a esta pantalla.</div>
+                <div class="d-flex gap-2">
+                    <a asp-page="/Clients/Create" class="btn btn-outline-primary btn-sm" target="_blank"><i class="fas fa-user-plus"></i> Nuevo cliente</a>
+                    <a asp-page="/Memberships/Create" class="btn btn-outline-primary btn-sm" target="_blank"><i class="fas fa-id-card-alt"></i> Nueva membresía</a>
+                </div>
+            </div>
+        </div>
+    </form>
+
     <div class="card shadow-sm">
         <div class="card-header bg-primary text-white">
             <i class="fas fa-cash-register"></i> Datos de la venta
         </div>
         <div class="card-body">
             <form method="post" class="row g-3" id="saleForm">
+                <input type="hidden" asp-for="CorrelationId" />
+                <input type="hidden" asp-for="OperationId" />
+
                 <div class="col-md-6">
                     <label asp-for="Input.ClientId" class="form-label">Cliente</label>
-                    <select asp-for="Input.ClientId" class="form-select">
+                    <select asp-for="Input.ClientId" class="form-select" id="clientSelect">
                         <option value="">-- Selecciona un cliente --</option>
                         @foreach (var c in Model.Clients)
                         {
                             var fullName = $"{c.Name} {c.FirstLastname} {c.SecondLastname}".Trim();
-                            <option value="@c.Id">@fullName</option>
+                            <option value="@c.Id" data-name="@fullName" data-ci="@c.Ci">@fullName (@c.Ci)</option>
                         }
                     </select>
                     <span asp-validation-for="Input.ClientId" class="text-danger"></span>
@@ -42,11 +78,11 @@
 
                 <div class="col-md-6">
                     <label asp-for="Input.MembershipId" class="form-label">Membresía</label>
-                    <select asp-for="Input.MembershipId" class="form-select">
+                    <select asp-for="Input.MembershipId" class="form-select" id="membershipSelect">
                         <option value="">-- Selecciona una membresía --</option>
                         @foreach (var m in Model.Memberships)
                         {
-                            <option value="@m.Id" data-price="@m.Price">@m.Name (@(m.Price?.ToString("N2") ?? "-") Bs)</option>
+                            <option value="@m.Id" data-price="@m.Price" data-sessions="@m.MonthlySessions">@m.Name (@(m.Price?.ToString("N2") ?? "-") Bs)</option>
                         }
                     </select>
                     <span asp-validation-for="Input.MembershipId" class="text-danger"></span>
@@ -94,6 +130,25 @@
                     <span asp-validation-for="Input.Notes" class="text-danger"></span>
                 </div>
 
+                <div class="col-md-6">
+                    <div class="bg-light border rounded p-3 h-100">
+                        <h5 class="fw-semibold">Resumen</h5>
+                        <div class="small text-muted">Se actualiza al elegir cliente y membresía.</div>
+                        <dl class="row mt-2 mb-0">
+                            <dt class="col-4">Cliente</dt>
+                            <dd class="col-8" id="clientPreview">Selecciona un cliente</dd>
+                            <dt class="col-4">CI/NIT</dt>
+                            <dd class="col-8" id="clientDoc">-</dd>
+                            <dt class="col-4">Membresía</dt>
+                            <dd class="col-8" id="membershipPreview">Selecciona una membresía</dd>
+                            <dt class="col-4">Sesiones/mes</dt>
+                            <dd class="col-8" id="sessionPreview">-</dd>
+                            <dt class="col-4">Total</dt>
+                            <dd class="col-8 fw-bold" id="totalPreview">0</dd>
+                        </dl>
+                    </div>
+                </div>
+
                 <div class="col-12 d-flex justify-content-end">
                     <button type="submit" class="btn btn-success">
                         <i class="fas fa-save"></i> Registrar venta
@@ -107,15 +162,41 @@
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
     <script>
-        const membershipSelect = document.querySelector('[name="Input.MembershipId"]');
+        const membershipSelect = document.getElementById('membershipSelect');
+        const clientSelect = document.getElementById('clientSelect');
         const totalInput = document.getElementById('totalAmount');
+        const clientPreview = document.getElementById('clientPreview');
+        const clientDoc = document.getElementById('clientDoc');
+        const membershipPreview = document.getElementById('membershipPreview');
+        const sessionPreview = document.getElementById('sessionPreview');
+        const totalPreview = document.getElementById('totalPreview');
 
-        membershipSelect?.addEventListener('change', function () {
+        function updateMembershipInfo() {
             const option = membershipSelect.options[membershipSelect.selectedIndex];
-            const price = option.getAttribute('data-price');
+            const price = option?.getAttribute('data-price');
+            const sessions = option?.getAttribute('data-sessions') || '-';
+            const name = option?.text || 'Selecciona una membresía';
             if (price) {
                 totalInput.value = price;
+                totalPreview.textContent = `${parseFloat(price).toFixed(2)} Bs`;
+            } else {
+                totalPreview.textContent = totalInput.value || '0';
             }
-        });
+            membershipPreview.textContent = name;
+            sessionPreview.textContent = sessions;
+        }
+
+        function updateClientInfo() {
+            const option = clientSelect.options[clientSelect.selectedIndex];
+            const name = option?.getAttribute('data-name') || 'Selecciona un cliente';
+            const ci = option?.getAttribute('data-ci') || '-';
+            clientPreview.textContent = name;
+            clientDoc.textContent = ci;
+        }
+
+        membershipSelect?.addEventListener('change', updateMembershipInfo);
+        clientSelect?.addEventListener('change', updateClientInfo);
+        updateMembershipInfo();
+        updateClientInfo();
     </script>
 }

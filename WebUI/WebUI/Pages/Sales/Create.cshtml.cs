@@ -18,6 +18,18 @@ namespace WebUI.Pages.Sales
         [BindProperty]
         public SaleInput Input { get; set; } = new();
 
+        [BindProperty]
+        public string CorrelationId { get; set; } = Guid.NewGuid().ToString();
+
+        [BindProperty]
+        public string OperationId { get; set; } = Guid.NewGuid().ToString();
+
+        [BindProperty(SupportsGet = true)]
+        public string? ClientSearch { get; set; }
+
+        [BindProperty(SupportsGet = true)]
+        public string? MembershipSearch { get; set; }
+
         public CreateModel(IHttpClientFactory factory)
         {
             _salesClient = factory.CreateClient("SalesAPI");
@@ -29,12 +41,14 @@ namespace WebUI.Pages.Sales
         {
             await LoadLookupsAsync();
             Input.SaleDate = DateTime.Today;
+            EnsureCorrelation();
             return Page();
         }
 
         public async Task<IActionResult> OnPostAsync()
         {
             await LoadLookupsAsync();
+            EnsureCorrelation();
 
             if (!ModelState.IsValid)
             {
@@ -54,6 +68,12 @@ namespace WebUI.Pages.Sales
 
             try
             {
+                var ctx = new
+                {
+                    correlationId = CorrelationId,
+                    operationId = OperationId
+                };
+
                 var payload = new
                 {
                     clientId = Input.ClientId,
@@ -68,7 +88,14 @@ namespace WebUI.Pages.Sales
                     notes = Input.Notes
                 };
 
-                var resp = await _salesClient.PostAsJsonAsync("/api/Sales", payload);
+                using var request = new HttpRequestMessage(HttpMethod.Post, "/api/Sales")
+                {
+                    Content = JsonContent.Create(payload)
+                };
+                request.Headers.TryAddWithoutValidation("X-Correlation-Id", ctx.correlationId);
+                request.Headers.TryAddWithoutValidation("X-Operation-Id", ctx.operationId);
+
+                var resp = await _salesClient.SendAsync(request);
 
                 if (resp.IsSuccessStatusCode)
                 {
@@ -106,6 +133,40 @@ namespace WebUI.Pages.Sales
             {
                 Memberships = new List<MembershipDTO>();
             }
+
+            ApplyFilters();
+        }
+
+        private void ApplyFilters()
+        {
+            if (!string.IsNullOrWhiteSpace(ClientSearch))
+            {
+                var term = ClientSearch.Trim().ToLowerInvariant();
+                Clients = Clients
+                    .Where(c =>
+                        $"{c.Name} {c.FirstLastname} {c.SecondLastname}".ToLower().Contains(term)
+                        || (c.Ci ?? string.Empty).ToLower().Contains(term))
+                    .ToList();
+            }
+
+            if (!string.IsNullOrWhiteSpace(MembershipSearch))
+            {
+                var term = MembershipSearch.Trim().ToLowerInvariant();
+                Memberships = Memberships
+                    .Where(m =>
+                        (m.Name ?? string.Empty).ToLower().Contains(term)
+                        || (m.Description ?? string.Empty).ToLower().Contains(term))
+                    .ToList();
+            }
+        }
+
+        private void EnsureCorrelation()
+        {
+            if (string.IsNullOrWhiteSpace(CorrelationId))
+                CorrelationId = Guid.NewGuid().ToString();
+
+            if (string.IsNullOrWhiteSpace(OperationId))
+                OperationId = CorrelationId;
         }
     }
 
