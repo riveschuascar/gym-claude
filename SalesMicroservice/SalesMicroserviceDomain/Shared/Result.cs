@@ -21,6 +21,7 @@ namespace SalesMicroserviceDomain.Shared
     public class Result
     {
         public bool IsSuccess { get; }
+        public bool IsFailure => !IsSuccess;
         public string? Error { get; }
 
         private Result(bool isSuccess, string? error)

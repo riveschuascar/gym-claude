@@ -61,7 +61,7 @@ namespace SalesMicroserviceApplication.Services
             var createResult = await _repo.Create(sale, userEmail);
             if (createResult.IsFailure) return createResult;
 
-            var saleCreatedEvent = SaleCreatedEvent.FromSale(createResult.Value, context.CorrelationId, context.OperationId);
+            var saleCreatedEvent = SaleCreatedEvent.FromSale(createResult.Value!, context.CorrelationId, context.OperationId);
             var outboxMessage = new OutboxMessage
             {
                 Id = Guid.NewGuid(),
