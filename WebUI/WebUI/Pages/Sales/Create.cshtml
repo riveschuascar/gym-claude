@@ -28,7 +28,7 @@
                     <label class="form-label">Buscar cliente</label>
                     <div class="input-group">
                         <span class="input-group-text"><i class="fas fa-search"></i></span>
-                        <input asp-for="ClientSearch" class="form-control" placeholder="Nombre, email o CI/NIT" />
+                        <input asp-for="ClientSearch" class="form-control" placeholder="Nombre o CI/NIT" />
                     </div>
                 </div>
                 <div class="col-md-5">
@@ -39,9 +39,14 @@
                     </div>
                 </div>
                 <div class="col-md-2 d-grid">
-                    <button type="submit" class="btn btn-secondary">
-                        <i class="fas fa-search"></i> Filtrar
-                    </button>
+                    <div class="btn-group" role="group">
+                        <button type="submit" class="btn btn-secondary">
+                            <i class="fas fa-search"></i>
+                        </button>
+                        <a href='@Url.Page("Create")' class="btn btn-outline-warning" title="Limpiar filtros">
+                            <i class="fas fa-eraser"></i>
+                        </a>
+                    </div>
                 </div>
             </div>
             <div class="d-flex justify-content-between align-items-center mt-2">
