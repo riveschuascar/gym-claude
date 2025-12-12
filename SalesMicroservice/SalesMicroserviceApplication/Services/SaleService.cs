@@ -1,18 +1,25 @@
 using SalesMicroserviceApplication.Interfaces;
 using SalesMicroserviceDomain.Entities;
+using SalesMicroserviceDomain.Events;
 using SalesMicroserviceDomain.Ports;
 using SalesMicroserviceDomain.Shared;
 using SalesMicroserviceDomain.Validators;
+using System.Text.Json;
+using Microsoft.Extensions.Logging;
 
 namespace SalesMicroserviceApplication.Services
 {
     public class SaleService : ISaleService
     {
         private readonly ISaleRepository _repo;
+        private readonly IOutboxRepository _outbox;
+        private readonly ILogger<SaleService> _logger;
 
-        public SaleService(ISaleRepository repo)
+        public SaleService(ISaleRepository repo, IOutboxRepository outbox, ILogger<SaleService> logger)
         {
             _repo = repo;
+            _outbox = outbox;
+            _logger = logger;
         }
 
         public async Task<Result<IEnumerable<Sale>>> GetAll() => await _repo.GetAll();
@@ -32,7 +39,27 @@ namespace SalesMicroserviceApplication.Services
             sale.LastModification = DateTime.UtcNow;
             sale.IsActive = true;
 
-            return await _repo.Create(sale, userEmail);
+            var createResult = await _repo.Create(sale, userEmail);
+            if (createResult.IsFailure) return createResult;
+
+            var saleCreatedEvent = SaleCreatedEvent.FromSale(createResult.Value, null, null);
+            var outboxMessage = new OutboxMessage
+            {
+                Id = Guid.NewGuid(),
+                Type = nameof(SaleCreatedEvent),
+                Payload = JsonSerializer.Serialize(saleCreatedEvent),
+                OccurredOn = DateTime.UtcNow,
+                CorrelationId = saleCreatedEvent.CorrelationId,
+                OperationId = saleCreatedEvent.OperationId
+            };
+
+            var outboxResult = await _outbox.SaveAsync(outboxMessage);
+            if (outboxResult.IsFailure)
+            {
+                _logger.LogError("No se pudo guardar en outbox el evento de venta creada. Error: {Error}", outboxResult.Error);
+            }
+
+            return createResult;
         }
 
         public async Task<Result<Sale>> Update(Sale sale, string? userEmail = null)

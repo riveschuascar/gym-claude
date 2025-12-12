@@ -1,5 +1,6 @@
 BEGIN;
 
+DROP TABLE IF EXISTS outbox_messages;
 DROP TABLE IF EXISTS membership_sale;
 
 CREATE TABLE membership_sale (
@@ -26,6 +27,17 @@ CREATE TABLE membership_sale (
 CREATE INDEX idx_membership_sale_active ON membership_sale(is_active);
 CREATE INDEX idx_membership_sale_client ON membership_sale(client_id);
 CREATE INDEX idx_membership_sale_membership ON membership_sale(membership_id);
+
+CREATE TABLE outbox_messages (
+    id UUID PRIMARY KEY,
+    message_type VARCHAR(150) NOT NULL,
+    payload JSONB NOT NULL,
+    occurred_on TIMESTAMPTZ NOT NULL,
+    correlation_id VARCHAR(150),
+    operation_id VARCHAR(150)
+);
+
+CREATE INDEX idx_outbox_messages_pending ON outbox_messages(occurred_on);
 
 -- Datos de ejemplo (asume clientes 1..3, membresías 1..5 según seeds)
 INSERT INTO membership_sale
