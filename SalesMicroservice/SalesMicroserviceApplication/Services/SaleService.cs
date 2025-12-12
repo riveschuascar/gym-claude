@@ -12,12 +12,21 @@ namespace SalesMicroserviceApplication.Services
     public class SaleService : ISaleService
     {
         private readonly ISaleRepository _repo;
+        private readonly IClientApi _clientApi;
+        private readonly IMembershipApi _membershipApi;
         private readonly IOutboxRepository _outbox;
         private readonly ILogger<SaleService> _logger;
 
-        public SaleService(ISaleRepository repo, IOutboxRepository outbox, ILogger<SaleService> logger)
+        public SaleService(
+            ISaleRepository repo,
+            IClientApi clientApi,
+            IMembershipApi membershipApi,
+            IOutboxRepository outbox,
+            ILogger<SaleService> logger)
         {
             _repo = repo;
+            _clientApi = clientApi;
+            _membershipApi = membershipApi;
             _outbox = outbox;
             _logger = logger;
         }
@@ -26,11 +35,21 @@ namespace SalesMicroserviceApplication.Services
 
         public async Task<Result<Sale>> GetById(int id) => await _repo.GetById(id);
 
-        public async Task<Result<Sale>> Create(Sale sale, string? userEmail = null)
+        public async Task<Result<Sale>> Create(Sale sale, string? userEmail = null, OperationContext? context = null)
         {
+            context ??= new OperationContext();
+
             var validation = SaleValidators.ValidateForCreate(sale);
             if (validation.IsFailure)
                 return Result<Sale>.Failure(validation.Error!);
+
+            var clientExists = await _clientApi.EnsureExists(sale.ClientId);
+            if (clientExists.IsFailure)
+                return Result<Sale>.Failure(clientExists.Error!);
+
+            var membershipExists = await _membershipApi.EnsureExists(sale.MembershipId);
+            if (membershipExists.IsFailure)
+                return Result<Sale>.Failure(membershipExists.Error!);
 
             sale.SaleDate = sale.SaleDate == default ? DateTime.UtcNow.Date : sale.SaleDate.Date;
             sale.StartDate = sale.SaleDate;
@@ -42,7 +61,7 @@ namespace SalesMicroserviceApplication.Services
             var createResult = await _repo.Create(sale, userEmail);
             if (createResult.IsFailure) return createResult;
 
-            var saleCreatedEvent = SaleCreatedEvent.FromSale(createResult.Value, null, null);
+            var saleCreatedEvent = SaleCreatedEvent.FromSale(createResult.Value, context.CorrelationId, context.OperationId);
             var outboxMessage = new OutboxMessage
             {
                 Id = Guid.NewGuid(),
@@ -67,6 +86,14 @@ namespace SalesMicroserviceApplication.Services
             var validation = SaleValidators.ValidateForUpdate(sale);
             if (validation.IsFailure)
                 return Result<Sale>.Failure(validation.Error!);
+
+            var clientExists = await _clientApi.EnsureExists(sale.ClientId);
+            if (clientExists.IsFailure)
+                return Result<Sale>.Failure(clientExists.Error!);
+
+            var membershipExists = await _membershipApi.EnsureExists(sale.MembershipId);
+            if (membershipExists.IsFailure)
+                return Result<Sale>.Failure(membershipExists.Error!);
 
             sale.SaleDate = sale.SaleDate == default ? DateTime.UtcNow.Date : sale.SaleDate.Date;
             sale.StartDate = sale.SaleDate;

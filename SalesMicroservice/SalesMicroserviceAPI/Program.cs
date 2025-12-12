@@ -2,8 +2,10 @@ using System.Text;
 using SalesMicroserviceApplication.Interfaces;
 using SalesMicroserviceApplication.Services;
 using SalesMicroserviceDomain.Ports;
+using SalesMicroserviceInfraestructure.Clients;
 using SalesMicroserviceInfraestructure.Persistence;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using SalesMicroserviceAPI.Http;
 using Microsoft.IdentityModel.Tokens;
 using Npgsql;
 using System.Data;
@@ -19,6 +21,24 @@ builder.Configuration
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddTransient<PropagationDelegatingHandler>();
+
+var httpTimeout = builder.Configuration.GetValue<int?>("ExternalApis:TimeoutSeconds") ?? 5;
+var clientApiBase = builder.Configuration["ExternalApis:Client"] ?? "http://localhost:5135";
+var membershipApiBase = builder.Configuration["ExternalApis:Membership"] ?? "http://localhost:5292";
+
+builder.Services.AddHttpClient<IClientApi, ClientApi>(client =>
+{
+    client.BaseAddress = new Uri(clientApiBase);
+    client.Timeout = TimeSpan.FromSeconds(httpTimeout);
+}).AddHttpMessageHandler<PropagationDelegatingHandler>();
+
+builder.Services.AddHttpClient<IMembershipApi, MembershipApi>(client =>
+{
+    client.BaseAddress = new Uri(membershipApiBase);
+    client.Timeout = TimeSpan.FromSeconds(httpTimeout);
+}).AddHttpMessageHandler<PropagationDelegatingHandler>();
 
 builder.Services.AddScoped<IDbConnection>(_ =>
     new NpgsqlConnection(builder.Configuration.GetConnectionString("SalesMicroserviceDB")));

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using SalesMicroserviceApplication.Interfaces;
 using SalesMicroserviceDomain.Entities;
 using System.Security.Claims;
+using SalesMicroserviceDomain.Shared;
 
 namespace SalesMicroserviceAPI.Controllers
 {
@@ -33,6 +34,24 @@ namespace SalesMicroserviceAPI.Controllers
             return email;
         }
 
+        private OperationContext BuildOperationContext()
+        {
+            var correlationId = Request.Headers["X-Correlation-Id"].FirstOrDefault();
+            var operationId = Request.Headers["X-Operation-Id"].FirstOrDefault();
+
+            var context = new OperationContext(correlationId, operationId);
+
+            if (string.IsNullOrWhiteSpace(correlationId))
+                Request.Headers["X-Correlation-Id"] = context.CorrelationId;
+            if (string.IsNullOrWhiteSpace(operationId))
+                Request.Headers["X-Operation-Id"] = context.OperationId;
+
+            Response.Headers["X-Correlation-Id"] = context.CorrelationId;
+            Response.Headers["X-Operation-Id"] = context.OperationId;
+
+            return context;
+        }
+
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
@@ -51,7 +70,8 @@ namespace SalesMicroserviceAPI.Controllers
         public async Task<IActionResult> Create([FromBody] Sale sale)
         {
             var email = GetEmailFromClaims();
-            var result = await _saleService.Create(sale, email);
+            var context = BuildOperationContext();
+            var result = await _saleService.Create(sale, email, context);
             if (!result.IsSuccess)
                 return BadRequest(new { error = result.Error });
 
