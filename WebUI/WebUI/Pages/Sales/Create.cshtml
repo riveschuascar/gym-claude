@@ -1,0 +1,121 @@
+@page
+@model WebUI.Pages.Sales.CreateModel
+
+@{
+    ViewData["Title"] = "Nueva venta de membresía";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1 class="mb-0">@ViewData["Title"]</h1>
+        <a asp-page="Index" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Volver
+        </a>
+    </div>
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <i class="fas fa-cash-register"></i> Datos de la venta
+        </div>
+        <div class="card-body">
+            <form method="post" class="row g-3" id="saleForm">
+                <div class="col-md-6">
+                    <label asp-for="Input.ClientId" class="form-label">Cliente</label>
+                    <select asp-for="Input.ClientId" class="form-select">
+                        <option value="">-- Selecciona un cliente --</option>
+                        @foreach (var c in Model.Clients)
+                        {
+                            var fullName = $"{c.Name} {c.FirstLastname} {c.SecondLastname}".Trim();
+                            <option value="@c.Id">@fullName</option>
+                        }
+                    </select>
+                    <span asp-validation-for="Input.ClientId" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-6">
+                    <label asp-for="Input.MembershipId" class="form-label">Membresía</label>
+                    <select asp-for="Input.MembershipId" class="form-select">
+                        <option value="">-- Selecciona una membresía --</option>
+                        @foreach (var m in Model.Memberships)
+                        {
+                            <option value="@m.Id" data-price="@m.Price">@m.Name (@(m.Price?.ToString("N2") ?? "-") Bs)</option>
+                        }
+                    </select>
+                    <span asp-validation-for="Input.MembershipId" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-3">
+                    <label asp-for="Input.SaleDate" class="form-label">Fecha de venta</label>
+                    <input asp-for="Input.SaleDate" class="form-control" type="date" />
+                    <span asp-validation-for="Input.SaleDate" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-3">
+                    <label asp-for="Input.PaymentMethod" class="form-label">Método de pago</label>
+                    <select asp-for="Input.PaymentMethod" class="form-select">
+                        <option value="">-- Selecciona --</option>
+                        <option>Efectivo</option>
+                        <option>Tarjeta</option>
+                        <option>Transferencia</option>
+                        <option>App</option>
+                    </select>
+                    <span asp-validation-for="Input.PaymentMethod" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-3">
+                    <label asp-for="Input.TotalAmount" class="form-label">Total (Bs)</label>
+                    <input asp-for="Input.TotalAmount" class="form-control" type="number" step="0.01" min="0" id="totalAmount" readonly />
+                    <span asp-validation-for="Input.TotalAmount" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-3">
+                    <label asp-for="Input.TaxId" class="form-label">CI/NIT</label>
+                    <input asp-for="Input.TaxId" class="form-control" />
+                    <span asp-validation-for="Input.TaxId" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-3">
+                    <label asp-for="Input.BusinessName" class="form-label">Razón social</label>
+                    <input asp-for="Input.BusinessName" class="form-control" />
+                    <span asp-validation-for="Input.BusinessName" class="text-danger"></span>
+                </div>
+
+                <div class="col-12">
+                    <label asp-for="Input.Notes" class="form-label">Notas</label>
+                    <textarea asp-for="Input.Notes" class="form-control" rows="2" placeholder="Ej: Cliente pagó en efectivo, agregar recordatorio de renovación."></textarea>
+                    <span asp-validation-for="Input.Notes" class="text-danger"></span>
+                </div>
+
+                <div class="col-12 d-flex justify-content-end">
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-save"></i> Registrar venta
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        const membershipSelect = document.querySelector('[name="Input.MembershipId"]');
+        const totalInput = document.getElementById('totalAmount');
+
+        membershipSelect?.addEventListener('change', function () {
+            const option = membershipSelect.options[membershipSelect.selectedIndex];
+            const price = option.getAttribute('data-price');
+            if (price) {
+                totalInput.value = price;
+            }
+        });
+    </script>
+}

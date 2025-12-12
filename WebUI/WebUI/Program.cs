@@ -25,6 +25,7 @@ builder.Services.AddRazorPages(options =>
 {
     options.Conventions.AuthorizeFolder("/Clients", "AdminOrInstructor");
     options.Conventions.AuthorizeFolder("/Memberships", "AdminOrInstructor");
+    options.Conventions.AuthorizeFolder("/Sales", "AdminOrInstructor");
     options.Conventions.AuthorizeFolder("/Disciplines", "AdminOnly");
     options.Conventions.AuthorizeFolder("/Users", "AdminOnly");
     options.Conventions.AllowAnonymousToPage("/Index");
@@ -67,6 +68,13 @@ builder.Services.AddHttpClient("LoginAPI", client =>
     client.BaseAddress = new Uri(baseUrl);
     client.DefaultRequestHeaders.Add("Accept", "application/json");
 });
+
+builder.Services.AddHttpClient("SalesAPI", client =>
+{
+    var baseUrl = builder.Configuration["SalesApiBase"] ?? "http://localhost:5305";
+    client.BaseAddress = new Uri(baseUrl);
+    client.DefaultRequestHeaders.Add("Accept", "application/json");
+}).AddHttpMessageHandler<TokenMessageHandler>();
 
 var app = builder.Build();
 

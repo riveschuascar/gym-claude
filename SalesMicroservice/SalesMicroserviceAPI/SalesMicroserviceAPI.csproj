@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.10" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
+    <PackageReference Include="Npgsql" Version="8.0.0" />
+    <PackageReference Include="Dapper" Version="2.1.35" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SalesMicroserviceApplication\SalesMicroserviceApplication.csproj" />
+    <ProjectReference Include="..\SalesMicroserviceDomain\SalesMicroserviceDomain.csproj" />
+    <ProjectReference Include="..\SalesMicroserviceInfraestructure\SalesMicroserviceInfrastructure.csproj" />
+  </ItemGroup>
+
+</Project>

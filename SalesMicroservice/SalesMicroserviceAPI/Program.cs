@@ -1,10 +1,12 @@
-using MembershipMicroservice.MembershipMicroserviceApplication.Interfaces;
-using MembershipMicroservice.MembershipMicroserviceApplication.Services;
-using MembershipMicroservice.MembershipMicroserviceDomain.Ports;
-using MembershipMicroservice.MembershipMicroserviceInfraestructure.Persistence;
+using System.Text;
+using SalesMicroserviceApplication.Interfaces;
+using SalesMicroserviceApplication.Services;
+using SalesMicroserviceDomain.Ports;
+using SalesMicroserviceInfraestructure.Persistence;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using System.Text;
+using Npgsql;
+using System.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,19 +20,10 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowFrontend",
-        policy => policy
-            .WithOrigins("http://localhost:5292")
-            .AllowAnyHeader()
-            .AllowAnyMethod());
-});
-
-builder.Services.AddScoped<IMembershipRepository, MembershipRepository>();
-builder.Services.AddScoped<IMembershipService, MembershipService>();
-builder.Services.AddScoped<IMembershipDetailRepository, MembershipDetailRepository>();
-builder.Services.AddScoped<IMembershipDetailService, MembershipDetailService>();
+builder.Services.AddScoped<IDbConnection>(_ =>
+    new NpgsqlConnection(builder.Configuration.GetConnectionString("SalesMicroserviceDB")));
+builder.Services.AddScoped<ISaleRepository, SaleRepository>();
+builder.Services.AddScoped<ISaleService, SaleService>();
 
 var jwtKey = builder.Configuration["Jwt:Key"] ?? throw new InvalidOperationException("Jwt:Key missing");
 var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
@@ -63,8 +56,6 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
-app.UseCors("AllowFrontend");
 
 app.UseAuthentication();
 app.UseAuthorization();

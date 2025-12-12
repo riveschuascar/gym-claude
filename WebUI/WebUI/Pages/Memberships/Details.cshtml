@@ -1,0 +1,153 @@
+@page "{id:int}"
+@model WebUI.Pages.Memberships.DetailsModel
+
+@{
+    ViewData["Title"] = "Detalle de membresia";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h1 class="mb-0">@ViewData["Title"]</h1>
+            <p class="text-muted mb-0">Asigna disciplinas a la membresia seleccionada.</p>
+        </div>
+        <a asp-page="Index" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Volver
+        </a>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (Model.Membership != null)
+    {
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start flex-wrap">
+                    <div>
+                        <h4 class="card-title mb-1">@Model.Membership.Name</h4>
+                        <p class="text-muted mb-2">@Model.Membership.Description</p>
+                        <div class="small text-secondary">
+                            <span class="me-3">
+                                <i class="fas fa-calendar-alt"></i> Sesiones mensuales: @Model.Membership.MonthlySessions
+                            </span>
+                            <span>
+                                <i class="fas fa-toggle-on"></i> @(Model.Membership.IsActive ? "Activa" : "Inactiva")
+                            </span>
+                        </div>
+                    </div>
+                    <div class="text-end">
+                        <div class="display-6 fw-bold text-primary mb-1">
+                            @((Model.Membership.Price ?? 0).ToString("N2")) Bs
+                        </div>
+                        <div class="text-muted small">
+                            Creada: @(Model.Membership.CreatedAt?.ToLocalTime().ToString("dd/MM/yyyy HH:mm") ?? "-")
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <div class="row">
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                    <span><i class="fas fa-list-check me-2"></i>Disciplinas asignadas</span>
+                </div>
+                <div class="card-body">
+                    @if (!Model.AssignedDisciplines.Any())
+                    {
+                        <div class="text-muted">Aun no hay disciplinas asignadas.</div>
+                    }
+                    else
+                    {
+                        <div class="table-responsive">
+                            <table class="table align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>Nombre</th>
+                                        <th>Horario</th>
+                                        <th class="text-end">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var d in Model.AssignedDisciplines)
+                                    {
+                                        <tr>
+                                            <td>@d.Name</td>
+                                            <td>
+                                                @if (d.StartTime.HasValue && d.EndTime.HasValue)
+                                                {
+                                                    @($"{d.StartTime:hh\\:mm} - {d.EndTime:hh\\:mm}")
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">Sin horario</span>
+                                                }
+                                            </td>
+                                            <td class="text-end">
+                                                <form method="post" asp-page-handler="Remove" asp-route-id="@Model.Id" asp-route-disciplineId="@d.Id" class="d-inline">
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                        <i class="fas fa-times"></i> Quitar
+                                                    </button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-primary text-white">
+                    <i class="fas fa-plus me-2"></i>Agregar disciplina
+                </div>
+                <div class="card-body">
+                    @if (!Model.AvailableDisciplines.Any())
+                    {
+                        <div class="alert alert-info mb-0">
+                            No hay disciplinas disponibles para asignar.
+                        </div>
+                    }
+                    else
+                    {
+                        <form method="post" asp-page-handler="Add">
+                            <input type="hidden" asp-for="Id" />
+                            <div class="mb-3">
+                                <label class="form-label">Disciplina</label>
+                                <select class="form-select" asp-for="SelectedDisciplineId">
+                                    <option value="">-- Selecciona una disciplina --</option>
+                                    @foreach (var d in Model.AvailableDisciplines)
+                                    {
+                                        <option value="@d.Id">@d.Name</option>
+                                    }
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Asignar
+                            </button>
+                        </form>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

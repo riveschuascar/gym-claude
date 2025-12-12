@@ -59,12 +59,14 @@ CREATE INDEX idx_discipline_name      ON public.discipline(name);
 INSERT INTO public.discipline
     (name, id_user, start_time, end_time, created_by)
 VALUES
-    ('Zumba',      1, '08:00', '09:30', 'system'),
-    ('Crossfit1',  2, '09:00', '10:30', 'system'),
-    ('YogaFit99',  3, '17:00', '18:00', 'system'),
-    ('Aerobicos',  4, '10:00', '11:00', 'system'),
-    ('BoxeoPro',   5, '18:00', '19:00', 'system'),
-    ('Pilates',    6, '15:00', '16:30', 'system');
+    ('Funcional AM',     1, '07:00', '08:30', 'system'),
+    ('Spinning After',   2, '18:00', '19:00', 'system'),
+    ('Yoga Flow',        3, '17:00', '18:00', 'system'),
+    ('CrossFit Base',    4, '19:00', '20:30', 'system'),
+    ('Pilates Core',     5, '09:00', '10:00', 'system'),
+    ('Boxeo Tecnico',    6, '20:30', '21:30', 'system'),
+    ('Zumba Cardio',     7, '10:30', '11:30', 'system'),
+    ('HIIT Express',     8, '12:30', '13:30', 'system');
 
 COMMIT;
 

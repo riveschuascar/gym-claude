@@ -32,7 +32,7 @@ INSERT INTO users.user
 (name, FirstLastname, SecondLastname, DateOfBirth, Ci, UserRole, HireDate, MonthlySalary, Specialization, Password, Email, MustChangePassword, created_by)
 VALUES
 ('Juan', 'Perez', 'Quispe', '2000-07-14', '12345678', 'Instructor', '2025-09-30', 2000, 'Body Combat', encode(digest('instructor', 'sha256'), 'hex'), 'instructor@gmail.com', true, 'system'),
-('Elad', 'Minist', 'Trador', '2000-12-24', '99999999', 'Admin', '2025-09-30', 2500, 'Administrar Sistema', encode(digest('admin', 'sha256'), 'hex'), 'admin@gmail.com', true, 'system'),
+('Elad', 'Minist', 'Trador', '2000-12-24', '99999999', 'Admin', '2025-09-30', 2500, 'Administrar Sistema', encode(digest('Admin123!', 'sha256'), 'hex'), 'admin@gmail.com', true, 'system'),
 ('María', 'Condori', 'Mamani', '1995-03-22', '87654321', 'Instructor', '2025-10-15', 2100, 'Yoga', encode(digest('yoga2025', 'sha256'), 'hex'), 'maria.condori@gmail.com', true, 'system'),
 ('Carlos', 'Ticona', 'Flores', '1998-11-08', '45678912', 'Instructor', '2025-10-01', 2000, 'CrossFit', encode(digest('crossfit123', 'sha256'), 'hex'), 'carlos.ticona@gmail.com', true, 'system'),
 ('Ana', 'Vargas', 'Choque', '1992-05-17', '78945612', 'Instructor', '2025-09-25', 2200, 'Pilates', encode(digest('pilates456', 'sha256'), 'hex'), 'ana.vargas@gmail.com', true, 'system'),
