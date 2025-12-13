@@ -4,199 +4,214 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using WebUI.DTO;
 
-namespace WebUI.Pages.Sales
+namespace WebUI.Pages.Sales;
+
+public class CreateModel : PageModel
 {
-    public class CreateModel : PageModel
+    private readonly HttpClient _salesClient;
+    private readonly HttpClient _clientApi;
+    private readonly HttpClient _disciplineApi;
+
+    public List<ClientDto> Clients { get; set; } = new();
+    public List<DisciplineDTO> Disciplines { get; set; } = new();
+
+    [BindProperty]
+    public SaleInput Input { get; set; } = new();
+
+    [BindProperty]
+    public string CorrelationId { get; set; } = Guid.NewGuid().ToString();
+
+    [BindProperty]
+    public string OperationId { get; set; } = Guid.NewGuid().ToString();
+
+    [BindProperty(SupportsGet = true)]
+    public string? ClientSearch { get; set; }
+
+    [BindProperty(SupportsGet = true)]
+    public string? DisciplineSearch { get; set; }
+
+    public CreateModel(IHttpClientFactory factory)
     {
-        private readonly HttpClient _salesClient;
-        private readonly HttpClient _clientApi;
-        private readonly HttpClient _membershipApi;
+        _salesClient = factory.CreateClient("SalesAPI");
+        _clientApi = factory.CreateClient("ClientAPI");
+        _disciplineApi = factory.CreateClient("Disciplines");
+    }
 
-        public List<ClientDto> Clients { get; set; } = new();
-        public List<MembershipDTO> Memberships { get; set; } = new();
+    public async Task<IActionResult> OnGetAsync()
+    {
+        await LoadLookupsAsync();
+        Input.SaleDate = DateTime.Today;
+        EnsureCorrelation();
+        return Page();
+    }
 
-        [BindProperty]
-        public SaleInput Input { get; set; } = new();
+    public async Task<IActionResult> OnPostAsync()
+    {
+        await LoadLookupsAsync();
+        EnsureCorrelation();
 
-        [BindProperty]
-        public string CorrelationId { get; set; } = Guid.NewGuid().ToString();
-
-        [BindProperty]
-        public string OperationId { get; set; } = Guid.NewGuid().ToString();
-
-        [BindProperty(SupportsGet = true)]
-        public string? ClientSearch { get; set; }
-
-        [BindProperty(SupportsGet = true)]
-        public string? MembershipSearch { get; set; }
-
-        public CreateModel(IHttpClientFactory factory)
+        if (!ModelState.IsValid)
         {
-            _salesClient = factory.CreateClient("SalesAPI");
-            _clientApi = factory.CreateClient("ClientAPI");
-            _membershipApi = factory.CreateClient("Memberships");
-        }
-
-        public async Task<IActionResult> OnGetAsync()
-        {
-            await LoadLookupsAsync();
-            Input.SaleDate = DateTime.Today;
-            EnsureCorrelation();
+            TempData["ErrorMessage"] = "Revisa los datos ingresados.";
             return Page();
         }
 
-        public async Task<IActionResult> OnPostAsync()
+        // Si no se digitó monto, calcula el total desde los detalles (disciplinas)
+        // If details provided, calculate total from details; otherwise leave as provided
+        if (Input.Details != null && Input.Details.Any())
         {
-            await LoadLookupsAsync();
-            EnsureCorrelation();
-
-            if (!ModelState.IsValid)
-            {
-                TempData["ErrorMessage"] = "Revisa los datos ingresados.";
-                return Page();
-            }
-
-            // Si no se digitó monto, toma el precio de la membresía
-            if (Input.TotalAmount <= 0)
-            {
-                var membership = Memberships.FirstOrDefault(m => m.Id == Input.MembershipId);
-                if (membership?.Price is decimal price && price > 0)
-                {
-                    Input.TotalAmount = price;
-                }
-            }
-
-            try
-            {
-                var ctx = new
-                {
-                    correlationId = CorrelationId,
-                    operationId = OperationId
-                };
-
-                var payload = new
-                {
-                    clientId = Input.ClientId,
-                    membershipId = Input.MembershipId,
-                    startDate = Input.SaleDate,
-                    endDate = Input.SaleDate,
-                    saleDate = Input.SaleDate,
-                    totalAmount = Input.TotalAmount,
-                    paymentMethod = Input.PaymentMethod,
-                    taxId = Input.TaxId,
-                    businessName = Input.BusinessName,
-                    notes = Input.Notes
-                };
-
-                using var request = new HttpRequestMessage(HttpMethod.Post, "/api/Sales")
-                {
-                    Content = JsonContent.Create(payload)
-                };
-                request.Headers.TryAddWithoutValidation("X-Correlation-Id", ctx.correlationId);
-                request.Headers.TryAddWithoutValidation("X-Operation-Id", ctx.operationId);
-
-                var resp = await _salesClient.SendAsync(request);
-
-                if (resp.IsSuccessStatusCode)
-                {
-                    TempData["SuccessMessage"] = "Venta registrada correctamente.";
-                    return RedirectToPage("Index");
-                }
-
-                TempData["ErrorMessage"] = "No se pudo registrar la venta.";
-                return Page();
-            }
-            catch (Exception ex)
-            {
-                TempData["ErrorMessage"] = "Error al conectar con el microservicio de ventas.";
-                Console.WriteLine("Error al crear venta: " + ex.Message);
-                return Page();
-            }
+            Input.TotalAmount = Input.Details.Sum(d => d.Total);
         }
 
-        private async Task LoadLookupsAsync()
+        try
         {
-            try
+            var ctx = new
             {
-                Clients = await _clientApi.GetFromJsonAsync<List<ClientDto>>("/api/Client") ?? new List<ClientDto>();
-            }
-            catch
+                correlationId = CorrelationId,
+                operationId = OperationId
+            };
+
+            var payload = new
             {
-                Clients = new List<ClientDto>();
+                clientId = Input.ClientId,
+                saleDate = Input.SaleDate,
+                totalAmount = Input.TotalAmount,
+                nit = Input.TaxId,
+                details = Input.Details?.Select(d => new
+                {
+                    disciplineId = d.DisciplineId,
+                    qty = d.Qty,
+                    price = d.Price,
+                    total = d.Total,
+                    startDate = d.StartDate,
+                    endDate = d.EndDate
+                })
+            };
+
+            using var request = new HttpRequestMessage(HttpMethod.Post, "/api/Sales")
+            {
+                Content = JsonContent.Create(payload)
+            };
+            request.Headers.TryAddWithoutValidation("X-Correlation-Id", ctx.correlationId);
+            request.Headers.TryAddWithoutValidation("X-Operation-Id", ctx.operationId);
+
+            var resp = await _salesClient.SendAsync(request);
+            var respBody = await resp.Content.ReadAsStringAsync();
+
+            if (resp.IsSuccessStatusCode)
+            {
+                TempData["SuccessMessage"] = "Venta registrada correctamente.";
+                return RedirectToPage("Index");
             }
 
-            try
-            {
-                Memberships = await _membershipApi.GetFromJsonAsync<List<MembershipDTO>>("/api/Memberships") ?? new List<MembershipDTO>();
-            }
-            catch
-            {
-                Memberships = new List<MembershipDTO>();
-            }
-
-            ApplyFilters();
+            Console.WriteLine($"Sales API returned {(int)resp.StatusCode} {resp.ReasonPhrase}. Body: {respBody}");
+            TempData["ErrorMessage"] = $"No se pudo registrar la venta: {(int)resp.StatusCode} {resp.ReasonPhrase} - {respBody}";
+            return Page();
         }
-
-        private void ApplyFilters()
+        catch (Exception ex)
         {
-            if (!string.IsNullOrWhiteSpace(ClientSearch))
-            {
-                var term = ClientSearch.Trim().ToLowerInvariant();
-                Clients = Clients
-                    .Where(c =>
-                        $"{c.Name} {c.FirstLastname} {c.SecondLastname}".ToLower().Contains(term)
-                        || (c.Ci ?? string.Empty).ToLower().Contains(term))
-                    .ToList();
-            }
-
-            if (!string.IsNullOrWhiteSpace(MembershipSearch))
-            {
-                var term = MembershipSearch.Trim().ToLowerInvariant();
-                Memberships = Memberships
-                    .Where(m =>
-                        (m.Name ?? string.Empty).ToLower().Contains(term)
-                        || (m.Description ?? string.Empty).ToLower().Contains(term))
-                    .ToList();
-            }
-        }
-
-        private void EnsureCorrelation()
-        {
-            if (string.IsNullOrWhiteSpace(CorrelationId))
-                CorrelationId = Guid.NewGuid().ToString();
-
-            if (string.IsNullOrWhiteSpace(OperationId))
-                OperationId = CorrelationId;
+            TempData["ErrorMessage"] = "Error al conectar con el microservicio de ventas.";
+            Console.WriteLine("Error al crear venta: " + ex.Message);
+            return Page();
         }
     }
 
-    public class SaleInput
+    private async Task LoadLookupsAsync()
     {
-        [Required(ErrorMessage = "El cliente es obligatorio.")]
-        [Range(1, int.MaxValue, ErrorMessage = "Seleccione un cliente.")]
-        public int ClientId { get; set; }
+        try
+        {
+            Clients = await _clientApi.GetFromJsonAsync<List<ClientDto>>("/api/Client") ?? new List<ClientDto>();
+        }
+        catch
+        {
+            Clients = new List<ClientDto>();
+        }
 
-        [Required(ErrorMessage = "La membresía es obligatoria.")]
-        [Range(1, int.MaxValue, ErrorMessage = "Seleccione una membresía.")]
-        public int MembershipId { get; set; }
+        try
+        {
+            Disciplines = await _discipline_api_GetAll();
+        }
+        catch
+        {
+            Disciplines = new List<DisciplineDTO>();
+        }
 
-        [Required(ErrorMessage = "La fecha de venta es obligatoria.")]
-        [DataType(DataType.Date)]
-        public DateTime SaleDate { get; set; }
+        ApplyFilters();
+    }
 
-        [Required(ErrorMessage = "Seleccione un método de pago.")]
-        public string PaymentMethod { get; set; } = string.Empty;
+    private void ApplyFilters()
+    {
+        if (!string.IsNullOrWhiteSpace(ClientSearch))
+        {
+            var term = ClientSearch.Trim().ToLowerInvariant();
+            Clients = Clients
+                .Where(c =>
+                    $"{c.Name} {c.FirstLastname} {c.SecondLastname}".ToLower().Contains(term)
+                    || (c.Ci ?? string.Empty).ToLower().Contains(term))
+                .ToList();
+        }
 
-        [Range(0.01, double.MaxValue, ErrorMessage = "El monto debe ser mayor a cero.")]
-        public decimal TotalAmount { get; set; }
+        if (!string.IsNullOrWhiteSpace(DisciplineSearch))
+        {
+            var term = DisciplineSearch.Trim().ToLowerInvariant();
+            Disciplines = Disciplines
+                .Where(m =>
+                    (m.Name ?? string.Empty).ToLower().Contains(term)
+                    || (m.Name ?? string.Empty).ToLower().Contains(term))
+                .ToList();
+        }
+    }
 
-        [StringLength(50, ErrorMessage = "El NIT/CI no puede exceder 50 caracteres.")]
-        public string? TaxId { get; set; }
+    private void EnsureCorrelation()
+    {
+        if (string.IsNullOrWhiteSpace(CorrelationId))
+            CorrelationId = Guid.NewGuid().ToString();
 
-        [StringLength(200, ErrorMessage = "La razón social no puede exceder 200 caracteres.")]
-        public string? BusinessName { get; set; }
+        if (string.IsNullOrWhiteSpace(OperationId))
+            OperationId = CorrelationId;
+    }
 
-        [StringLength(500, ErrorMessage = "Las notas no pueden exceder 500 caracteres.")]
-        public string? Notes { get; set; }
+    private async Task<List<DisciplineDTO>> _discipline_api_GetAll()
+    {
+        try
+        {
+            return await _disciplineApi.GetFromJsonAsync<List<DisciplineDTO>>("/api/Disciplines") ?? new List<DisciplineDTO>();
+        }
+        catch
+        {
+            return new List<DisciplineDTO>();
+        }
     }
 }
+
+public class SaleInput
+{
+    [Required(ErrorMessage = "El cliente es obligatorio.")]
+    [Range(1, int.MaxValue, ErrorMessage = "Seleccione un cliente.")]
+    public int ClientId { get; set; }
+
+    public List<SaleDetailInput>? Details { get; set; }
+
+    [Required(ErrorMessage = "La fecha de venta es obligatoria.")]
+    [DataType(DataType.Date)]
+    public DateTime SaleDate { get; set; }
+
+
+    [Range(0.01, double.MaxValue, ErrorMessage = "El monto debe ser mayor a cero.")]
+    public decimal TotalAmount { get; set; }
+
+    [StringLength(50, ErrorMessage = "El NIT/CI no puede exceder 50 caracteres.")]
+    public string? TaxId { get; set; }
+}
+
+public class SaleDetailInput
+{
+    public int? Id { get; set; }
+    public int DisciplineId { get; set; }
+    public int Qty { get; set; } = 1;
+    public decimal Price { get; set; }
+    public decimal Total { get; set; }
+    public DateTime? StartDate { get; set; }
+    public DateTime? EndDate { get; set; }
+}
+

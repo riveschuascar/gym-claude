@@ -126,7 +126,7 @@ namespace SalesMicroserviceApplication.Services
             try
             {
                 var client = _httpFactory.CreateClient("Clients");
-                var response = await client.GetAsync($"/api/clients/{clientId}");
+                var response = await client.GetAsync($"/api/Client/{clientId}");
                 if (response.StatusCode == HttpStatusCode.NotFound)
                     return Result.Failure("El cliente no existe en el microservicio de clientes.");
 
@@ -150,7 +150,7 @@ namespace SalesMicroserviceApplication.Services
             try
             {
                 var client = _httpFactory.CreateClient("Disciplines");
-                var response = await client.GetAsync($"/api/disciplines/{disciplineId}");
+                var response = await client.GetAsync($"/api/Disciplines/{disciplineId}");
                 if (response.StatusCode == HttpStatusCode.NotFound)
                     return Result.Failure("La disciplina no existe en el microservicio de disciplinas.");
 

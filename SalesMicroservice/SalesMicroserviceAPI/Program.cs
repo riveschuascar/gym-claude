@@ -26,7 +26,7 @@ builder.Services.AddTransient<PropagationDelegatingHandler>();
 
 var httpTimeout = builder.Configuration.GetValue<int?>("ExternalApis:TimeoutSeconds") ?? 5;
 var clientApiBase = builder.Configuration["ExternalApis:Client"] ?? "http://localhost:5135";
-var disciplineApiBase = builder.Configuration["ExternalApis:Discipline"] ?? builder.Configuration["ExternalApis:Membership"] ?? "http://localhost:5292";
+var disciplineApiBase = builder.Configuration["ExternalApis:Discipline"] ?? builder.Configuration["ExternalApis:Membership"] ?? "http://localhost:5098";
 
 builder.Services.AddHttpClient("Clients", client =>
 {

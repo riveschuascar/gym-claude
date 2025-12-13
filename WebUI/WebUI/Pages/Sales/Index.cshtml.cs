@@ -11,7 +11,7 @@ namespace WebUI.Pages.Sales
     {
         private readonly HttpClient _salesClient;
         private readonly HttpClient _clientApi;
-        private readonly HttpClient _membershipApi;
+        private readonly HttpClient _disciplineApi;
 
         public List<SaleRow> Sales { get; set; } = new();
         [BindProperty(SupportsGet = true)]
@@ -21,19 +21,17 @@ namespace WebUI.Pages.Sales
         {
             _salesClient = factory.CreateClient("SalesAPI");
             _clientApi = factory.CreateClient("ClientAPI");
-            _membershipApi = factory.CreateClient("Memberships");
+            _disciplineApi = factory.CreateClient("Disciplines");
         }
 
         public class SaleRow
         {
             public int Id { get; set; }
             public string ClientName { get; set; } = string.Empty;
-            public string MembershipName { get; set; } = string.Empty;
+            public string Disciplines { get; set; } = string.Empty;
             public decimal Total { get; set; }
-            public string Payment { get; set; } = string.Empty;
             public DateTime SaleDate { get; set; }
-            public string? TaxId { get; set; }
-            public string? Notes { get; set; }
+            public string? Nit { get; set; }
         }
 
         public async Task<IActionResult> OnGetAsync()
@@ -42,10 +40,10 @@ namespace WebUI.Pages.Sales
             {
                 var sales = await _salesClient.GetFromJsonAsync<List<SaleDTO>>("/api/Sales") ?? new List<SaleDTO>();
                 var clients = await _clientApi.GetFromJsonAsync<List<ClientDto>>("/api/Client") ?? new List<ClientDto>();
-                var memberships = await _membershipApi.GetFromJsonAsync<List<MembershipDTO>>("/api/Memberships") ?? new List<MembershipDTO>();
+                var disciplines = await _disciplineApi.GetFromJsonAsync<List<DisciplineDTO>>("/api/Disciplines") ?? new List<DisciplineDTO>();
 
                 var clientLookup = clients.ToDictionary(c => c.Id, c => $"{c.Name} {c.FirstLastname} {c.SecondLastname}".Trim());
-                var membershipLookup = memberships.ToDictionary(m => (int)(m.Id ?? 0), m => m.Name ?? "Membresía");
+                var disciplineLookup = disciplines.ToDictionary(d => (int)d.Id, d => d.Name ?? "Disciplina");
 
                 var filtered = sales.Where(s => s.IsActive);
 
@@ -56,12 +54,12 @@ namespace WebUI.Pages.Sales
                     {
                         var clientName = clientLookup.TryGetValue(s.ClientId, out var cn) ? cn : string.Empty;
                         var clientCi = clients.FirstOrDefault(c => c.Id == s.ClientId)?.Ci ?? string.Empty;
-                        var taxId = s.TaxId ?? string.Empty;
-                        var membershipName = membershipLookup.TryGetValue(s.MembershipId, out var mn) ? mn : string.Empty;
-                        return clientName.ToLower().Contains(term)
-                               || clientCi.ToLower().Contains(term)
-                               || taxId.ToLower().Contains(term)
-                               || membershipName.ToLower().Contains(term);
+                        var taxId = s.Nit ?? string.Empty;
+                        var disciplineNames = s.Details?.Select(d => disciplineLookup.TryGetValue(d.DisciplineId, out var dn) ? dn : ("Disciplina #" + d.DisciplineId)).ToArray() ?? Array.Empty<string>();
+                            return clientName.ToLower().Contains(term)
+                                   || clientCi.ToLower().Contains(term)
+                                   || taxId.ToLower().Contains(term)
+                                   || string.Join(" ", disciplineNames).ToLower().Contains(term);
                     });
                 }
 
@@ -71,12 +69,12 @@ namespace WebUI.Pages.Sales
                     {
                         Id = s.Id ?? 0,
                         ClientName = clientLookup.TryGetValue(s.ClientId, out var cn) ? cn : $"Cliente #{s.ClientId}",
-                        MembershipName = membershipLookup.TryGetValue(s.MembershipId, out var mn) ? mn : $"Membresía #{s.MembershipId}",
+                        Disciplines = s.Details != null && s.Details.Any()
+                            ? string.Join(", ", s.Details.Select(d => disciplineLookup.TryGetValue(d.DisciplineId, out var dn) ? dn : ("Disciplina #" + d.DisciplineId)))
+                            : "-",
                         Total = s.TotalAmount,
-                        Payment = s.PaymentMethod,
-                        SaleDate = s.SaleDate == default ? s.StartDate : s.SaleDate,
-                        TaxId = s.TaxId,
-                        Notes = s.Notes
+                        SaleDate = s.SaleDate,
+                        Nit = s.Nit
                     })
                     .OrderByDescending(s => s.SaleDate)
                     .ToList();
