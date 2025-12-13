@@ -1,9 +1,1 @@
-using SalesMicroserviceDomain.Shared;
-
-namespace SalesMicroserviceApplication.Interfaces
-{
-    public interface IMembershipApi
-    {
-        Task<Result> EnsureExists(int membershipId, CancellationToken cancellationToken = default);
-    }
-}
+// Removed: membership wrapper interface is no longer used; HttpClientFactory is used instead.

@@ -5,6 +5,9 @@ using SalesMicroserviceDomain.Ports;
 using SalesMicroserviceDomain.Shared;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace SalesMicroserviceInfraestructure.Persistence
 {
@@ -25,21 +28,39 @@ namespace SalesMicroserviceInfraestructure.Persistence
         public async Task<Result<IEnumerable<Sale>>> GetAll()
         {
             const string query = @"
-                SELECT id, client_id AS ClientId, membership_id AS MembershipId,
-                       start_date AS StartDate, end_date AS EndDate, sale_date AS SaleDate,
-                       total_amount AS TotalAmount, payment_method AS PaymentMethod,
-                       tax_id AS TaxId, business_name AS BusinessName,
-                       notes AS Notes, created_at AS CreatedAt, last_modification AS LastModification,
-                       is_active AS IsActive, created_by AS CreatedBy, modified_by AS ModifiedBy
-                  FROM membership_sale
-                 WHERE is_active = true
-                 ORDER BY created_at DESC;";
+                SELECT s.id, s.client_id AS ClientId, s.sale_date AS SaleDate,
+                       s.total_amount AS TotalAmount, s.payment_method AS PaymentMethod,
+                       s.tax_id AS TaxId, s.business_name AS BusinessName,
+                       s.notes AS Notes, s.created_at AS CreatedAt, s.last_modification AS LastModification,
+                       s.is_active AS IsActive, s.created_by AS CreatedBy, s.modified_by AS ModifiedBy,
+                       sd.id AS SaleDetailId, sd.sale_id AS SaleId, sd.discipline_id AS DisciplineId,
+                       sd.qty AS Qty, sd.price AS Price, sd.total AS Total, sd.start_date AS StartDate, sd.end_date AS EndDate
+                  FROM sales s
+             LEFT JOIN sale_details sd ON sd.sale_id = s.id
+                 WHERE s.is_active = true
+                 ORDER BY s.created_at DESC;";
             try
             {
                 using var conn = CreateConnection();
                 await conn.OpenAsync();
-                var data = await conn.QueryAsync<Sale>(query);
-                return Result<IEnumerable<Sale>>.Success(data);
+                var saleDict = new Dictionary<int, Sale>();
+                var data = await conn.QueryAsync<Sale, SaleDetail, Sale>(query,
+                    (s, d) =>
+                    {
+                        if (!saleDict.TryGetValue(s.Id ?? 0, out var sale))
+                        {
+                            sale = s;
+                            sale.Details = new List<SaleDetail>();
+                            saleDict.Add(s.Id ?? 0, sale);
+                        }
+
+                        if (d != null && d.Id.HasValue)
+                            sale.Details.Add(d);
+
+                        return sale;
+                    }, splitOn: "SaleDetailId");
+
+                return Result<IEnumerable<Sale>>.Success(saleDict.Values);
             }
             catch (Exception ex)
             {
@@ -51,20 +72,37 @@ namespace SalesMicroserviceInfraestructure.Persistence
         public async Task<Result<Sale>> GetById(int id)
         {
             const string query = @"
-                SELECT id, client_id AS ClientId, membership_id AS MembershipId,
-                       start_date AS StartDate, end_date AS EndDate, sale_date AS SaleDate,
-                       total_amount AS TotalAmount, payment_method AS PaymentMethod,
-                       tax_id AS TaxId, business_name AS BusinessName,
-                       notes AS Notes, created_at AS CreatedAt, last_modification AS LastModification,
-                       is_active AS IsActive, created_by AS CreatedBy, modified_by AS ModifiedBy
-                  FROM membership_sale
-                 WHERE id = @Id;";
+                SELECT s.id, s.client_id AS ClientId, s.sale_date AS SaleDate,
+                       s.total_amount AS TotalAmount, s.payment_method AS PaymentMethod,
+                       s.tax_id AS TaxId, s.business_name AS BusinessName,
+                       s.notes AS Notes, s.created_at AS CreatedAt, s.last_modification AS LastModification,
+                       s.is_active AS IsActive, s.created_by AS CreatedBy, s.modified_by AS ModifiedBy,
+                       sd.id AS SaleDetailId, sd.sale_id AS SaleId, sd.discipline_id AS DisciplineId,
+                       sd.qty AS Qty, sd.price AS Price, sd.total AS Total, sd.start_date AS StartDate, sd.end_date AS EndDate
+                  FROM sales s
+             LEFT JOIN sale_details sd ON sd.sale_id = s.id
+                 WHERE s.id = @Id;";
 
             try
             {
                 using var conn = CreateConnection();
                 await conn.OpenAsync();
-                var sale = await conn.QuerySingleOrDefaultAsync<Sale>(query, new { Id = id });
+                var saleDict = new Dictionary<int, Sale>();
+                await conn.QueryAsync<Sale, SaleDetail, Sale>(query,
+                    (s, d) =>
+                    {
+                        if (!saleDict.TryGetValue(s.Id ?? 0, out var sale))
+                        {
+                            sale = s;
+                            sale.Details = new List<SaleDetail>();
+                            saleDict.Add(s.Id ?? 0, sale);
+                        }
+                        if (d != null && d.Id.HasValue)
+                            sale.Details.Add(d);
+                        return sale;
+                    }, new { Id = id }, splitOn: "SaleDetailId");
+
+                var sale = saleDict.Values.FirstOrDefault();
                 return sale == null
                     ? Result<Sale>.Failure("Venta no encontrada.")
                     : Result<Sale>.Success(sale);
@@ -79,12 +117,10 @@ namespace SalesMicroserviceInfraestructure.Persistence
         public async Task<Result<Sale>> Create(Sale sale, string? userEmail = null)
         {
             const string query = @"
-                INSERT INTO membership_sale
-                    (client_id, membership_id, start_date, end_date, sale_date, total_amount, payment_method, tax_id, business_name, notes,
-                     created_at, last_modification, is_active, created_by)
+                INSERT INTO sales
+                    (client_id, sale_date, total_amount, payment_method, tax_id, business_name, notes, created_at, last_modification, is_active, created_by)
                 VALUES
-                    (@ClientId, @MembershipId, @StartDate, @EndDate, @SaleDate, @TotalAmount, @PaymentMethod, @TaxId, @BusinessName, @Notes,
-                     @CreatedAt, @LastModification, @IsActive, @CreatedBy)
+                    (@ClientId, @SaleDate, @TotalAmount, @PaymentMethod, @TaxId, @BusinessName, @Notes, @CreatedAt, @LastModification, @IsActive, @CreatedBy)
                 RETURNING id;";
 
             try
@@ -94,9 +130,23 @@ namespace SalesMicroserviceInfraestructure.Persistence
 
                 sale.CreatedBy = userEmail;
 
-                var id = await conn.ExecuteScalarAsync<int>(query, sale);
+                using var tran = conn.BeginTransaction();
+                var id = await conn.ExecuteScalarAsync<int>(query, sale, tran);
                 sale.Id = id;
 
+                // insert sale details
+                if (sale.Details != null && sale.Details.Any())
+                {
+                    foreach (var d in sale.Details)
+                    {
+                        d.SaleId = id;
+                        const string detailQuery = @"INSERT INTO sale_details (sale_id, discipline_id, qty, price, total, start_date, end_date)
+                                                      VALUES (@SaleId, @DisciplineId, @Qty, @Price, @Total, @StartDate, @EndDate);";
+                            await conn.ExecuteAsync(detailQuery, d, tran);
+                    }
+                }
+
+                await tran.CommitAsync();
                 return Result<Sale>.Success(sale);
             }
             catch (Exception ex)
@@ -109,11 +159,9 @@ namespace SalesMicroserviceInfraestructure.Persistence
         public async Task<Result<Sale>> Update(Sale sale, string? userEmail = null)
         {
             const string query = @"
-                UPDATE membership_sale
+                UPDATE sales
                    SET client_id = @ClientId,
-                       membership_id = @MembershipId,
-                       start_date = @StartDate,
-                       end_date = @EndDate,
+                       sale_date = @SaleDate,
                        total_amount = @TotalAmount,
                        payment_method = @PaymentMethod,
                        tax_id = @TaxId,
@@ -130,10 +178,24 @@ namespace SalesMicroserviceInfraestructure.Persistence
 
                 sale.ModifiedBy = userEmail;
 
-                var affected = await conn.ExecuteAsync(query, sale);
+                using var tran = conn.BeginTransaction();
+                var affected = await conn.ExecuteAsync(query, sale, tran);
                 if (affected == 0)
                     return Result<Sale>.Failure("No se encontro la venta para actualizar.");
-
+                // replace details: delete existing & insert new
+                const string deleteDetails = "DELETE FROM sale_details WHERE sale_id = @SaleId;";
+                await conn.ExecuteAsync(deleteDetails, new { SaleId = sale.Id }, tran);
+                if (sale.Details != null && sale.Details.Any())
+                {
+                    foreach (var d in sale.Details)
+                    {
+                        d.SaleId = sale.Id ?? 0;
+                        const string detailQuery = @"INSERT INTO sale_details (sale_id, discipline_id, qty, price, total, start_date, end_date)
+                                                      VALUES (@SaleId, @DisciplineId, @Qty, @Price, @Total, @StartDate, @EndDate);";
+                        await conn.ExecuteAsync(detailQuery, d, tran);
+                    }
+                }
+                await tran.CommitAsync();
                 return Result<Sale>.Success(sale);
             }
             catch (Exception ex)
@@ -146,7 +208,7 @@ namespace SalesMicroserviceInfraestructure.Persistence
         public async Task<Result> Delete(int id, string? userEmail = null)
         {
             const string query = @"
-                UPDATE membership_sale
+                UPDATE sales
                    SET is_active = false,
                        last_modification = @LastModification,
                        modified_by = @ModifiedBy

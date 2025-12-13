@@ -1,12 +1,12 @@
 using System.Text;
 using SalesMicroserviceApplication.Interfaces;
 using SalesMicroserviceApplication.Services;
-using SalesMicroserviceDomain.Ports;
-using SalesMicroserviceInfraestructure.Clients;
 using SalesMicroserviceInfraestructure.Persistence;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using SalesMicroserviceAPI.Http;
+using System.Net.Http;
 using Microsoft.IdentityModel.Tokens;
+using SalesMicroserviceDomain.Ports;
 using Npgsql;
 using System.Data;
 
@@ -26,24 +26,24 @@ builder.Services.AddTransient<PropagationDelegatingHandler>();
 
 var httpTimeout = builder.Configuration.GetValue<int?>("ExternalApis:TimeoutSeconds") ?? 5;
 var clientApiBase = builder.Configuration["ExternalApis:Client"] ?? "http://localhost:5135";
-var membershipApiBase = builder.Configuration["ExternalApis:Membership"] ?? "http://localhost:5292";
+var disciplineApiBase = builder.Configuration["ExternalApis:Discipline"] ?? builder.Configuration["ExternalApis:Membership"] ?? "http://localhost:5292";
 
-builder.Services.AddHttpClient<IClientApi, ClientApi>(client =>
+builder.Services.AddHttpClient("Clients", client =>
 {
     client.BaseAddress = new Uri(clientApiBase);
     client.Timeout = TimeSpan.FromSeconds(httpTimeout);
 }).AddHttpMessageHandler<PropagationDelegatingHandler>();
 
-builder.Services.AddHttpClient<IMembershipApi, MembershipApi>(client =>
+builder.Services.AddHttpClient("Disciplines", client =>
 {
-    client.BaseAddress = new Uri(membershipApiBase);
+    client.BaseAddress = new Uri(disciplineApiBase);
     client.Timeout = TimeSpan.FromSeconds(httpTimeout);
 }).AddHttpMessageHandler<PropagationDelegatingHandler>();
 
 builder.Services.AddScoped<IDbConnection>(_ =>
     new NpgsqlConnection(builder.Configuration.GetConnectionString("SalesMicroserviceDB")));
 builder.Services.AddScoped<ISaleRepository, SaleRepository>();
-builder.Services.AddScoped<IOutboxRepository, OutboxRepository>();
+// outbox not used for now
 builder.Services.AddScoped<ISaleService, SaleService>();
 
 var jwtKey = builder.Configuration["Jwt:Key"] ?? throw new InvalidOperationException("Jwt:Key missing");

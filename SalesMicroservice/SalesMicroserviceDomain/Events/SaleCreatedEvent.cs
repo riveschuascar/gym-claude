@@ -1,4 +1,7 @@
 using SalesMicroserviceDomain.Entities;
+using System.Collections.Generic;
+using System.Linq;
+using System;
 
 namespace SalesMicroserviceDomain.Events
 {
@@ -6,7 +9,7 @@ namespace SalesMicroserviceDomain.Events
     {
         public int SaleId { get; init; }
         public int ClientId { get; init; }
-        public int MembershipId { get; init; }
+        public List<SaleCreatedEventDetail>? Details { get; init; }
         public DateTime SaleDate { get; init; }
         public decimal TotalAmount { get; init; }
         public string PaymentMethod { get; init; } = string.Empty;
@@ -24,7 +27,15 @@ namespace SalesMicroserviceDomain.Events
             {
                 SaleId = sale.Id ?? 0,
                 ClientId = sale.ClientId,
-                MembershipId = sale.MembershipId,
+                Details = sale.Details?.Select(d => new SaleCreatedEventDetail
+                {
+                    DisciplineId = d.DisciplineId,
+                    Qty = d.Qty,
+                    Price = d.Price,
+                    Total = d.Total,
+                    StartDate = d.StartDate,
+                    EndDate = d.EndDate
+                }).ToList(),
                 SaleDate = sale.SaleDate,
                 TotalAmount = sale.TotalAmount,
                 PaymentMethod = sale.PaymentMethod,
@@ -37,5 +48,15 @@ namespace SalesMicroserviceDomain.Events
                 OperationId = operationId
             };
         }
+    }
+
+    public class SaleCreatedEventDetail
+    {
+        public int DisciplineId { get; init; }
+        public int Qty { get; init; }
+        public decimal Price { get; init; }
+        public decimal Total { get; init; }
+        public DateTime? StartDate { get; init; }
+        public DateTime? EndDate { get; init; }
     }
 }

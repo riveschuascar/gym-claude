@@ -1,5 +1,7 @@
 using SalesMicroserviceDomain.Entities;
 using SalesMicroserviceDomain.Shared;
+using System.Linq;
+using System;
 
 namespace SalesMicroserviceDomain.Validators
 {
@@ -13,14 +15,26 @@ namespace SalesMicroserviceDomain.Validators
             if (sale.ClientId <= 0)
                 return Result<Sale>.Failure("El cliente es obligatorio.");
 
-            if (sale.MembershipId <= 0)
-                return Result<Sale>.Failure("La membresia es obligatoria.");
-
             if (sale.TotalAmount <= 0)
                 return Result<Sale>.Failure("El monto debe ser mayor a cero.");
 
-            if (sale.EndDate < sale.StartDate)
-                return Result<Sale>.Failure("La fecha de fin no puede ser anterior al inicio.");
+            if (sale.Details == null || !sale.Details.Any())
+                return Result<Sale>.Failure("La venta debe contener al menos un detalle con una disciplina.");
+
+            foreach (var d in sale.Details)
+            {
+                if (d.DisciplineId <= 0)
+                    return Result<Sale>.Failure("Cada detalle debe contener una disciplina válida.");
+                if (d.Qty <= 0)
+                    return Result<Sale>.Failure("La cantidad en los detalles debe ser mayor a cero.");
+                if (d.Price <= 0)
+                    return Result<Sale>.Failure("El precio en los detalles debe ser mayor a cero.");
+                if (d.Total <= d.Price * d.Qty - 0.0001m) // small tolerance
+                    return Result<Sale>.Failure("El total en los detalles debe ser igual a precio * cantidad.");
+
+                if (d.StartDate.HasValue && d.EndDate.HasValue && d.EndDate < d.StartDate)
+                    return Result<Sale>.Failure("La fecha de fin del detalle no puede ser anterior al inicio.");
+            }
 
             if (string.IsNullOrWhiteSpace(sale.PaymentMethod))
                 return Result<Sale>.Failure("El metodo de pago es obligatorio.");

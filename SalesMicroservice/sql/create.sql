@@ -1,14 +1,15 @@
 BEGIN;
 
+-- DROP OLD TABLES
 DROP TABLE IF EXISTS outbox_messages;
 DROP TABLE IF EXISTS membership_sale;
+DROP TABLE IF EXISTS sale_details;
+DROP TABLE IF EXISTS sales;
 
-CREATE TABLE membership_sale (
+-- New sales table
+CREATE TABLE sales (
     id SERIAL PRIMARY KEY,
     client_id INTEGER NOT NULL,
-    membership_id INTEGER NOT NULL,
-    start_date DATE NOT NULL,
-    end_date DATE NOT NULL,
     sale_date DATE NOT NULL DEFAULT CURRENT_DATE,
     total_amount NUMERIC(10,2) NOT NULL,
     payment_method VARCHAR(50) NOT NULL,
@@ -20,31 +21,38 @@ CREATE TABLE membership_sale (
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
     created_by VARCHAR(150),
     modified_by VARCHAR(150),
-    CONSTRAINT chk_dates CHECK (end_date >= start_date),
     CONSTRAINT chk_amount CHECK (total_amount > 0)
 );
 
-CREATE INDEX idx_membership_sale_active ON membership_sale(is_active);
-CREATE INDEX idx_membership_sale_client ON membership_sale(client_id);
-CREATE INDEX idx_membership_sale_membership ON membership_sale(membership_id);
+CREATE INDEX idx_sales_active ON sales(is_active);
+CREATE INDEX idx_sales_client ON sales(client_id);
 
-CREATE TABLE outbox_messages (
-    id UUID PRIMARY KEY,
-    message_type VARCHAR(150) NOT NULL,
-    payload JSONB NOT NULL,
-    occurred_on TIMESTAMPTZ NOT NULL,
-    correlation_id VARCHAR(150),
-    operation_id VARCHAR(150)
+-- New sale_details table
+CREATE TABLE sale_details (
+    id SERIAL PRIMARY KEY,
+    sale_id INTEGER NOT NULL REFERENCES sales(id) ON DELETE CASCADE,
+    discipline_id INTEGER NOT NULL,
+    qty INTEGER NOT NULL DEFAULT 1,
+    price NUMERIC(10,2) NOT NULL,
+    total NUMERIC(10,2) NOT NULL,
+    start_date DATE,
+    end_date DATE
 );
 
-CREATE INDEX idx_outbox_messages_pending ON outbox_messages(occurred_on);
+CREATE INDEX idx_sale_details_sale ON sale_details(sale_id);
+CREATE INDEX idx_sale_details_discipline ON sale_details(discipline_id);
 
--- Datos de ejemplo (asume clientes 1..3, membresías 1..5 según seeds)
-INSERT INTO membership_sale
-    (client_id, membership_id, start_date, end_date, sale_date, total_amount, payment_method, tax_id, business_name, notes, created_by)
+-- Example data (assume clients 1..3 and disciplines 1..5)
+INSERT INTO sales (client_id, sale_date, total_amount, payment_method, tax_id, business_name, notes, created_by)
 VALUES
-    (1, 1, current_date, current_date, current_date, 120.00, 'Efectivo',      '12345678', 'Juan Perez', 'Venta presencial', 'system'),
-    (2, 3, current_date, current_date, current_date, 260.00, 'Tarjeta',       '98765432', 'Maria Condori', 'Incluye functional y spinning', 'system'),
-    (3, 5, current_date, current_date, current_date, 95.00,  'Transferencia', '45678912', 'Luis Apaza', 'Tarifa estudiante', 'system');
+    (1, current_date, 120.00, 'Efectivo',      '12345678', 'Juan Perez', 'Venta presencial', 'system'),
+    (2, current_date, 260.00, 'Tarjeta',       '98765432', 'Maria Condori', 'Incluye clases de functional y spinning', 'system'),
+    (3, current_date, 95.00,  'Transferencia', '45678912', 'Luis Apaza', 'Tarifa estudiante', 'system');
+
+INSERT INTO sale_details (sale_id, discipline_id, qty, price, total, start_date, end_date)
+VALUES
+    (1, 1, 1, 120.00, 120.00, current_date, current_date),
+    (2, 3, 2, 130.00, 260.00, current_date, current_date),
+    (3, 5, 1, 95.00, 95.00, current_date, current_date);
 
 COMMIT;
