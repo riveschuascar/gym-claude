@@ -28,7 +28,9 @@
                     <th>Nombre</th>
                     <th>Hora de Inicio</th>
                     <th>Hora de Fin</th>
-                    <th>Duración</th>
+                    <th>Duración Horas</th>
+                    <th>Precio Bs.</th>
+                    <th>Sesiones/Mes</th>
                     <th>Activo</th>
                     <th class="text-center">Acciones</th>
                 </tr>
@@ -47,6 +49,8 @@
                                 ? (d.EndTime.Value - d.StartTime.Value).ToString(@"hh\:mm")
                                 : "-")
                         </td>
+                        <td>@d.Price</td>
+                        <td>@d.MonthlySessions</td>
                         <td>
                             @if (d.IsActive)
                             {

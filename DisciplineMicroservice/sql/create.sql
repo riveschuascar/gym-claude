@@ -62,14 +62,14 @@ CREATE INDEX idx_discipline_name      ON public.discipline(name);
 INSERT INTO public.discipline
     (name, id_user, start_time, end_time, price, monthly_sessions, created_by)
 VALUES
-    ('Funcional AM',     1, '07:00', '08:30', 10.00, 12, 'system'),
-    ('Spinning After',   2, '18:00', '19:00', 15.50, 12, 'system'),
-    ('Yoga Flow',        3, '17:00', '18:00', 8.00, 12, 'system'),
-    ('CrossFit Base',    4, '19:00', '20:30', 18.00, 12, 'system'),
-    ('Pilates Core',     5, '09:00', '10:00', 12.50, 12, 'system'),
-    ('Boxeo Tecnico',    6, '20:30', '21:30', 10.00, 12, 'system'),
-    ('Zumba Cardio',     7, '10:30', '11:30', 9.00, 12, 'system'),
-    ('HIIT Express',     8, '12:30', '13:30', 7.50, 12, 'system');
+    ('Funcional AM',     1, '07:00', '08:30', 100.00, 12, 'system'),
+    ('Spinning After',   2, '18:00', '19:00', 150.50, 12, 'system'),
+    ('Yoga Flow',        3, '17:00', '18:00', 80.00, 12, 'system'),
+    ('CrossFit Base',    4, '19:00', '20:30', 180.00, 12, 'system'),
+    ('Pilates Core',     5, '09:00', '10:00', 120.50, 12, 'system'),
+    ('Boxeo Tecnico',    6, '20:30', '21:30', 100.00, 12, 'system'),
+    ('Zumba Cardio',     7, '10:30', '11:30', 90.00, 12, 'system'),
+    ('HIIT Express',     8, '12:30', '13:30', 70.50, 12, 'system');
 
 COMMIT;
 
