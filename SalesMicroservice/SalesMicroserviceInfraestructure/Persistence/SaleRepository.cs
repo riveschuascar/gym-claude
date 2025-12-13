@@ -29,9 +29,8 @@ namespace SalesMicroserviceInfraestructure.Persistence
         {
             const string query = @"
                 SELECT s.id, s.client_id AS ClientId, s.sale_date AS SaleDate,
-                       s.total_amount AS TotalAmount, s.payment_method AS PaymentMethod,
-                       s.tax_id AS TaxId, s.business_name AS BusinessName,
-                       s.notes AS Notes, s.created_at AS CreatedAt, s.last_modification AS LastModification,
+                       s.total_amount AS TotalAmount, s.nit AS Nit,
+                       s.created_at AS CreatedAt, s.last_modification AS LastModification,
                        s.is_active AS IsActive, s.created_by AS CreatedBy, s.modified_by AS ModifiedBy,
                        sd.id AS SaleDetailId, sd.sale_id AS SaleId, sd.discipline_id AS DisciplineId,
                        sd.qty AS Qty, sd.price AS Price, sd.total AS Total, sd.start_date AS StartDate, sd.end_date AS EndDate
@@ -73,9 +72,8 @@ namespace SalesMicroserviceInfraestructure.Persistence
         {
             const string query = @"
                 SELECT s.id, s.client_id AS ClientId, s.sale_date AS SaleDate,
-                       s.total_amount AS TotalAmount, s.payment_method AS PaymentMethod,
-                       s.tax_id AS TaxId, s.business_name AS BusinessName,
-                       s.notes AS Notes, s.created_at AS CreatedAt, s.last_modification AS LastModification,
+                       s.total_amount AS TotalAmount, s.nit AS Nit,
+                       s.created_at AS CreatedAt, s.last_modification AS LastModification,
                        s.is_active AS IsActive, s.created_by AS CreatedBy, s.modified_by AS ModifiedBy,
                        sd.id AS SaleDetailId, sd.sale_id AS SaleId, sd.discipline_id AS DisciplineId,
                        sd.qty AS Qty, sd.price AS Price, sd.total AS Total, sd.start_date AS StartDate, sd.end_date AS EndDate
@@ -118,9 +116,9 @@ namespace SalesMicroserviceInfraestructure.Persistence
         {
             const string query = @"
                 INSERT INTO sales
-                    (client_id, sale_date, total_amount, payment_method, tax_id, business_name, notes, created_at, last_modification, is_active, created_by)
+                    (client_id, sale_date, total_amount, nit, created_at, last_modification, is_active, created_by)
                 VALUES
-                    (@ClientId, @SaleDate, @TotalAmount, @PaymentMethod, @TaxId, @BusinessName, @Notes, @CreatedAt, @LastModification, @IsActive, @CreatedBy)
+                    (@ClientId, @SaleDate, @TotalAmount, @Nit, @CreatedAt, @LastModification, @IsActive, @CreatedBy)
                 RETURNING id;";
 
             try
@@ -163,10 +161,7 @@ namespace SalesMicroserviceInfraestructure.Persistence
                    SET client_id = @ClientId,
                        sale_date = @SaleDate,
                        total_amount = @TotalAmount,
-                       payment_method = @PaymentMethod,
-                       tax_id = @TaxId,
-                       business_name = @BusinessName,
-                       notes = @Notes,
+                       nit = @Nit,
                        last_modification = @LastModification,
                        modified_by = @ModifiedBy
                  WHERE id = @Id;";

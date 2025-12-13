@@ -10,10 +10,7 @@ namespace SalesMicroserviceDomain.Entities
         public DateTime SaleDate { get; set; }
         public List<SaleDetail>? Details { get; set; }
         public decimal TotalAmount { get; set; }
-        public string PaymentMethod { get; set; } = string.Empty;
-        public string? TaxId { get; set; }
-        public string? BusinessName { get; set; }
-        public string? Notes { get; set; }
+        public string? Nit { get; set; }
         public DateTime? CreatedAt { get; set; }
         public DateTime? LastModification { get; set; }
         public bool IsActive { get; set; } = true;

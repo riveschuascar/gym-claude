@@ -36,14 +36,8 @@ namespace SalesMicroserviceDomain.Validators
                     return Result<Sale>.Failure("La fecha de fin del detalle no puede ser anterior al inicio.");
             }
 
-            if (string.IsNullOrWhiteSpace(sale.PaymentMethod))
-                return Result<Sale>.Failure("El metodo de pago es obligatorio.");
-
-            if (!string.IsNullOrWhiteSpace(sale.TaxId) && sale.TaxId.Length > 50)
-                return Result<Sale>.Failure("El NIT/CI no puede exceder 50 caracteres.");
-
-            if (!string.IsNullOrWhiteSpace(sale.BusinessName) && sale.BusinessName.Length > 200)
-                return Result<Sale>.Failure("La razón social no puede exceder 200 caracteres.");
+            if (!string.IsNullOrWhiteSpace(sale.Nit) && sale.Nit.Length > 50)
+                return Result<Sale>.Failure("El NIT no puede exceder 50 caracteres.");
 
             return Result<Sale>.Success(sale);
         }

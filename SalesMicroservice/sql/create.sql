@@ -12,10 +12,7 @@ CREATE TABLE sales (
     client_id INTEGER NOT NULL,
     sale_date DATE NOT NULL DEFAULT CURRENT_DATE,
     total_amount NUMERIC(10,2) NOT NULL,
-    payment_method VARCHAR(50) NOT NULL,
-    tax_id VARCHAR(50),
-    business_name VARCHAR(200),
-    notes TEXT,
+    nit VARCHAR(50),
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     last_modification TIMESTAMPTZ,
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
@@ -43,11 +40,11 @@ CREATE INDEX idx_sale_details_sale ON sale_details(sale_id);
 CREATE INDEX idx_sale_details_discipline ON sale_details(discipline_id);
 
 -- Example data (assume clients 1..3 and disciplines 1..5)
-INSERT INTO sales (client_id, sale_date, total_amount, payment_method, tax_id, business_name, notes, created_by)
+INSERT INTO sales (client_id, sale_date, total_amount, nit, created_by)
 VALUES
-    (1, current_date, 120.00, 'Efectivo',      '12345678', 'Juan Perez', 'Venta presencial', 'system'),
-    (2, current_date, 260.00, 'Tarjeta',       '98765432', 'Maria Condori', 'Incluye clases de functional y spinning', 'system'),
-    (3, current_date, 95.00,  'Transferencia', '45678912', 'Luis Apaza', 'Tarifa estudiante', 'system');
+    (1, current_date, 120.00, '12345678', 'system'),
+    (2, current_date, 260.00, '98765432', 'system'),
+    (3, current_date, 95.00,  '45678912', 'system');
 
 INSERT INTO sale_details (sale_id, discipline_id, qty, price, total, start_date, end_date)
 VALUES

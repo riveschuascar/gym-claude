@@ -12,10 +12,7 @@ namespace SalesMicroserviceDomain.Events
         public List<SaleCreatedEventDetail>? Details { get; init; }
         public DateTime SaleDate { get; init; }
         public decimal TotalAmount { get; init; }
-        public string PaymentMethod { get; init; } = string.Empty;
-        public string? TaxId { get; init; }
-        public string? BusinessName { get; init; }
-        public string? Notes { get; init; }
+        public string? Nit { get; init; }
         public string? CreatedBy { get; init; }
         public DateTime CreatedAt { get; init; }
         public string? CorrelationId { get; init; }
@@ -38,10 +35,7 @@ namespace SalesMicroserviceDomain.Events
                 }).ToList(),
                 SaleDate = sale.SaleDate,
                 TotalAmount = sale.TotalAmount,
-                PaymentMethod = sale.PaymentMethod,
-                TaxId = sale.TaxId,
-                BusinessName = sale.BusinessName,
-                Notes = sale.Notes,
+                Nit = sale.Nit,
                 CreatedBy = sale.CreatedBy,
                 CreatedAt = sale.CreatedAt ?? DateTime.UtcNow,
                 CorrelationId = correlationId,
