@@ -23,36 +23,31 @@ namespace ReportMicroservice.Application.Services
 
         public async Task<byte[]> GenerateSaleReportAsync(int saleId)
         {
-            // 1. Obtener el Token JWT actual para propagarlo
             var context = _httpContextAccessor.HttpContext;
             string token = context?.Request.Headers["Authorization"];
-            string userEmail = context?.User.FindFirst(ClaimTypes.Email)?.Value ?? "elad@gmail.com";
+            string userEmail = context?.User.FindFirst(ClaimTypes.Email)?.Value ?? "system@gmail.com";
 
             if (string.IsNullOrEmpty(token)) throw new UnauthorizedAccessException("No JWT token found");
 
-            // 2. Obtener datos externos (paralelizar donde sea posible)
-            // Primero la venta para saber quién es el cliente
             var sale = await _externalDataService.GetSaleByIdAsync(saleId, token);
+            var details = sale.Details; 
 
             var clientTask = _externalDataService.GetClientByIdAsync(sale.ClientId, token);
-            var saleDetailsTask = _externalDataService.GetSaleDetailsBySaleIdAsync(saleId, token);
-            var disciplinesTask = _externalDataService.GetAllDisciplinesAsync(token); // Traemos todas para mapear nombres
+            var disciplinesTask = _externalDataService.GetAllDisciplinesAsync(token);
 
-            await Task.WhenAll(clientTask, saleDetailsTask, disciplinesTask);
+            await Task.WhenAll(clientTask, disciplinesTask);
 
             var client = clientTask.Result;
-            var details = saleDetailsTask.Result;
             var disciplines = disciplinesTask.Result;
 
-            // 3. Lógica con LINQ para armar el modelo del reporte
-            // Unimos Detalle Venta con Disciplinas para obtener el nombre
+            // Lógica con LINQ para armar el modelo del reporte
             var reportDetails = (from d in details
                                  join disc in disciplines on d.DisciplineId equals disc.Id
                                  select new SaleReportDetail
                                  {
                                      Quantity = d.Qty,
                                      Description = disc.Name,
-                                     UnitPrice = disc.Price, // Precio base de disciplina (o d.Price si hubo descuento en venta)
+                                     UnitPrice = disc.Price, 
                                      Import = d.Total
                                  }).ToList();
 
@@ -61,14 +56,14 @@ namespace ReportMicroservice.Application.Services
                 SaleId = sale.Id,
                 Date = sale.SaleDate,
                 ClientName = client.FullName,
-                ClientCiNit = client.Ci, // Usamos CI del cliente segun requerimiento
+                ClientCiNit = client.Ci, 
                 Details = reportDetails,
                 TotalAmount = sale.TotalAmount,
                 GeneratedAt = DateTime.Now,
                 GeneratedByEmail = userEmail
             };
 
-            // 4. Usar el Builder para generar el PDF
+            // Usar Builder para generar el PDF
             return _reportBuilder
                 .Reset()
                 .SetReportData(reportData)

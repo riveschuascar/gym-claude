@@ -1,0 +1,56 @@
+@page
+@model WebUI.Pages.Report.IndexModel
+@{
+    ViewData["Title"] = "Generar Reportes";
+}
+
+<div class="container mt-5">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h3 class="card-title mb-0"><i class="bi bi-file-earmark-pdf"></i> Generador de Reportes</h3>
+        </div>
+        <div class="card-body">
+            
+            @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <strong>Error:</strong> @Model.ErrorMessage
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+
+            <div class="row mb-4">
+                <div class="col-md-12">
+                    <p class="text-muted">
+                        Ingrese el ID de la venta para generar el comprobante en formato PDF. 
+                        El sistema se conectará con los microservicios de Ventas, Clientes y Disciplinas para consolidar la información.
+                    </p>
+                </div>
+            </div>
+
+            <form method="post" asp-page-handler="Generate" target="_blank">
+                <div class="row align-items-end">
+                    <div class="col-md-6">
+                        <label for="saleId" class="form-label fw-bold">ID de Venta (Sale ID)</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-hash"></i></span>
+                            <input type="number" class="form-control" id="saleId" asp-for="SaleId" placeholder="Ej. 1" required min="1">
+                        </div>
+                    </div>
+                    <div class="col-md-6 mt-3 mt-md-0">
+                        <button type="submit" class="btn btn-success w-100">
+                            <i class="bi bi-download"></i> Descargar Comprobante PDF
+                        </button>
+                    </div>
+                </div>
+            </form>
+            
+            <hr class="my-4"/>
+            
+            <div class="alert alert-info">
+                <small><i class="bi bi-info-circle"></i> Nota: El reporte incluirá el logo, datos del cliente, detalle de disciplinas y el total, firmado digitalmente por su usuario.</small>
+            </div>
+
+        </div>
+    </div>
+</div>

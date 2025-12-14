@@ -32,7 +32,9 @@ namespace SalesMicroserviceInfraestructure.Persistence
                        s.total_amount AS TotalAmount, s.nit AS Nit,
                        s.created_at AS CreatedAt, s.last_modification AS LastModification,
                        s.is_active AS IsActive, s.created_by AS CreatedBy, s.modified_by AS ModifiedBy,
-                       sd.id AS SaleDetailId, sd.sale_id AS SaleId, sd.discipline_id AS DisciplineId,
+                       
+                       sd.id,
+                       sd.sale_id AS SaleId, sd.discipline_id AS DisciplineId,
                        sd.qty AS Qty, sd.price AS Price, sd.total AS Total, sd.start_date AS StartDate, sd.end_date AS EndDate
                   FROM sales s
              LEFT JOIN sale_details sd ON sd.sale_id = s.id
@@ -57,7 +59,7 @@ namespace SalesMicroserviceInfraestructure.Persistence
                             sale.Details.Add(d);
 
                         return sale;
-                    }, splitOn: "SaleDetailId");
+                    }, splitOn: "id"); 
 
                 return Result<IEnumerable<Sale>>.Success(saleDict.Values);
             }
@@ -75,7 +77,9 @@ namespace SalesMicroserviceInfraestructure.Persistence
                        s.total_amount AS TotalAmount, s.nit AS Nit,
                        s.created_at AS CreatedAt, s.last_modification AS LastModification,
                        s.is_active AS IsActive, s.created_by AS CreatedBy, s.modified_by AS ModifiedBy,
-                       sd.id AS SaleDetailId, sd.sale_id AS SaleId, sd.discipline_id AS DisciplineId,
+                       
+                       sd.id, 
+                       sd.sale_id AS SaleId, sd.discipline_id AS DisciplineId,
                        sd.qty AS Qty, sd.price AS Price, sd.total AS Total, sd.start_date AS StartDate, sd.end_date AS EndDate
                   FROM sales s
              LEFT JOIN sale_details sd ON sd.sale_id = s.id
@@ -98,8 +102,7 @@ namespace SalesMicroserviceInfraestructure.Persistence
                         if (d != null && d.Id.HasValue)
                             sale.Details.Add(d);
                         return sale;
-                    }, new { Id = id }, splitOn: "SaleDetailId");
-
+                    }, new { Id = id }, splitOn: "id"); 
                 var sale = saleDict.Values.FirstOrDefault();
                 return sale == null
                     ? Result<Sale>.Failure("Venta no encontrada.")

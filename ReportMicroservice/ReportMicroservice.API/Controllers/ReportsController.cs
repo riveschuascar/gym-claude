@@ -6,7 +6,7 @@ namespace ReportMicroservice.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    // [Authorize] // Descomentar para forzar validación de token
+    [Authorize]
     public class ReportsController : ControllerBase
     {
         private readonly ReportGenerationService _reportService;

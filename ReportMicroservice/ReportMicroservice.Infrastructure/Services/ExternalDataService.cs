@@ -1,70 +1,70 @@
-﻿using QuestPDF.Fluent;
-using QuestPDF.Helpers;
-using QuestPDF.Infrastructure;
+﻿using Microsoft.Extensions.Configuration;
 using ReportMicroservice.Domain.DTO;
 using ReportMicroservice.Domain.Ports;
-using ReportMicroservice.Domain.Models;
 using System.Net.Http.Headers;
 using System.Text.Json;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ReportMicroservice.Infrastructure.Services
 {
     public class ExternalDataService : IExternalDataService
     {
         private readonly HttpClient _httpClient;
+        private readonly IConfiguration _configuration;
+        private readonly JsonSerializerOptions _jsonOptions;
 
-        private const string BaseUrlSales = "http://localhost:5305/api";
-        private const string BaseUrlClients = "http://localhost:5135/api";
-        private const string BaseUrlDisciplines = "http://localhost:5098/api";
-
-        public ExternalDataService(HttpClient httpClient)
+        public ExternalDataService(HttpClient httpClient, IConfiguration configuration)
         {
             _httpClient = httpClient;
+            _configuration = configuration;
+            _jsonOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
         }
 
         private void SetToken(string token)
         {
-            _httpClient.DefaultRequestHeaders.Authorization =
-                new AuthenticationHeaderValue("Bearer", token.Replace("Bearer ", ""));
+            if (!string.IsNullOrEmpty(token))
+            {
+                var cleanToken = token.Replace("Bearer ", "").Trim();
+                _httpClient.DefaultRequestHeaders.Authorization =
+                    new AuthenticationHeaderValue("Bearer", cleanToken);
+            }
         }
 
         public async Task<SaleDto> GetSaleByIdAsync(int id, string token)
         {
             SetToken(token);
-            var response = await _httpClient.GetAsync($"{BaseUrlSales}/sales/{id}");
+            var baseUrl = _configuration["Microservices:SalesApi"];
+
+            var response = await _httpClient.GetAsync($"{baseUrl}/api/Sales/{id}");
+
             response.EnsureSuccessStatusCode();
+
             return await JsonSerializer.DeserializeAsync<SaleDto>(
-                await response.Content.ReadAsStreamAsync(), new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                await response.Content.ReadAsStreamAsync(), _jsonOptions);
         }
 
         public async Task<List<SaleDetailDto>> GetSaleDetailsBySaleIdAsync(int saleId, string token)
         {
-            SetToken(token);
-            // Asumiendo que hay un endpoint para filtrar detalles por venta
-            var response = await _httpClient.GetAsync($"{BaseUrlSales}/{saleId}");
-            response.EnsureSuccessStatusCode();
-            return await JsonSerializer.DeserializeAsync<List<SaleDetailDto>>(
-                await response.Content.ReadAsStreamAsync(), new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            var sale = await GetSaleByIdAsync(saleId, token);
+
+            return sale.Details ?? new List<SaleDetailDto>();
         }
 
         public async Task<ClientDto> GetClientByIdAsync(int id, string token)
         {
             SetToken(token);
-            var response = await _httpClient.GetAsync($"{BaseUrlClients}/clients/{id}");
+            var baseUrl = _configuration["Microservices:ClientsApi"];
+            var response = await _httpClient.GetAsync($"{baseUrl}/api/Client/{id}");
             response.EnsureSuccessStatusCode();
-            return await JsonSerializer.DeserializeAsync<ClientDto>(
-                await response.Content.ReadAsStreamAsync(), new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            return await JsonSerializer.DeserializeAsync<ClientDto>(await response.Content.ReadAsStreamAsync(), _jsonOptions);
         }
 
         public async Task<List<DisciplineDto>> GetAllDisciplinesAsync(string token)
         {
             SetToken(token);
-            var response = await _httpClient.GetAsync($"{BaseUrlDisciplines}/disciplines");
+            var baseUrl = _configuration["Microservices:DisciplinesApi"];
+            var response = await _httpClient.GetAsync($"{baseUrl}/api/Disciplines");
             response.EnsureSuccessStatusCode();
-            return await JsonSerializer.DeserializeAsync<List<DisciplineDto>>(
-                await response.Content.ReadAsStreamAsync(), new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            return await JsonSerializer.DeserializeAsync<List<DisciplineDto>>(await response.Content.ReadAsStreamAsync(), _jsonOptions);
         }
     }
 }
