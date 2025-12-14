@@ -6,4 +6,12 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="QuestPDF" Version="2025.12.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ReportMicroservice.Domain\ReportMicroservice.Domain.csproj" />
+  </ItemGroup>
+
 </Project>
