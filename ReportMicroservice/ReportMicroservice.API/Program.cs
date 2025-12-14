@@ -1,7 +1,10 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 using ReportMicroservice.Application.Services;
 using ReportMicroservice.Domain.Ports;
 using ReportMicroservice.Infrastructure.Reports;
 using ReportMicroservice.Infrastructure.Services;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,15 +25,28 @@ builder.Services.AddScoped<ReportGenerationService>();
 builder.Services.AddHttpContextAccessor();
 
 // Configuración básica de autenticación (para que funcione User.Claims)
-// Necesitas el paquete Microsoft.AspNetCore.Authentication.JwtBearer
-/*
-builder.Services.AddAuthentication("Bearer")
-    .AddJwtBearer("Bearer", options => {
-        // Configura aquí tu Authority o Validación de Token igual que tus otros microservicios
-        options.Authority = "https://tu-auth-server";
-        options.Audience = "report-api";
-    });
-*/
+var jwtKey = builder.Configuration["Jwt:Key"] ?? throw new InvalidOperationException("Jwt:Key missing");
+var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+}).AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = signingKey,
+        ValidateIssuer = true,
+        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+        ValidateAudience = true,
+        ValidAudience = builder.Configuration["Jwt:Audience"],
+        ValidateLifetime = true,
+        ClockSkew = TimeSpan.FromSeconds(30)
+    };
+});
+
 
 var app = builder.Build();
 

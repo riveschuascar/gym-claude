@@ -15,10 +15,9 @@ namespace ReportMicroservice.Infrastructure.Services
     {
         private readonly HttpClient _httpClient;
 
-        // En un escenario real, estas URLs vendrían de appsettings.json
-        private const string BaseUrlSales = "http://localhost:5001/api";
-        private const string BaseUrlClients = "http://localhost:5002/api";
-        private const string BaseUrlDisciplines = "http://localhost:5003/api";
+        private const string BaseUrlSales = "http://localhost:5305/api";
+        private const string BaseUrlClients = "http://localhost:5135/api";
+        private const string BaseUrlDisciplines = "http://localhost:5098/api";
 
         public ExternalDataService(HttpClient httpClient)
         {
@@ -44,7 +43,7 @@ namespace ReportMicroservice.Infrastructure.Services
         {
             SetToken(token);
             // Asumiendo que hay un endpoint para filtrar detalles por venta
-            var response = await _httpClient.GetAsync($"{BaseUrlSales}/sale-details?saleId={saleId}");
+            var response = await _httpClient.GetAsync($"{BaseUrlSales}/{saleId}");
             response.EnsureSuccessStatusCode();
             return await JsonSerializer.DeserializeAsync<List<SaleDetailDto>>(
                 await response.Content.ReadAsStreamAsync(), new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
