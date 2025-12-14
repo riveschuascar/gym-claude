@@ -14,11 +14,11 @@ namespace ReportMicroservice.Infrastructure.Reports
     {
         private SaleReportData _data;
         private Document _document;
-        private IContainer _container; // Usado para construir secciones progresivamente
+        private IContainer _container; 
 
         public PdfReportBuilder()
         {
-            // Configuración de licencia Community (necesario en versiones recientes)
+            // Configuración de licencia Community 
             QuestPDF.Settings.License = LicenseType.Community;
         }
 
@@ -47,14 +47,26 @@ namespace ReportMicroservice.Infrastructure.Reports
             {
                 container.Row(row =>
                 {
-                    // IZQUIERDA: Logo (Placeholder)
-                    row.ConstantItem(100).Height(50).Placeholder("Logo");
+                    var logoPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "logo.jpeg");
 
-                    // CENTRO: Título
+                    var logoContainer = row.ConstantItem(100).Height(60); 
+
+                    if (File.Exists(logoPath))
+                    {
+                        var imageBytes = File.ReadAllBytes(logoPath);
+                        logoContainer.Image(imageBytes).FitArea();
+                    }
+                    else
+                    {
+                        logoContainer.AlignCenter().AlignMiddle().Text("Logo").FontSize(10);
+                    }
+
                     row.RelativeItem().Column(col =>
                     {
                         col.Item().Text("COMPROBANTE DE VENTA")
-                           .FontSize(20).Bold().FontColor(Colors.Blue.Medium).AlignCenter();
+                           .FontSize(20).Bold().FontColor(Colors.Black).AlignCenter();
+
+                        col.Item().Text("Gym Claude Center").FontSize(12).FontColor(Colors.Grey.Darken1).AlignCenter();
                     });
                 });
             };
