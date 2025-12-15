@@ -1,21 +1,21 @@
-CREATE SCHEMA IF NOT EXISTS users;
+--CREATE SCHEMA IF NOT EXISTS users;
 
-CREATE TABLE users.user (
-    Id SERIAL PRIMARY KEY,
-    Name VARCHAR(50),
-    FirstLastname VARCHAR(50),
-    SecondLastname VARCHAR(50),
-    DateOfBirth DATE,
-    Ci VARCHAR(20),
-    UserRole VARCHAR(20),
-    HireDate DATE,
-    MonthlySalary NUMERIC(10,2),
-    Specialization VARCHAR(100),
-    Password VARCHAR(255) NOT NULL,
-    Email VARCHAR(100) UNIQUE,
+--CREATE TABLE users.user (
+--    Id SERIAL PRIMARY KEY,
+--    Name VARCHAR(50),
+--    FirstLastname VARCHAR(50),
+--    SecondLastname VARCHAR(50),
+--    DateOfBirth DATE,
+--    Ci VARCHAR(20),
+--    UserRole VARCHAR(20),
+--    HireDate DATE,
+--    MonthlySalary NUMERIC(10,2),
+--    Specialization VARCHAR(100),
+--    Password VARCHAR(255) NOT NULL,
+--    Email VARCHAR(100) UNIQUE,
     
-    MustChangePassword BOOLEAN DEFAULT true,
-    CreatedAt TIMESTAMP DEFAULT now() NOT NULL,
-    LastModification TIMESTAMP DEFAULT NULL,
-    IsActive BOOLEAN DEFAULT true
-);
+--    MustChangePassword BOOLEAN DEFAULT true,
+--    CreatedAt TIMESTAMP DEFAULT now() NOT NULL,
+--    LastModification TIMESTAMP DEFAULT NULL,
+--    IsActive BOOLEAN DEFAULT true
+--);
