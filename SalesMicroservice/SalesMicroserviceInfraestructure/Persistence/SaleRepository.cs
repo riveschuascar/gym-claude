@@ -232,5 +232,34 @@ namespace SalesMicroserviceInfraestructure.Persistence
                 return Result.Failure("Error al eliminar la venta.");
             }
         }
+
+        public async Task<Result> UpdateSaleStatus(int id, string status)
+        {
+            const string query = @"
+                UPDATE sales
+                SET status = @Status,
+                    last_modification = @LastModification
+                WHERE id = @Id;";
+
+            try
+            {
+                using var conn = CreateConnection();
+                await conn.OpenAsync();
+
+                var affected = await conn.ExecuteAsync(query, new
+                {
+                    Id = id,
+                    Status = status,
+                    LastModification = DateTime.UtcNow
+                });
+
+                return affected > 0 ? Result.Success() : Result.Failure("No se encontro la venta para actualizar el estado.");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error en UpdateStatus");
+                return Result.Failure("Error al actualizar el estado de la venta.");
+            }
+        }
     }
 }

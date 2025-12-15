@@ -9,6 +9,7 @@ using Microsoft.IdentityModel.Tokens;
 using SalesMicroserviceDomain.Ports;
 using Npgsql;
 using System.Data;
+using Microsoft.Extensions.Hosting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -38,6 +39,11 @@ builder.Services.AddHttpClient("Disciplines", client =>
 {
     client.BaseAddress = new Uri(disciplineApiBase);
     client.Timeout = TimeSpan.FromSeconds(httpTimeout);
+}).AddHttpMessageHandler<PropagationDelegatingHandler>();
+
+builder.Services.AddHttpClient("Orchestrator", client =>
+{
+    client.BaseAddress = new Uri("http://localhost:5071");
 }).AddHttpMessageHandler<PropagationDelegatingHandler>();
 
 builder.Services.AddScoped<IDbConnection>(_ =>

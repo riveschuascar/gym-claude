@@ -1,6 +1,9 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using Orchestrator.Application.Interfaces;
+using Orchestrator.Application.Services;
+using Orchestrator.Rest.Http;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,6 +26,40 @@ builder.Services.AddSwaggerGen();
 
 // HttpContext (útil si luego propagas token)
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddTransient<PropagationDelegatingHandler>();
+
+// --------------------
+// HttpClientFactory
+// --------------------
+
+builder.Services.AddHttpClient("clients", client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["Services:clients:BaseUrl"] ?? "");
+    client.Timeout = TimeSpan.FromSeconds(30);
+}).AddHttpMessageHandler<PropagationDelegatingHandler>();
+
+builder.Services.AddHttpClient("disciplines", client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["Services:disciplines:BaseUrl"] ?? "");
+    client.Timeout = TimeSpan.FromSeconds(60);
+}).AddHttpMessageHandler<PropagationDelegatingHandler>();
+
+builder.Services.AddHttpClient("sales", client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["Services:sales:BaseUrl"] ?? "");
+    client.Timeout = TimeSpan.FromSeconds(60);
+}).AddHttpMessageHandler<PropagationDelegatingHandler>();
+
+builder.Services.AddHttpClient("reports", client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["Services:reports:BaseUrl"] ?? "");
+    client.Timeout = TimeSpan.FromSeconds(60);
+}).AddHttpMessageHandler<PropagationDelegatingHandler>();
+
+// --------------------
+// Registrar el servicio Orchestrator
+// --------------------
+builder.Services.AddScoped<IOrchestatorService, OrchestratorService>();
 
 // --------------------
 // JWT Authentication

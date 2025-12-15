@@ -3,6 +3,7 @@ using SalesMicroserviceDomain.Entities;
 using SalesMicroserviceDomain.Events;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Json;
 using SalesMicroserviceDomain.Ports;
 using SalesMicroserviceDomain.Shared;
 using SalesMicroserviceDomain.Validators;
@@ -75,9 +76,42 @@ namespace SalesMicroserviceApplication.Services
             var createResult = await _repo.Create(sale, userEmail);
             if (createResult.IsFailure) return createResult;
 
+            // notify orchestrator about the created sale (best-effort)
+            await NotifyOrchestratorAsync(createResult.Value);
+
             // outbox and event publishing omitted for now - handled later
 
             return createResult;
+        }
+
+        private async Task NotifyOrchestratorAsync(Sale sale)
+        {
+            try
+            {
+                var client = _httpFactory.CreateClient("Orchestrator");
+                var payload = new
+                {
+                    idOrquestas = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
+                    saleId = sale.Id ?? 0,
+                    clientId = sale.ClientId,
+                    disciplinesIds = sale.Details?.Select(d => d.DisciplineId).ToArray() ?? Array.Empty<int>()
+                };
+
+                var resp = await client.PostAsJsonAsync("/api/Orchestator/sale-created", payload);
+
+                if (!resp.IsSuccessStatusCode)
+                {
+                    _logger.LogWarning("Orchestrator notification failed with status {Status} for sale {SaleId}", resp.StatusCode, sale.Id);
+                }
+                else
+                {
+                    _logger.LogInformation("Orchestrator notified for sale {SaleId}", sale.Id);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to notify orchestrator for sale {SaleId}", sale.Id);
+            }
         }
 
         public async Task<Result<Sale>> Update(Sale sale, string? userEmail = null)
@@ -167,6 +201,13 @@ namespace SalesMicroserviceApplication.Services
                 _logger.LogWarning(ex, "No se pudo validar disciplina {DisciplineId} en Discipline API. Se continua optimistamente.", disciplineId);
                 return Result.Success();
             }
+        }
+
+        public async Task<Result> UpdateSaleStatus(int Id, string Status)
+        {
+            _logger.LogInformation("Updating sale {SaleId} status to {Status}", Id, Status);
+            var res = await _repo.UpdateSaleStatus(Id, Status);
+            return res;
         }
     }
 }

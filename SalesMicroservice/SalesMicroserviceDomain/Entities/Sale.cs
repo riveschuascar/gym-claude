@@ -16,5 +16,6 @@ namespace SalesMicroserviceDomain.Entities
         public bool IsActive { get; set; } = true;
         public string? CreatedBy { get; set; }
         public string? ModifiedBy { get; set; }
+        public string? State { get; set; }
     }
 }

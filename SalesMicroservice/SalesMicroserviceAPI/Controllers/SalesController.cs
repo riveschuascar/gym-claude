@@ -8,7 +8,7 @@ using SalesMicroserviceDomain.Shared;
 namespace SalesMicroserviceAPI.Controllers
 {
     [ApiController]
-    [Authorize(Roles = "Admin,Instructor")]
+    //[Authorize(Roles = "Admin,Instructor")]
     [Route("api/[controller]")]
     public class SalesController : ControllerBase
     {
@@ -93,6 +93,13 @@ namespace SalesMicroserviceAPI.Controllers
             var email = GetEmailFromClaims();
             var result = await _saleService.Delete(id, email);
             return result.IsSuccess ? NoContent() : NotFound(result.Error);
+        }
+
+        [HttpPost("status/{id:int}")]
+        public async Task<IActionResult> UpdateSaleStatus(int id, [FromBody] string status)
+        {
+            var result = await _saleService.UpdateSaleStatus(id, status);
+            return result.IsSuccess ? Ok() : BadRequest(result.Error);
         }
     }
 }
