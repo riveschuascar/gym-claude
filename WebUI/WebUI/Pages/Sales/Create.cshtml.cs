@@ -108,7 +108,6 @@ public class CreateModel : PageModel
                 
                 int newSaleId = createdSale?.Id ?? 0; 
                 
-                // CAMBIO: Redirigimos al Index de Ventas, pero le avisamos que debe descargar
                 return RedirectToPage("./Index", new { SaleId = newSaleId, AutoDownload = true });
             }
 
