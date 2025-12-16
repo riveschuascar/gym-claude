@@ -33,17 +33,17 @@ namespace ReportMicroservice.API.Controllers
             }
         }
         
-        [HttpPost("sales")]
+        [HttpPost("~/api/Report/sales")] 
         public IActionResult ReceiveSaleNotification([FromBody] SaleNotificationDto request)
         {
-            // El orquestador nos avisa que la venta terminó.
-            // No devolvemos el PDF aquí, solo decimos "Recibido".
-            Console.WriteLine($"[Notificación] Venta {request.SaleId} completada exitosamente.");
+            // Solo logueamos que el orquestador terminó.
+            // No hacemos nada más porque el PDF lo pide el usuario desde la WebUI.
+            Console.WriteLine($"[Orchestrator Notification] Venta {request.SaleId} finalizada correctamente.");
             return Ok();
         }
     }
+}
     public class SaleNotificationDto
     {
         public int SaleId { get; set; }
     }
-}

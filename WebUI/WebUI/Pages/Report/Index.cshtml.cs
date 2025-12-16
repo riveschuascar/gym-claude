@@ -76,7 +76,7 @@ namespace WebUI.Pages.Report
             catch (Exception ex)
             {
                 ErrorMessage = $"Ocurrió un error de conexión: {ex.Message}";
-                return Page();
+                return RedirectToPage("/Sales/Index");
             }
         }
     }

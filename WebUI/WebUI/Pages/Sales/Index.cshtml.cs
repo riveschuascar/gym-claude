@@ -12,13 +12,19 @@ namespace WebUI.Pages.Sales
         private readonly HttpClient _salesClient;
         private readonly HttpClient _clientApi;
         private readonly HttpClient _disciplineApi;
+        private readonly HttpClient _reportClient;
 
         public List<SaleRow> Sales { get; set; } = new();
         [BindProperty(SupportsGet = true)]
         public string? Search { get; set; }
+        [BindProperty(SupportsGet = true)]
+        public int SaleId { get; set; } // El ID que viene del Create
 
+        [BindProperty(SupportsGet = true)]
+        public bool AutoDownload { get; set; } // La bandera para saber si descargamos
         public IndexModel(IHttpClientFactory factory)
         {
+            _reportClient = factory.CreateClient("ReportAPI");
             _salesClient = factory.CreateClient("SalesAPI");
             _clientApi = factory.CreateClient("ClientAPI");
             _disciplineApi = factory.CreateClient("Disciplines");
@@ -115,5 +121,22 @@ namespace WebUI.Pages.Sales
 
             return RedirectToPage();
         }
+        public async Task<IActionResult> OnGetDownloadAsync(int saleId)
+        {
+            try
+            {
+                var response = await _reportClient.GetAsync($"/api/reports/sale/{saleId}");
+
+                if (!response.IsSuccessStatusCode) return NotFound();
+
+                var pdfBytes = await response.Content.ReadAsByteArrayAsync();
+                return File(pdfBytes, "application/pdf", $"Comprobante_Venta_{saleId}.pdf");
+            }
+            catch
+            {
+                return NotFound();
+            }
+        }
+
     }
 }

@@ -47,6 +47,20 @@
             });
         }
     </script>
+
+        <!-- Script de Descarga Automática -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var autoDownload = '@Model.AutoDownload'.toLowerCase() === 'true'; 
+            var saleId = parseInt('@Model.SaleId');
+
+            if (autoDownload && saleId > 0) {
+                console.log("Iniciando descarga automática para venta ID: " + saleId);
+                
+                window.location.href = '?handler=Download&saleId=' + saleId;
+            }
+        });
+    </script>
 }
     @if (TempData["SuccessMessage"] != null)
     {

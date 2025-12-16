@@ -102,10 +102,14 @@ public class CreateModel : PageModel
             if (resp.IsSuccessStatusCode)
             {
                 TempData["SuccessMessage"] = "Venta registrada correctamente.";
+                
                 var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
                 var createdSale = JsonSerializer.Deserialize<SaleResponseDto>(respBody, options);
+                
                 int newSaleId = createdSale?.Id ?? 0; 
-                return RedirectToPage("/Report/Index", new { SaleId = newSaleId, AutoDownload = true });
+                
+                // CAMBIO: Redirigimos al Index de Ventas, pero le avisamos que debe descargar
+                return RedirectToPage("./Index", new { SaleId = newSaleId, AutoDownload = true });
             }
 
             Console.WriteLine($"Sales API returned {(int)resp.StatusCode} {resp.ReasonPhrase}. Body: {respBody}");
