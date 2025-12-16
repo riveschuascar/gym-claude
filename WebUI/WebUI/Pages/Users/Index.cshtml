@@ -1,97 +1,95 @@
 @page
-@model WebUI.Pages.Users.IndexModel
+@model WebUI.Pages.Clients.IndexModel
 @{
-    ViewData["Title"] = "Gestión de Usuarios";
+    ViewData["Title"] = "Gestión de Clientes";
 }
 
 <div class="text-center">
-    <h1 class="display-4">Gestión de Usuarios</h1>
-    <p class="lead text-muted">Lista general de todos los usuarios.</p>
-    <a class="btn btn-primary shadow-sm" asp-page="Create">+ Registrar Nuevo Usuario</a>
+    <h1 class="display-4">Gestión de Clientes</h1>
+    <p class="lead text-muted">Lista general de todos los clientes registrados.</p>
+    <button type="button" class="btn btn-primary shadow-sm" data-bs-toggle="modal" data-bs-target="#createClientModal">
+        + Registrar Nuevo Cliente
+    </button>
 </div>
 
 @if (TempData["ErrorMessage"] is string err && !string.IsNullOrWhiteSpace(err))
 {
-    <div class="alert alert-danger mt-3" role="alert">
-        @err
-    </div>
-}
-
-@if (TempData["SuccessMessage"] is string success && !string.IsNullOrWhiteSpace(success))
-{
-    <div class="alert alert-success mt-3" role="alert">
-        @success
-    </div>
+<div class="alert alert-danger mt-3" role="alert">
+    @err
+</div>
 }
 
 <div class="card shadow-sm mt-4">
     <div class="card-body">
-        @if (Model.Users.Any())
-        {
-            <table class="table table-hover align-middle">
-                <thead class="table-dark">
-                    <tr>
-                        <th>Nombre Completo</th>
-                        <th>CI</th>
-                        <th>Fecha de nacimiento</th>
-                        <th>Rol</th>
-                        <th>Fecha contratación</th>
-                        <th>Salario mensual</th>
-                        <th>Especialización</th>
-                        <th class="text-center">Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var user in Model.Users)
-                    {
-                        <tr> 
-                            <td>
-                                <a asp-page="Details" asp-route-id="@user.Id" class="text-decoration-none">
-                                    @user.Name @user.FirstLastname @user.SecondLastname
-                                </a>
-                            </td>
-                            <td>@user.Ci</td>
-                            <td>@(user.DateOfBirth?.ToString("d"))</td>
-                            <td>
-                                @if (!string.IsNullOrWhiteSpace(user.UserRole))
-                                {
-                                    <span class="badge bg-secondary">@user.UserRole</span>
-                                }
-                            </td>
-                            <td>@(user.HireDate?.ToString("d"))</td>
-                            <td>@(user.MonthlySalary?.ToString("N2") ?? "-") Bs.</td>
-                            <td>@user.Specialization</td>
-                            <td class="text-center">
-                                <div class="btn-group" role="group">
-                                    <a asp-page="Details" asp-route-id="@user.Id" class="btn btn-sm btn-outline-info" title="Ver">
-                                        <i class="fas fa-eye"></i>
-                                    </a>
-                                    <a asp-page="Edit" asp-route-id="@user.Id" class="btn btn-sm btn-outline-warning">
-                                        <i class="bi bi-pencil"></i> Editar
-                                    </a>
-                                    <form method="post" asp-page-handler="Delete" asp-route-id="@user.Id" class="d-inline"
-                                        onsubmit="confirmDelete(event, 'al usuario @user.Name @user.FirstLastname');">
-                                        <button type="submit" class="btn btn-sm btn-outline-danger">Eliminar</button>
-                                    </form>
-                                </div>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        }
-        else
-        {
-            <div class="alert alert-info text-center" role="alert">
-                <strong>No hay usuarios para mostrar.</strong>
-            </div>
-        }
+        <table class="table table-hover align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>Nombre Completo</th>
+                    <th>CI</th>
+                    <th>Fecha de nacimiento</th>
+                    <th>Nivel</th>
+                    <th>Peso actual (Kg)</th>
+                    <th class="text-center">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var c in Model.Clients)
+            {
+                <tr>
+                    <td>
+                        <a asp-page="Details" asp-route-id="@c.Id" class="text-decoration-none">
+                            @c.Name @c.FirstLastname @c.SecondLastname
+                        </a>
+                    </td>
+                    <td>@c.Ci</td>
+                    <td>@(c.DateBirth?.ToString("d"))</td>
+                    <td>
+                        @if (!string.IsNullOrWhiteSpace(c.FitnessLevel))
+                        {
+                        <span class="badge bg-secondary">@c.FitnessLevel</span>
+                        }
+                    </td>
+                    <td>@(c.CurrentWeightKg?.ToString("0.##"))</td>
+                    <td class="text-center">
+                        <div class="btn-group" role="group">
+                            <a asp-page="Details" asp-route-id="@c.Id" class="btn btn-sm btn-outline-info" title="Ver">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a asp-page="Edit" asp-route-id="@c.Id" class="btn btn-sm btn-outline-warning">Editar</a>
+                            <form method="post" asp-page-handler="Delete" asp-route-id="@c.Id" class="d-inline" onsubmit="confirmDelete(event, 'al cliente @c.Name @c.FirstLastname');">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Eliminar</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
     </div>
 </div>
 
+<div class="modal fade" id="createClientModal" tabindex="-1" aria-labelledby="createClientModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createClientModalLabel">Registrar Nuevo Cliente</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="createClientModalBody">
+                <div class="text-center p-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Cargando...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 @section Scripts {
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
+        // Función existente para confirmación de eliminación
         function confirmDelete(event, clientName) {
             event.preventDefault();
             const form = event.target;
@@ -111,5 +109,89 @@
                 }
             });
         }
+
+        // ---------------------------------------------
+        // Lógica del Modal (Pop-up) para Creación
+        // ---------------------------------------------
+
+        const modalElement = document.getElementById('createClientModal');
+        const modalBody = document.getElementById('createClientModalBody');
+
+        // Función para recargar la página después de una creación exitosa
+        function handleSuccess() {
+            const modal = bootstrap.Modal.getInstance(modalElement);
+            if (modal) {
+                modal.hide();
+            }
+            window.location.reload();
+        }
+
+        // 1. Cargar el formulario vía AJAX cuando el modal se abre
+        modalElement.addEventListener('show.bs.modal', function (event) {
+            // CAMBIO: Llama al nuevo OnGetPartial (handler=Partial)
+            fetch('/Clients/Create?handler=Partial')
+                .then(response => response.text())
+                .then(html => {
+
+                    // Se inserta directamente el HTML del formulario parcial
+                    modalBody.innerHTML = html;
+
+                    // 2. Rebind de la validación de jQuery para el nuevo contenido
+                    const form = modalBody.querySelector('form');
+                    if (form) {
+                        // Limpiar y volver a aplicar la validación para el contenido cargado dinámicamente
+                        if ($.validator) {
+                            $(form).removeData("validator").removeData("unobtrusiveValidation");
+                            $.validator.unobtrusive.parse(form);
+                        }
+
+                        // 3. Capturar el envío del formulario cargado
+                        form.addEventListener('submit', function (e) {
+                            e.preventDefault();
+
+                            // Verificar la validez antes de enviar
+                            if ($(form).valid()) {
+
+                                // Envío por AJAX
+                                $.ajax({
+                                    url: form.action,
+                                    type: form.method,
+                                    data: $(form).serialize(),
+                                    contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+                                    success: function (response) {
+                                        if (response && response.success === true) {
+                                            handleSuccess();
+                                        } else {
+                                            // Recarga el HTML con los errores de validación/API
+                                            modalBody.innerHTML = response;
+                                            $.validator.unobtrusive.parse(modalBody.querySelector('form'));
+                                        }
+                                    },
+                                    error: function (xhr, status, error) {
+                                        // En caso de error HTTP, recarga el contenido del modal
+                                        modalBody.innerHTML = xhr.responseText;
+                                        $.validator.unobtrusive.parse(modalBody.querySelector('form'));
+                                    }
+                                });
+                            }
+                        });
+                    }
+                })
+                .catch(error => {
+                    modalBody.innerHTML = '<div class="alert alert-danger">Error al cargar el formulario de cliente.</div>';
+                    console.error('Error loading form:', error);
+                });
+        });
+
+        // 4. Limpiar el modal al cerrarlo
+        modalElement.addEventListener('hidden.bs.modal', function (event) {
+            modalBody.innerHTML = `
+                    <div class="text-center p-5">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Cargando...</span>
+                        </div>
+                    </div>
+                `;
+        });
     </script>
 }

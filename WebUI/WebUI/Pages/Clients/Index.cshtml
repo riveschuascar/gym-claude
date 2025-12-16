@@ -7,14 +7,16 @@
 <div class="text-center">
     <h1 class="display-4">Gestión de Clientes</h1>
     <p class="lead text-muted">Lista general de todos los clientes registrados.</p>
-    <a class="btn btn-primary shadow-sm" asp-page="Create">+ Registrar Nuevo Cliente</a>
- </div>
+    <button type="button" class="btn btn-primary shadow-sm" data-bs-toggle="modal" data-bs-target="#createClientModal">
+        + Registrar Nuevo Cliente
+    </button>
+</div>
 
 @if (TempData["ErrorMessage"] is string err && !string.IsNullOrWhiteSpace(err))
 {
-    <div class="alert alert-danger mt-3" role="alert">
-        @err
-    </div>
+<div class="alert alert-danger mt-3" role="alert">
+    @err
+</div>
 }
 
 <div class="card shadow-sm mt-4">
@@ -31,7 +33,7 @@
                 </tr>
             </thead>
             <tbody>
-            @foreach (var c in Model.Clients)
+                @foreach (var c in Model.Clients)
             {
                 <tr>
                     <td>
@@ -44,7 +46,7 @@
                     <td>
                         @if (!string.IsNullOrWhiteSpace(c.FitnessLevel))
                         {
-                            <span class="badge bg-secondary">@c.FitnessLevel</span>
+                        <span class="badge bg-secondary">@c.FitnessLevel</span>
                         }
                     </td>
                     <td>@(c.CurrentWeightKg?.ToString("0.##"))</td>
@@ -66,8 +68,28 @@
     </div>
 </div>
 
+<div class="modal fade" id="createClientModal" tabindex="-1" aria-labelledby="createClientModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createClientModalLabel">Registrar Nuevo Cliente</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="createClientModalBody">
+                <div class="text-center p-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Cargando...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 @section Scripts {
     <script>
+        // Función existente para confirmación de eliminación
         function confirmDelete(event, clientName) {
             event.preventDefault();
             const form = event.target;
@@ -87,6 +109,83 @@
                 }
             });
         }
+
+        // ---------------------------------------------
+        // Lógica del Modal (Pop-up) para Creación (AJAX)
+        // ---------------------------------------------
+
+        const modalElement = document.getElementById('createClientModal');
+        const modalBody = document.getElementById('createClientModalBody');
+
+        function handleSuccess() {
+            const modal = bootstrap.Modal.getInstance(modalElement);
+            if (modal) {
+                modal.hide();
+            }
+            window.location.reload();
+        }
+
+        // 1. Cargar el formulario vía AJAX cuando el modal se abre
+        modalElement.addEventListener('show.bs.modal', function (event) {
+            // Llama al handler OnGetPartial que retorna solo el formulario
+            fetch('/Clients/Create?handler=Partial')
+                .then(response => response.text())
+                .then(html => {
+
+                    modalBody.innerHTML = html;
+
+                    // 2. Rebind de la validación de jQuery para el nuevo contenido
+                    const form = modalBody.querySelector('form');
+                    if (form) {
+                        if ($.validator) {
+                            $(form).removeData("validator").removeData("unobtrusiveValidation");
+                            $.validator.unobtrusive.parse(form);
+                        }
+
+                        // 3. Capturar el envío del formulario cargado
+                        form.addEventListener('submit', function (e) {
+                            e.preventDefault();
+
+                            if ($(form).valid()) {
+
+                                $.ajax({
+                                    url: form.action,
+                                    type: form.method,
+                                    data: $(form).serialize(),
+                                    contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+                                    success: function (response) {
+                                        if (response && response.success === true) {
+                                            handleSuccess();
+                                        } else {
+                                            // Recarga el HTML con los errores de validación/API
+                                            modalBody.innerHTML = response;
+                                            $.validator.unobtrusive.parse(modalBody.querySelector('form'));
+                                        }
+                                    },
+                                    error: function (xhr, status, error) {
+                                        modalBody.innerHTML = xhr.responseText;
+                                        $.validator.unobtrusive.parse(modalBody.querySelector('form'));
+                                    }
+                                });
+                            }
+                        });
+                    }
+                })
+                .catch(error => {
+                    modalBody.innerHTML = '<div class="alert alert-danger">Error al cargar el formulario de cliente.</div>';
+                    console.error('Error loading form:', error);
+                });
+        });
+
+        // 4. Limpiar el modal al cerrarlo
+        modalElement.addEventListener('hidden.bs.modal', function (event) {
+            modalBody.innerHTML = `
+                    <div class="text-center p-5">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Cargando...</span>
+                        </div>
+                    </div>
+                `;
+        });
     </script>
 }
-
