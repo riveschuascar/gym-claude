@@ -7,17 +7,19 @@
 <div class="text-center">
     <h1 class="display-4">Gestión de Disciplinas</h1>
     <p class="lead text-muted">Lista general de todas las disciplinas.</p>
-    <a class="btn btn-primary shadow-sm" asp-page="Create">+ Registrar Nueva Disciplina</a>
+    <button type="button" class="btn btn-primary shadow-sm" data-bs-toggle="modal" data-bs-target="#createDisciplineModal">
+        + Registrar Nueva Disciplina
+    </button>
 </div>
 
 @if (TempData["ErrorMessage"] is string err && !string.IsNullOrWhiteSpace(err))
 {
-    <div class="alert alert-danger mt-3" role="alert">@err</div>
+<div class="alert alert-danger mt-3" role="alert">@err</div>
 }
 
 @if (TempData["SuccessMessage"] is string success && !string.IsNullOrWhiteSpace(success))
 {
-    <div class="alert alert-success mt-3" role="alert">@success</div>
+<div class="alert alert-success mt-3" role="alert">@success</div>
 }
 
 <div class="card shadow-sm mt-4">
@@ -38,47 +40,66 @@
             <tbody>
                 @foreach (var d in Model.Disciplines)
                 {
-                    <tr>
-                        <td>
-                            <a asp-page="Details" asp-route-id="@d.Id" class="text-decoration-none">@d.Name</a>
-                        </td>
-                        <td>@(d.StartTime?.ToString(@"hh\:mm"))</td>
-                        <td>@(d.EndTime?.ToString(@"hh\:mm"))</td>
-                        <td>
-                            @(d.StartTime.HasValue && d.EndTime.HasValue
+                <tr>
+                    <td>
+                        <a asp-page="Details" asp-route-id="@d.Id" class="text-decoration-none">@d.Name</a>
+                    </td>
+                    <td>@(d.StartTime?.ToString(@"hh\:mm"))</td>
+                    <td>@(d.EndTime?.ToString(@"hh\:mm"))</td>
+                    <td>
+                        @(d.StartTime.HasValue && d.EndTime.HasValue
                                 ? (d.EndTime.Value - d.StartTime.Value).ToString(@"hh\:mm")
                                 : "-")
-                        </td>
-                        <td>@d.Price</td>
-                        <td>@d.MonthlySessions</td>
-                        <td>
-                            @if (d.IsActive)
+                    </td>
+                    <td>@d.Price</td>
+                    <td>@d.MonthlySessions</td>
+                    <td>
+                        @if (d.IsActive)
                             {
-                                <span class="badge bg-success">Sí</span>
+                        <span class="badge bg-success">Sí</span>
                             }
                             else
                             {
-                                <span class="badge bg-secondary">No</span>
+                        <span class="badge bg-secondary">No</span>
                             }
-                        </td>
-                        <td class="text-center">
-                            <div class="btn-group" role="group">
-                                <a asp-page="Details" asp-route-id="@d.Id" class="btn btn-sm btn-outline-info" title="Ver">
-                                    <i class="fas fa-eye"></i>
-                                </a>
-                                <a asp-page="Edit" asp-route-id="@d.Id" class="btn btn-sm btn-outline-warning">Editar</a>
-                                <form method="post" asp-page-handler="Delete" asp-route-id="@d.Id" class="d-inline"
-                                    onsubmit="confirmDelete(event, 'la disciplina @d.Name');">
-                                    <button type="submit" class="btn btn-sm btn-outline-danger">Eliminar</button>
-                                </form>
-                            </div>
-                        </td>
-                    </tr>
+                    </td>
+                    <td class="text-center">
+                        <div class="btn-group" role="group">
+                            <a asp-page="Details" asp-route-id="@d.Id" class="btn btn-sm btn-outline-info" title="Ver">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a asp-page="Edit" asp-route-id="@d.Id" class="btn btn-sm btn-outline-warning">Editar</a>
+                            <form method="post" asp-page-handler="Delete" asp-route-id="@d.Id" class="d-inline"
+                                  onsubmit="confirmDelete(event, 'la disciplina @d.Name');">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Eliminar</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
                 }
             </tbody>
         </table>
     </div>
 </div>
+
+<div class="modal fade" id="createDisciplineModal" tabindex="-1" aria-labelledby="createDisciplineModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-md">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createDisciplineModalLabel">Registrar Nueva Disciplina</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="createDisciplineModalBody">
+                <div class="text-center p-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Cargando...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 
 @section Scripts {
     <script>
@@ -101,5 +122,73 @@
                 }
             });
         }
+
+        const modalElement = document.getElementById('createDisciplineModal');
+        const modalBody = document.getElementById('createDisciplineModalBody');
+
+        function handleSuccessDiscipline() {
+            const modal = bootstrap.Modal.getInstance(modalElement);
+            if (modal) {
+                modal.hide();
+            }
+            window.location.reload();
+        }
+
+        modalElement.addEventListener('show.bs.modal', function (event) {
+            fetch('/Disciplines/Create?handler=Partial')
+                .then(response => response.text())
+                .then(html => {
+
+                    modalBody.innerHTML = html;
+
+                    const form = modalBody.querySelector('form');
+                    if (form) {
+                        if ($.validator) {
+                            $(form).removeData("validator").removeData("unobtrusiveValidation");
+                            $.validator.unobtrusive.parse(form);
+                        }
+
+                        form.addEventListener('submit', function (e) {
+                            e.preventDefault();
+
+                            if ($(form).valid()) {
+
+                                $.ajax({
+                                    url: form.action,
+                                    type: form.method,
+                                    data: $(form).serialize(),
+                                    contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+                                    success: function (response) {
+                                        if (response && response.success === true) {
+                                            handleSuccessDiscipline();
+                                        } else {
+                                            modalBody.innerHTML = response;
+                                            $.validator.unobtrusive.parse(modalBody.querySelector('form'));
+                                        }
+                                    },
+                                    error: function (xhr, status, error) {
+                                        modalBody.innerHTML = xhr.responseText;
+                                        $.validator.unobtrusive.parse(modalBody.querySelector('form'));
+                                    }
+                                });
+                            }
+                        });
+                    }
+                })
+                .catch(error => {
+                    modalBody.innerHTML = '<div class="alert alert-danger">Error al cargar el formulario de disciplina.</div>';
+                    console.error('Error loading form:', error);
+                });
+        });
+
+        modalElement.addEventListener('hidden.bs.modal', function (event) {
+            modalBody.innerHTML = `
+                    <div class="text-center p-5">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Cargando...</span>
+                        </div>
+                    </div>
+                `;
+        });
     </script>
 }

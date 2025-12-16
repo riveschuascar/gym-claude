@@ -89,7 +89,6 @@
 
 @section Scripts {
     <script>
-        // Función existente para confirmación de eliminación
         function confirmDelete(event, clientName) {
             event.preventDefault();
             const form = event.target;
@@ -125,16 +124,13 @@
             window.location.reload();
         }
 
-        // 1. Cargar el formulario vía AJAX cuando el modal se abre
         modalElement.addEventListener('show.bs.modal', function (event) {
-            // Llama al handler OnGetPartial que retorna solo el formulario
             fetch('/Clients/Create?handler=Partial')
                 .then(response => response.text())
                 .then(html => {
 
                     modalBody.innerHTML = html;
 
-                    // 2. Rebind de la validación de jQuery para el nuevo contenido
                     const form = modalBody.querySelector('form');
                     if (form) {
                         if ($.validator) {
@@ -142,7 +138,6 @@
                             $.validator.unobtrusive.parse(form);
                         }
 
-                        // 3. Capturar el envío del formulario cargado
                         form.addEventListener('submit', function (e) {
                             e.preventDefault();
 
@@ -157,7 +152,6 @@
                                         if (response && response.success === true) {
                                             handleSuccess();
                                         } else {
-                                            // Recarga el HTML con los errores de validación/API
                                             modalBody.innerHTML = response;
                                             $.validator.unobtrusive.parse(modalBody.querySelector('form'));
                                         }
@@ -177,7 +171,6 @@
                 });
         });
 
-        // 4. Limpiar el modal al cerrarlo
         modalElement.addEventListener('hidden.bs.modal', function (event) {
             modalBody.innerHTML = `
                     <div class="text-center p-5">

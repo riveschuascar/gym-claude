@@ -20,13 +20,10 @@ public class CreateModel : PageModel
 
     public void OnGet() { }
 
-    // Implementación del handler para cargar el formulario por AJAX
     public IActionResult OnGetPartial()
     {
         Client = new ClientDto();
 
-        // CORRECCIÓN: Se pasa 'this' (la instancia de CreateModel) 
-        // porque la vista parcial espera el modelo de la página.
         return Partial("_CreateClientForm", this);
     }
 
@@ -44,7 +41,6 @@ public class CreateModel : PageModel
             return Page();
         }
 
-        // Retorna JSON en caso de éxito para el manejo AJAX
         return new JsonResult(new { success = true });
     }
 
@@ -62,7 +58,7 @@ public class CreateModel : PageModel
             }
             catch (JsonException)
             {
-                // ignorar parseo, usar texto crudo
+
             }
 
             return $"Error al {action}: {raw}";

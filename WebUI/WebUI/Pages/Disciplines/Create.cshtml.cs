@@ -19,6 +19,13 @@ public class CreateModel : PageModel
 
     public void OnGet() { }
 
+    public IActionResult OnGetPartial()
+    {
+        Discipline = new DisciplineDTO();
+
+        return Partial("_CreateDisciplineForm", this);
+    }
+
     public async Task<IActionResult> OnPostAsync()
     {
         if (!ModelState.IsValid)
@@ -29,7 +36,7 @@ public class CreateModel : PageModel
             var resp = await _disciplineHttp.PostAsJsonAsync("/api/Disciplines", Discipline);
             if (resp.IsSuccessStatusCode)
             {
-                TempData["SuccessMessage"] = "Disciplina creada exitosamente.";
+                return new JsonResult(new { success = true });
             }
             else
             {
@@ -44,8 +51,6 @@ public class CreateModel : PageModel
             Console.WriteLine(ex.Message);
             return Page();
         }
-
-        return RedirectToPage("Index");
     }
 
     private static string ExtractErrorMessage(string raw, HttpStatusCode status, string action)
@@ -62,7 +67,7 @@ public class CreateModel : PageModel
             }
             catch (JsonException)
             {
-                // ignorar parseo, usar texto crudo
+
             }
             return $"No se pudo {action}: {raw}";
         }
@@ -70,4 +75,3 @@ public class CreateModel : PageModel
         return $"No se pudo {action}. Código HTTP: {(int)status} ({status}).";
     }
 }
-
