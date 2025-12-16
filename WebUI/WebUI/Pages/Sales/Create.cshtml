@@ -15,10 +15,10 @@
 
     @if (TempData["ErrorMessage"] != null)
     {
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            @TempData["ErrorMessage"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
     }
 
     <form method="get" class="card shadow-sm mb-3">
@@ -75,7 +75,7 @@
                         @foreach (var c in Model.Clients)
                         {
                             var fullName = $"{c.Name} {c.FirstLastname} {c.SecondLastname}".Trim();
-                            <option value="@c.Id" data-name="@fullName" data-ci="@c.Ci">@fullName (@c.Ci)</option>
+                        <option value="@c.Id" data-name="@fullName" data-ci="@c.Ci">@fullName (@c.Ci)</option>
                         }
                     </select>
                     <span asp-validation-for="Input.ClientId" class="text-danger"></span>
@@ -109,7 +109,7 @@
                 </div>
 
 
-                
+
 
                 <div class="col-md-6">
                     <div class="bg-light border rounded p-3 h-100">
@@ -120,10 +120,10 @@
                             <dd class="col-8" id="clientPreview">Selecciona un cliente</dd>
                             <dt class="col-4">CI/NIT</dt>
                             <dd class="col-8" id="clientDoc">-</dd>
-                                <dt class="col-4">Disciplinas</dt>
-                                <dd class="col-8" id="disciplinePreview">Selecciona una disciplina</dd>
-                                <dt class="col-4">Sesiones/mes</dt>
-                                <dd class="col-8" id="sessionPreview">-</dd>
+                            <dt class="col-4">Disciplinas</dt>
+                            <dd class="col-8" id="disciplinePreview">Selecciona una disciplina</dd>
+                            <dt class="col-4">Sesiones/mes</dt>
+                            <dd class="col-8" id="sessionPreview">-</dd>
                             <dt class="col-4">Total</dt>
                             <dd class="col-8 fw-bold" id="totalPreview">0</dd>
                         </dl>
@@ -143,7 +143,7 @@
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
     <script>
-        
+
         const clientSelect = document.getElementById('clientSelect');
         const totalInput = document.getElementById('totalAmount');
         const clientPreview = document.getElementById('clientPreview');

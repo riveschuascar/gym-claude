@@ -22,8 +22,37 @@ public class CreateModel : PageModel
     public IActionResult OnGetPartial()
     {
         Discipline = new DisciplineDTO();
-
         return Partial("_CreateDisciplineForm", this);
+    }
+
+    public async Task<IActionResult> OnPostPostAsync()
+    {
+        if (!ModelState.IsValid)
+        {
+            return Partial("_CreateDisciplineForm", this);
+        }
+
+        try
+        {
+            var resp = await _disciplineHttp.PostAsJsonAsync("/api/Disciplines", Discipline);
+            if (resp.IsSuccessStatusCode)
+            {
+                return new JsonResult(new { success = true });
+            }
+            else
+            {
+                var error = await resp.Content.ReadAsStringAsync();
+                TempData["ErrorMessage"] = ExtractErrorMessage(error, resp.StatusCode, "crear la disciplina");
+                ModelState.AddModelError(string.Empty, TempData["ErrorMessage"] as string ?? "");
+                return Partial("_CreateDisciplineForm", this);
+            }
+        }
+        catch (Exception ex)
+        {
+            ModelState.AddModelError(string.Empty, "Error al conectar con el microservicio.");
+            Console.WriteLine(ex.Message);
+            return Partial("_CreateDisciplineForm", this);
+        }
     }
 
     public async Task<IActionResult> OnPostAsync()
@@ -36,7 +65,7 @@ public class CreateModel : PageModel
             var resp = await _disciplineHttp.PostAsJsonAsync("/api/Disciplines", Discipline);
             if (resp.IsSuccessStatusCode)
             {
-                return new JsonResult(new { success = true });
+                TempData["SuccessMessage"] = "Disciplina creada exitosamente.";
             }
             else
             {
@@ -51,7 +80,10 @@ public class CreateModel : PageModel
             Console.WriteLine(ex.Message);
             return Page();
         }
+
+        return RedirectToPage("Index");
     }
+
 
     private static string ExtractErrorMessage(string raw, HttpStatusCode status, string action)
     {
@@ -65,10 +97,7 @@ public class CreateModel : PageModel
                     return err.GetString() ?? $"No se pudo {action}.";
                 }
             }
-            catch (JsonException)
-            {
-
-            }
+            catch (JsonException) { }
             return $"No se pudo {action}: {raw}";
         }
 

@@ -23,8 +23,34 @@ public class CreateModel : PageModel
     public IActionResult OnGetPartial()
     {
         Client = new ClientDto();
-
         return Partial("_CreateClientForm", this);
+    }
+
+    public async Task<IActionResult> OnPostPostAsync()
+    {
+        if (!ModelState.IsValid)
+        {
+            return Partial("_CreateClientForm", this);
+        }
+
+        var resp = await _http.PostAsJsonAsync("/api/Client", Client);
+        if (!resp.IsSuccessStatusCode)
+        {
+            var body = await resp.Content.ReadAsStringAsync();
+            var message = ExtractErrorMessage(body, resp.StatusCode, "crear el cliente");
+            ModelState.AddModelError(string.Empty, message);
+            return Partial("_CreateClientForm", this);
+        }
+
+        int newId = 0;
+        try
+        {
+            var responseString = await resp.Content.ReadAsStringAsync();
+            if (int.TryParse(responseString, out int parsedId)) { newId = parsedId; }
+        }
+        catch { /* ignored */ }
+
+        return new JsonResult(new { success = true, newId = newId });
     }
 
     public async Task<IActionResult> OnPostAsync()
@@ -40,9 +66,9 @@ public class CreateModel : PageModel
             ModelState.AddModelError(string.Empty, message);
             return Page();
         }
-
-        return new JsonResult(new { success = true });
+        return RedirectToPage("Index");
     }
+
 
     private static string ExtractErrorMessage(string raw, HttpStatusCode status, string action)
     {
@@ -56,14 +82,9 @@ public class CreateModel : PageModel
                     return err.GetString() ?? $"Error al {action}.";
                 }
             }
-            catch (JsonException)
-            {
-
-            }
-
+            catch (JsonException) { }
             return $"Error al {action}: {raw}";
         }
-
         return $"Error al {action}. Código HTTP: {(int)status} ({status}).";
     }
 }

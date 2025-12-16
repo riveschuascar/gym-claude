@@ -22,7 +22,7 @@
                 </div>
                 <a class="navbar-brand" asp-area="" asp-page="/Index">GYMPT</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse"
-                    aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
 
@@ -33,63 +33,63 @@
                             var isAdmin = User.IsInRole("Admin");
                             var isInstructor = User.IsInRole("Instructor");
 
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-page="/Privacy">Privacidad</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-page="/Clients/Index">Clientes</a>
-                            </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-page="/Privacy">Privacidad</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-page="/Clients/Index">Clientes</a>
+                        </li>
 
-                            @*Restricted roles users logic*@
+                        @*Restricted roles users logic*@
                             if (isAdmin)
                             {
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-area="" asp-page="/Memberships/Index">Membres&iacute;as</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-area="" asp-page="/Sales/Index">Ventas</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-area="" asp-page="/Disciplines/Index">Disciplinas</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-area="" asp-page="/Users/Index">Usuarios</a>
-                                </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-page="/Memberships/Index">Membres&iacute;as</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-page="/Sales/Index">Ventas</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-page="/Disciplines/Index">Disciplinas</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-page="/Users/Index">Usuarios</a>
+                        </li>
                             }
                             else if (isInstructor)
                             {
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-area="" asp-page="/Memberships/Index">Membres&iacute;as</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-area="" asp-page="/Sales/Index">Ventas</a>
-                                </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-page="/Memberships/Index">Membres&iacute;as</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-page="/Sales/Index">Ventas</a>
+                        </li>
                             }
                         }
                     </ul>
                     <ul class="navbar-nav">
                         @if (User.Identity != null && User.Identity.IsAuthenticated)
                         {
-                            <li class="nav-item d-flex align-items-center me-3">
-                                <span class="text-dark">
-                                    <strong>@User.Identity.Name</strong><br />
-                                    <small class="text-muted">@User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value</small>
-                                    <div><a class="small text-decoration-none d-block mt-1" asp-page="/Account/ChangePassword">Cambiar contraseña</a></div>
-                                </span>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-danger" asp-page="/Login/Logout">
-                                    <i class="fas fa-sign-out-alt"></i> Cerrar sesi&oacute;n
-                                </a>
-                            </li>
+                        <li class="nav-item d-flex align-items-center me-3">
+                            <span class="text-dark">
+                                <strong>@User.Identity.Name</strong><br />
+                                <small class="text-muted">@User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value</small>
+                                <div><a class="small text-decoration-none d-block mt-1" asp-page="/Account/ChangePassword">Cambiar contraseña</a></div>
+                            </span>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-danger" asp-page="/Login/Logout">
+                                <i class="fas fa-sign-out-alt"></i> Cerrar sesi&oacute;n
+                            </a>
+                        </li>
                         }
                         else
                         {
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-page="/Login/Index">
-                                    <i class="fas fa-sign-in-alt"></i> Iniciar sesi&oacute;n
-                                </a>
-                            </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-page="/Login/Index">
+                                <i class="fas fa-sign-in-alt"></i> Iniciar sesi&oacute;n
+                            </a>
+                        </li>
                         }
                     </ul>
                 </div>
@@ -103,14 +103,16 @@
     </div>
 
     <footer class="footer bg-black bg-opacity-50">
-        <!-- ... Tu footer se queda igual ... -->
         <div class="container">
             <div class="row flex-row flex-wrap align-items-start">
 
                 <div class="col-lg-4 col-md-6 mb-5 mb-lg-0">
                     <h2 class="text-white mb-4">GymFit</h2>
-                    <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Voluptatibus illo ad quo sunt mayores,
-                        sint nostrum omnis eaque cumque dolorum.</p>
+                    <p>
+                        Lorem ipsum dolor sit amet, consectetur adipisicing elit.
+                        Voluptatibus illo ad quo sunt mayores,
+                        sint nostrum omnis eaque cumque dolorum.
+                    </p>
                     <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit.</p>
                 </div>
 
@@ -166,7 +168,8 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
 
-    <!-- ===== 2. A&Ntilde;ADE ESTO para que funcionen los POP-UPS de alerta ===== -->
+    <partial name="_ValidationScriptsPartial" />
+
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     @await RenderSectionAsync("Scripts", required: false)
