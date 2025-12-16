@@ -4,10 +4,11 @@
     <ProjectReference Include="..\..\DisciplineMicroservice\DisciplineMicroserviceDomain\DisciplineMicroserviceDomain.csproj" />
   </ItemGroup>
 
-  <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<UseAppHost>false</UseAppHost>
+	</PropertyGroup>
 
 </Project>

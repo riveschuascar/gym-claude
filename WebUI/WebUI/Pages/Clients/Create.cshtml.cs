@@ -20,6 +20,19 @@ public class CreateModel : PageModel
 
     public void OnGet() { }
 
+    // ********************************************************
+    // MÉTODO OnGetPartial CORREGIDO
+    // ********************************************************
+    public IActionResult OnGetPartial()
+    {
+        Client = new ClientDto();
+
+        // CORRECCIÓN: Se pasa 'this' (la instancia de CreateModel) 
+        // porque la vista parcial espera el modelo de la página.
+        return Partial("_CreateClientForm", this);
+    }
+    // ********************************************************
+
     public async Task<IActionResult> OnPostAsync()
     {
         if (!ModelState.IsValid)
@@ -33,7 +46,8 @@ public class CreateModel : PageModel
             ModelState.AddModelError(string.Empty, message);
             return Page();
         }
-        return RedirectToPage("Index");
+
+        return new JsonResult(new { success = true });
     }
 
     private static string ExtractErrorMessage(string raw, HttpStatusCode status, string action)
@@ -59,4 +73,3 @@ public class CreateModel : PageModel
         return $"Error al {action}. Código HTTP: {(int)status} ({status}).";
     }
 }
-
