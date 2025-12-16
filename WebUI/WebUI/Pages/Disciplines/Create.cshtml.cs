@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Net;
 using System.Text.Json;
 using WebUI.DTO;
+using System; // Agrega cualquier otro using que encuentres al final del archivo aquí.
 
 namespace WebUI.Pages.Disciplines;
 
@@ -35,6 +36,7 @@ public class CreateModel : PageModel
         try
         {
             var resp = await _disciplineHttp.PostAsJsonAsync("/api/Disciplines", Discipline);
+
             if (resp.IsSuccessStatusCode)
             {
                 return new JsonResult(new { success = true });
@@ -43,14 +45,21 @@ public class CreateModel : PageModel
             {
                 var error = await resp.Content.ReadAsStringAsync();
                 TempData["ErrorMessage"] = ExtractErrorMessage(error, resp.StatusCode, "crear la disciplina");
-                ModelState.AddModelError(string.Empty, TempData["ErrorMessage"] as string ?? "");
+                ModelState.AddModelError(string.Empty, TempData["ErrorMessage"] as string ?? "Error desconocido.");
                 return Partial("_CreateDisciplineForm", this);
             }
         }
+        catch (HttpRequestException ex)
+        {
+            // Captura de error de conexión de red
+            ModelState.AddModelError(string.Empty, "Error de Conexión: No se pudo contactar al microservicio de Disciplinas. Verifique que esté activo y la configuración del HttpClient.");
+            Console.WriteLine($"Error de Conexión (Disciplina): {ex.Message}");
+            return Partial("_CreateDisciplineForm", this);
+        }
         catch (Exception ex)
         {
-            ModelState.AddModelError(string.Empty, "Error al conectar con el microservicio.");
-            Console.WriteLine(ex.Message);
+            ModelState.AddModelError(string.Empty, "Error inesperado al intentar registrar la disciplina.");
+            Console.WriteLine($"Error General (Disciplina): {ex.Message}");
             return Partial("_CreateDisciplineForm", this);
         }
     }
