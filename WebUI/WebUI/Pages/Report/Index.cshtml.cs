@@ -12,21 +12,32 @@ namespace WebUI.Pages.Report
             _httpClientFactory = httpClientFactory;
         }
 
-        [BindProperty]
+        [BindProperty(SupportsGet = true)] // Permite recibirlo por URL
         public int SaleId { get; set; }
 
+        [BindProperty(SupportsGet = true)]
+        public bool AutoDownload { get; set; }
         public string ErrorMessage { get; set; }
         public string SuccessMessage { get; set; }
 
-        public void OnGet()
+        public async Task<IActionResult> OnGetAsync()
         {
+            if (AutoDownload && SaleId > 0)
+            {
+                return await GeneratePdfInternal();
+            }
+            return Page();
         }
 
         public async Task<IActionResult> OnPostGenerateAsync()
         {
-            if (SaleId <= 0)
+            return await GeneratePdfInternal();
+        }
+        private async Task<IActionResult> GeneratePdfInternal()
+        {
+           if (SaleId <= 0)
             {
-                ErrorMessage = "Por favor ingrese un ID de venta válido.";
+                ErrorMessage = "ID de venta válido.";
                 return Page();
             }
 
@@ -59,7 +70,7 @@ namespace WebUI.Pages.Report
                 var pdfBytes = await response.Content.ReadAsByteArrayAsync();
 
                 // 4. Devolver el archivo
-                return File(pdfBytes, "application/pdf", $"Comprobante_Venta_{SaleId}.pdf");
+                return File(pdfBytes, "application/pdf", $"Comprobante_Venta_Nro{SaleId}.pdf");
 
             }
             catch (Exception ex)

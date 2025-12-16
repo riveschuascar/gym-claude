@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.Net.Http.Json;
+using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using WebUI.DTO;
@@ -101,7 +102,10 @@ public class CreateModel : PageModel
             if (resp.IsSuccessStatusCode)
             {
                 TempData["SuccessMessage"] = "Venta registrada correctamente.";
-                return RedirectToPage("Index");
+                var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                var createdSale = JsonSerializer.Deserialize<SaleResponseDto>(respBody, options);
+                int newSaleId = createdSale?.Id ?? 0; 
+                return RedirectToPage("/Report/Index", new { SaleId = newSaleId, AutoDownload = true });
             }
 
             Console.WriteLine($"Sales API returned {(int)resp.StatusCode} {resp.ReasonPhrase}. Body: {respBody}");
@@ -215,3 +219,8 @@ public class SaleDetailInput
     public DateTime? EndDate { get; set; }
 }
 
+// Clase auxiliar solo para leer el ID de la respuesta
+public class SaleResponseDto
+{
+    public int Id { get; set; }
+}

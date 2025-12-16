@@ -53,6 +53,7 @@ $services = @(
     @{ Name = "Sales API";            Path = "SalesMicroservice/SalesMicroserviceAPI/SalesMicroserviceAPI.csproj"; Url = "http://localhost:5305"; LaunchProfile = "http" },
     @{ Name = "Report API";           Path = "ReportMicroservice/ReportMicroservice.API/ReportMicroservice.API.csproj"; Url = "http://localhost:5236"; LaunchProfile = "http" },
     @{ Name = "Email gRPC";           Path = "EmailMicroservice/EmailMicroservice.API/EmailMicroservice.API.csproj"; Url = "http://localhost:5254"; LaunchProfile = "http" },
+    @{ Name = "Orchestrator";         Path = "OrchestratorMicroservice/Orchestrator.Rest/Orchestrator.Rest.csproj"; Url = "http://localhost:5071"; LaunchProfile = "http" },
     @{ Name = "WebUI";                Path = "WebUI/WebUI/WebUI.csproj";                                            Url = "https://localhost:7241"; LaunchProfile = "https" }
 )
 

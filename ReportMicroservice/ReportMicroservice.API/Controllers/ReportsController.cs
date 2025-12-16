@@ -32,5 +32,18 @@ namespace ReportMicroservice.API.Controllers
                 return StatusCode(500, new { Message = ex.Message });
             }
         }
+        
+        [HttpPost("sales")]
+        public IActionResult ReceiveSaleNotification([FromBody] SaleNotificationDto request)
+        {
+            // El orquestador nos avisa que la venta terminó.
+            // No devolvemos el PDF aquí, solo decimos "Recibido".
+            Console.WriteLine($"[Notificación] Venta {request.SaleId} completada exitosamente.");
+            return Ok();
+        }
+    }
+    public class SaleNotificationDto
+    {
+        public int SaleId { get; set; }
     }
 }
