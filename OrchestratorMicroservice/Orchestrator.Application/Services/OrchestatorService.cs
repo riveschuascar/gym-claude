@@ -20,7 +20,7 @@ public class OrchestratorService : IOrchestatorService
     {
         _logger.LogInformation("Starting saga for sale {SaleId}", @event.SaleId);
 
-        // 1) Validate client by GET /api/clients/{id}
+        // 1) Validate client by GET /api/Clients/{id}
         var clientValid = await ValidateClientAsync(@event.ClientId);
         if (!clientValid)
         {
@@ -29,23 +29,87 @@ public class OrchestratorService : IOrchestatorService
             return;
         }
 
-        // 2) Validate each discipline via POST /api/disciplines/validate
-        foreach (var d in @event.DisciplinesIds)
+        // 2) Insert sale_details via POST /api/SaleDetails
+        var detailsCreated = await CreateSaleDetailsAsync(@event.SaleId, @event.Details);
+        if (!detailsCreated)
         {
-            var valid = await ValidateDisciplineAsync(d);
+            _logger.LogWarning("Failed to create sale details for sale {SaleId}", @event.SaleId);
+            await UpdateSaleStatusAsync(@event.SaleId, SaleStatus.SaleDetailsFailed);
+            return;
+        }
+
+        // 3) Validate each discipline via PUT /api/Disciplines/validate/ (verifica existencia y actualiza cupos)
+        var processedDisciplines = new List<SaleDetailDto>();
+        
+        foreach (var d in @event.Details)
+        {
+            var valid = await ValidateDisciplineAsync(d.DisciplineId, d.Qty);
             if (!valid)
             {
-                _logger.LogWarning("Discipline {DisciplineId} not valid", d);
+                _logger.LogWarning("Discipline {DisciplineId} validation failed. Starting compensation.", d.DisciplineId);
+                
+                // Compensar las disciplinas que ya fueron procesadas
+                await CompensateDisciplinesAsync(processedDisciplines);
+                
                 await UpdateSaleStatusAsync(@event.SaleId, SaleStatus.DisciplineFailed);
                 return;
             }
+            
+            // Agregar a la lista de procesadas exitosamente
+            processedDisciplines.Add(d);
+            _logger.LogInformation("Discipline {DisciplineId} validated and updated successfully", d.DisciplineId);
         }
 
-        // 3) Mark sale as complete
+        // 4) Mark sale as complete
         await UpdateSaleStatusAsync(@event.SaleId, SaleStatus.Completed);
 
-        // 4) Notify reports
-        await NotifyReportsAsync(@event.SaleId);  
+        // 5) Notify reports
+        await NotifyReportsAsync(@event.SaleId);
+    }
+
+    private async Task<bool> CreateSaleDetailsAsync(int saleId, List<SaleDetailDto> details)
+    {
+        try
+        {
+            var client = _httpClientFactory.CreateClient("SaleDetails");
+            var response = await client.PostAsJsonAsync("/api/SaleDetails", details);
+
+            if (response.IsSuccessStatusCode)
+            {
+                _logger.LogInformation("Sale details created successfully for sale {SaleId}", saleId);
+                return true;
+            }
+
+            if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                _logger.LogWarning("Bad request when creating sale details for sale {SaleId}: {Error}",
+                    saleId, errorContent);
+                return false;
+            }
+
+            if ((int)response.StatusCode >= 500)
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                _logger.LogError("Server error when creating sale details for sale {SaleId}: {StatusCode} - {Error}",
+                    saleId, response.StatusCode, errorContent);
+                return false;
+            }
+
+            _logger.LogWarning("Unexpected status code {StatusCode} when creating sale details for sale {SaleId}",
+                response.StatusCode, saleId);
+            return false;
+        }
+        catch (HttpRequestException ex)
+        {
+            _logger.LogError(ex, "HTTP request exception when creating sale details for sale {SaleId}", saleId);
+            return false;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error when creating sale details for sale {SaleId}", saleId);
+            return false;
+        }
     }
 
     private async Task<bool> ValidateClientAsync(int clientId)
@@ -73,24 +137,70 @@ public class OrchestratorService : IOrchestatorService
         }
     }
 
-    private async Task<bool> ValidateDisciplineAsync(int disciplineId)
+    private async Task<bool> ValidateDisciplineAsync(int disciplineId, int qty)
     {
         try
         {
             var client = _httpClientFactory.CreateClient("disciplines");
-            var payload = new { id = disciplineId };
-            var resp = await client.GetAsync($"/api/Disciplines/{disciplineId}");
-            if (!resp.IsSuccessStatusCode)
+            var payload = new { Qty = qty };
+            var resp = await client.PutAsJsonAsync($"/api/Disciplines/validate/{disciplineId}", payload);
+            
+            if (resp.IsSuccessStatusCode)
             {
-                _logger.LogWarning("Discipline service returned status {Status} for {Id}", resp.StatusCode, disciplineId);
+                return true;
+            }
+            
+            if (resp.StatusCode == System.Net.HttpStatusCode.BadRequest)
+            {
+                var errorContent = await resp.Content.ReadAsStringAsync();
+                _logger.LogWarning("Discipline {DisciplineId} validation failed: {Error}", disciplineId, errorContent);
                 return false;
             }
-            return true;
+            
+            _logger.LogWarning("Discipline service returned status {Status} for {Id}", resp.StatusCode, disciplineId);
+            return false;
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error validating discipline {DisciplineId}", disciplineId);
             return false;
+        }
+    }
+
+    private async Task CompensateDisciplinesAsync(List<SaleDetailDto> processedDisciplines)
+    {
+        if (!processedDisciplines.Any())
+        {
+            _logger.LogInformation("No disciplines to compensate");
+            return;
+        }
+
+        _logger.LogInformation("Starting compensation for {Count} disciplines", processedDisciplines.Count);
+
+        foreach (var d in processedDisciplines)
+        {
+            try
+            {
+                var client = _httpClientFactory.CreateClient("disciplines");
+                // Revertir la operación: devolver los cupos sumando qty de nuevo
+                var payload = new { Qty = d.Qty };
+                var resp = await client.PutAsJsonAsync($"/api/Disciplines/compensate/{d.DisciplineId}", payload);
+
+                if (resp.IsSuccessStatusCode)
+                {
+                    _logger.LogInformation("Discipline {DisciplineId} compensated successfully (restored {Qty} cupos)", 
+                        d.DisciplineId, d.Qty);
+                }
+                else
+                {
+                    _logger.LogError("Failed to compensate discipline {DisciplineId} with status {Status}", 
+                        d.DisciplineId, resp.StatusCode);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error compensating discipline {DisciplineId}", d.DisciplineId);
+            }
         }
     }
 

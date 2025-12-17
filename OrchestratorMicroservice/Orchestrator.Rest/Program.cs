@@ -50,6 +50,12 @@ builder.Services.AddHttpClient("sales", client =>
     client.Timeout = TimeSpan.FromSeconds(60);
 }).AddHttpMessageHandler<PropagationDelegatingHandler>();
 
+builder.Services.AddHttpClient("sale_details", client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["Services:sale_details:BaseUrl"] ?? "");
+    client.Timeout = TimeSpan.FromSeconds(60);
+}).AddHttpMessageHandler<PropagationDelegatingHandler>();
+
 builder.Services.AddHttpClient("reports", client =>
 {
     client.BaseAddress = new Uri(builder.Configuration["Services:reports:BaseUrl"] ?? "");

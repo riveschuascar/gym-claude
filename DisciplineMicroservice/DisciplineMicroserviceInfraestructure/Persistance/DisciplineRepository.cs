@@ -116,7 +116,7 @@ namespace DisciplineMicroservice.DisciplineMicroserviceInfraestructure.Persistan
                     entity.StartTime,
                     entity.EndTime,
                     entity.Price,
-                    entity.MonthlySessions,
+                    entity.Cupos,
                     entity.CreatedAt,
                     entity.LastModification,
                     entity.IsActive,
@@ -167,7 +167,7 @@ namespace DisciplineMicroservice.DisciplineMicroserviceInfraestructure.Persistan
                     entity.StartTime,
                     entity.EndTime,
                     entity.Price,
-                    entity.MonthlySessions,
+                    entity.Cupos,
                     entity.LastModification,
                     entity.IsActive,
                     ModifiedBy = userEmail
@@ -217,6 +217,38 @@ namespace DisciplineMicroservice.DisciplineMicroserviceInfraestructure.Persistan
             {
                 Console.WriteLine("Error en DeleteById: " + ex.Message);
                 return Result.Failure("Error al eliminar disciplina.");
+            }
+        }
+
+        public async Task<Result> UpdateCupos(short id, int qty, string? userEmail)
+        {
+            const string query = @"
+            UPDATE discipline
+            SET cupos = @Qty,
+            last_modification = @LastModification,
+            modified_by = @ModifiedBy
+            WHERE id = @Id";
+
+            try
+            {
+                using var conn = CreateConnection();
+                await conn.OpenAsync();
+
+                var parameters = new
+                {
+                    Id = id,
+                    LastModification = DateTime.Now,
+                    ModifiedBy = userEmail
+                };
+
+                var affected = await conn.ExecuteAsync(query, parameters);
+
+                return affected > 0 ? Result.Success() : Result.Failure("No se encontro la disciplina a validar");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error en Validate" + ex.Message);
+                return Result.Failure("Error al validar disciplina");
             }
         }
     }

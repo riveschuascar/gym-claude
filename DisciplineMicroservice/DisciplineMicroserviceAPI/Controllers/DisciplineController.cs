@@ -72,4 +72,13 @@ public class DisciplinesController : ControllerBase
         var result = await _disciplineService.Delete((short)id, email);
         return result.IsSuccess ? Ok(result.Value) : BadRequest(result.Error);
     }
+
+    [HttpPut("validate/{id}")]
+    public async Task<IActionResult> Validate(int id, [FromBody] int qty)
+    {
+        var email = GetEmailFromClaims();
+        short Id = (short)id;
+        var result = await _disciplineService.Validate(Id, qty, email);
+        return result.IsSuccess ? Ok(result) : BadRequest(result.Error);
+    }
 }

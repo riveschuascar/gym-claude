@@ -7,7 +7,7 @@ namespace SaleDetailMicroservice.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize]
+    //[Authorize]
     public class SaleDetailsController : ControllerBase
     {
         private readonly ISaleDetailService _service;

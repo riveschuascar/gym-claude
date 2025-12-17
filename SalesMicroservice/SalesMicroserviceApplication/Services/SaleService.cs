@@ -62,11 +62,11 @@ namespace SalesMicroserviceApplication.Services
                     d.Total = d.Price * d.Qty;
             }
             var total = sale.Details.Sum(d => d.Total);
-            if (sale.TotalAmount <= 0) 
+            if (sale.TotalAmount <= 0)
                 sale.TotalAmount = total;
 
             var createResult = await _repo.Create(sale, userEmail);
-            if (createResult.IsFailure) 
+            if (createResult.IsFailure)
                 return createResult;
 
             // Notificar al orquestador con la lista de disciplinas (best-effort)
@@ -85,7 +85,16 @@ namespace SalesMicroserviceApplication.Services
                     idOrquestas = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
                     saleId = sale.Id ?? 0,
                     clientId = sale.ClientId,
-                    disciplinesIds = sale.Details?.Select(d => d.DisciplineId).ToArray() ?? Array.Empty<int>()
+                    details = sale.Details?.Select(d => new
+                    {
+                        saleId = sale.Id ?? 0,
+                        disciplineId = d.DisciplineId,
+                        qty = d.Qty,
+                        price = d.Price,
+                        total = d.Total,
+                        startDate = d.StartDate,
+                        endDate = d.EndDate
+                    }).ToArray() ?? Array.Empty<object>()
                 };
 
                 var resp = await client.PostAsJsonAsync("/api/Orchestator/sale-created", payload);

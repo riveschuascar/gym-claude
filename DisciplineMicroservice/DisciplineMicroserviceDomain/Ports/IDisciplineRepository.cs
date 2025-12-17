@@ -12,5 +12,6 @@ namespace DisciplineMicroservice.DisciplineMicroserviceDomain.Ports
         Task<Result<Discipline>> Create(Discipline entity, string? userEmail = null);
         Task<Result<Discipline>> Update(Discipline entity, string? userEmail = null);
         Task<Result> DeleteById(int id, string? userEmail = null);
+        Task<Result> UpdateCupos(short id, int qty, string? userEmail);
     }
 }

@@ -11,6 +11,6 @@
         public TimeSpan? StartTime { get; set; }
         public TimeSpan? EndTime { get; set; }
         public double? Price { get; set; }
-        public short? MonthlySessions { get; set; } 
+        public short? Cupos { get; set; } 
     }
 }

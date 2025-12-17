@@ -52,7 +52,6 @@ builder.Services.AddScoped<ISaleRepository, SaleRepository>();
 // outbox not used for now
 builder.Services.AddScoped<ISaleService, SaleService>();
 
-
 var jwtKey = builder.Configuration["Jwt:Key"] ?? throw new InvalidOperationException("Jwt:Key missing");
 var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
 

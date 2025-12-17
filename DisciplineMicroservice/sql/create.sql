@@ -19,7 +19,7 @@ CREATE TABLE public.discipline (
     end_time            INTERVAL NOT NULL,
 
     price               DOUBLE PRECISION NOT NULL,
-    monthly_sessions    SMALLINT NOT NULL,
+    cupos    SMALLINT NOT NULL,
 
     CONSTRAINT chk_discipline_name_chars CHECK (
         name ~ '^[[:alpha:][:digit:] ''-]+$'
@@ -60,7 +60,7 @@ CREATE INDEX idx_discipline_is_active ON public.discipline(is_active);
 CREATE INDEX idx_discipline_name      ON public.discipline(name);
 
 INSERT INTO public.discipline
-    (name, id_user, start_time, end_time, price, monthly_sessions, created_by)
+    (name, id_user, start_time, end_time, price, cupos, created_by)
 VALUES
     ('Funcional AM',     1, '07:00', '08:30', 100.00, 12, 'system'),
     ('Spinning After',   2, '18:00', '19:00', 150.50, 12, 'system'),
