@@ -11,7 +11,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Controllers\" />
+    <ProjectReference Include="..\SaleDetailMicroservice.Application\SaleDetailMicroservice.Application.csproj" />
+    <ProjectReference Include="..\SaleDetailMicroservice.Domain\SaleDetailMicroservice.Domain.csproj" />
+    <ProjectReference Include="..\SaleDetailMicroservice.Infrastructure\SaleDetailMicroservice.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>
