@@ -29,9 +29,15 @@ namespace SalesMicroserviceApplication.Services
             _logger = logger;
         }
 
-        public async Task<Result<IEnumerable<Sale>>> GetAll() => await _repo.GetAll();
+        public async Task<Result<IEnumerable<Sale>>> GetAll()
+        {
+            return await _repo.GetAll();
+        }
 
-        public async Task<Result<Sale>> GetById(int id) => await _repo.GetById(id);
+        public async Task<Result<Sale>> GetById(int id)
+        {
+            return await _repo.GetById(id);
+        }
 
         public async Task<Result<Sale>> Create(Sale sale, string? userEmail = null, OperationContext? context = null)
         {
@@ -41,45 +47,30 @@ namespace SalesMicroserviceApplication.Services
             if (validation.IsFailure)
                 return Result<Sale>.Failure(validation.Error!);
 
-            var clientExists = await EnsureClientExists(sale.ClientId);
-            if (clientExists.IsFailure)
-                return Result<Sale>.Failure(clientExists.Error!);
-
-            // validate each discipline in the details
-            if (sale.Details != null)
-            {
-                foreach (var d in sale.Details)
-                {
-                    var disciplineExists = await EnsureDisciplineExists(d.DisciplineId);
-                    if (disciplineExists.IsFailure)
-                        return Result<Sale>.Failure(disciplineExists.Error!);
-                }
-            }
+            if (sale.Details == null || !sale.Details.Any())
+                return Result<Sale>.Failure("La venta debe contener al menos una disciplina.");
 
             sale.SaleDate = sale.SaleDate == default ? DateTime.UtcNow.Date : sale.SaleDate.Date;
-            // details contain start/end per discipline, if needed leave them as-is
             sale.CreatedAt = DateTime.UtcNow;
             sale.LastModification = DateTime.UtcNow;
             sale.IsActive = true;
-            // compute totals for details and sale total
-            if (sale.Details != null)
+
+            // Calcular el total basado en los detalles recibidos
+            foreach (var d in sale.Details)
             {
-                foreach (var d in sale.Details)
-                {
-                    if (d.Total <= 0)
-                        d.Total = d.Price * d.Qty;
-                }
-                var total = sale.Details.Sum(d => d.Total);
-                if (sale.TotalAmount <= 0) sale.TotalAmount = total;
+                if (d.Total <= 0)
+                    d.Total = d.Price * d.Qty;
             }
+            var total = sale.Details.Sum(d => d.Total);
+            if (sale.TotalAmount <= 0) 
+                sale.TotalAmount = total;
 
             var createResult = await _repo.Create(sale, userEmail);
-            if (createResult.IsFailure) return createResult;
+            if (createResult.IsFailure) 
+                return createResult;
 
-            // notify orchestrator about the created sale (best-effort)
-            await NotifyOrchestratorAsync(createResult.Value);
-
-            // outbox and event publishing omitted for now - handled later
+            // Notificar al orquestador con la lista de disciplinas (best-effort)
+            _ = NotifyOrchestratorAsync(createResult.Value);
 
             return createResult;
         }
@@ -120,33 +111,9 @@ namespace SalesMicroserviceApplication.Services
             if (validation.IsFailure)
                 return Result<Sale>.Failure(validation.Error!);
 
-            var clientExists = await EnsureClientExists(sale.ClientId);
-            if (clientExists.IsFailure)
-                return Result<Sale>.Failure(clientExists.Error!);
-
-            if (sale.Details != null)
-            {
-                foreach (var d in sale.Details)
-                {
-                    var disciplineExists = await EnsureDisciplineExists(d.DisciplineId);
-                    if (disciplineExists.IsFailure)
-                        return Result<Sale>.Failure(disciplineExists.Error!);
-                }
-            }
-
             sale.SaleDate = sale.SaleDate == default ? DateTime.UtcNow.Date : sale.SaleDate.Date;
-            // details contained by sale, no global start/end
             sale.LastModification = DateTime.UtcNow;
-            if (sale.Details != null)
-            {
-                foreach (var d in sale.Details)
-                {
-                    if (d.Total <= 0)
-                        d.Total = d.Price * d.Qty;
-                }
-                var total = sale.Details.Sum(d => d.Total);
-                if (sale.TotalAmount <= 0) sale.TotalAmount = total;
-            }
+
             return await _repo.Update(sale, userEmail);
         }
 
@@ -155,59 +122,10 @@ namespace SalesMicroserviceApplication.Services
             return await _repo.Delete(id, userEmail);
         }
 
-        private async Task<Result> EnsureClientExists(int clientId)
-        {
-            try
-            {
-                var client = _httpFactory.CreateClient("Clients");
-                var response = await client.GetAsync($"/api/Client/{clientId}");
-                if (response.StatusCode == HttpStatusCode.NotFound)
-                    return Result.Failure("El cliente no existe en el microservicio de clientes.");
-
-                response.EnsureSuccessStatusCode();
-                return Result.Success();
-            }
-            catch (TaskCanceledException ex)
-            {
-                _logger.LogWarning(ex, "Timeout al validar cliente {ClientId}. Se permite continuar de forma optimista.", clientId);
-                return Result.Success();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, "No se pudo validar cliente {ClientId} en Client API. Se continua optimistamente.", clientId);
-                return Result.Success();
-            }
-        }
-
-        private async Task<Result> EnsureDisciplineExists(int disciplineId)
-        {
-            try
-            {
-                var client = _httpFactory.CreateClient("Disciplines");
-                var response = await client.GetAsync($"/api/Disciplines/{disciplineId}");
-                if (response.StatusCode == HttpStatusCode.NotFound)
-                    return Result.Failure("La disciplina no existe en el microservicio de disciplinas.");
-
-                response.EnsureSuccessStatusCode();
-                return Result.Success();
-            }
-            catch (TaskCanceledException ex)
-            {
-                _logger.LogWarning(ex, "Timeout al validar disciplina {DisciplineId}. Se permite continuar de forma optimista.", disciplineId);
-                return Result.Success();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, "No se pudo validar disciplina {DisciplineId} en Discipline API. Se continua optimistamente.", disciplineId);
-                return Result.Success();
-            }
-        }
-
         public async Task<Result> UpdateSaleStatus(int Id, string Status)
         {
             _logger.LogInformation("Updating sale {SaleId} status to {Status}", Id, Status);
-            var res = await _repo.UpdateSaleStatus(Id, Status);
-            return res;
+            return await _repo.UpdateSaleStatus(Id, Status);
         }
     }
 }

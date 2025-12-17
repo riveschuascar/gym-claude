@@ -52,6 +52,11 @@ start cmd /k "echo [Reportes] iniciando... & cd ReportMicroservice\ReportMicrose
 REM ===========================
 REM   WebUI (http://localhost:5030)
 REM ===========================
+start cmd /k "echo [SaleDetails] iniciando... & cd SaleDetailMicroservice\SaleDetailMicroservice && dotnet run --launch-profile http --urls http://localhost:5079"
+
+REM ===========================
+REM   WebUI (http://localhost:5030)
+REM ===========================
 start cmd /k "echo [WebUI] iniciando... & cd WebUI\WebUI && dotnet run --launch-profile http --urls http://localhost:5030"
 
 echo.

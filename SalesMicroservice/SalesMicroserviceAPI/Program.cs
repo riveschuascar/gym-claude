@@ -26,20 +26,20 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddTransient<PropagationDelegatingHandler>();
 
 var httpTimeout = builder.Configuration.GetValue<int?>("ExternalApis:TimeoutSeconds") ?? 5;
-var clientApiBase = builder.Configuration["ExternalApis:Client"] ?? "http://localhost:5135";
-var disciplineApiBase = builder.Configuration["ExternalApis:Discipline"] ?? builder.Configuration["ExternalApis:Membership"] ?? "http://localhost:5098";
+// var clientApiBase = builder.Configuration["ExternalApis:Client"] ?? "http://localhost:5135";
+// var disciplineApiBase = builder.Configuration["ExternalApis:Discipline"] ?? builder.Configuration["ExternalApis:Membership"] ?? "http://localhost:5098";
 
-builder.Services.AddHttpClient("Clients", client =>
-{
-    client.BaseAddress = new Uri(clientApiBase);
-    client.Timeout = TimeSpan.FromSeconds(httpTimeout);
-}).AddHttpMessageHandler<PropagationDelegatingHandler>();
+// builder.Services.AddHttpClient("Clients", client =>
+// {
+//     client.BaseAddress = new Uri(clientApiBase);
+//     client.Timeout = TimeSpan.FromSeconds(httpTimeout);
+// }).AddHttpMessageHandler<PropagationDelegatingHandler>();
 
-builder.Services.AddHttpClient("Disciplines", client =>
-{
-    client.BaseAddress = new Uri(disciplineApiBase);
-    client.Timeout = TimeSpan.FromSeconds(httpTimeout);
-}).AddHttpMessageHandler<PropagationDelegatingHandler>();
+// builder.Services.AddHttpClient("Disciplines", client =>
+// {
+//     client.BaseAddress = new Uri(disciplineApiBase);
+//     client.Timeout = TimeSpan.FromSeconds(httpTimeout);
+// }).AddHttpMessageHandler<PropagationDelegatingHandler>();
 
 builder.Services.AddHttpClient("Orchestrator", client =>
 {
@@ -51,6 +51,7 @@ builder.Services.AddScoped<IDbConnection>(_ =>
 builder.Services.AddScoped<ISaleRepository, SaleRepository>();
 // outbox not used for now
 builder.Services.AddScoped<ISaleService, SaleService>();
+
 
 var jwtKey = builder.Configuration["Jwt:Key"] ?? throw new InvalidOperationException("Jwt:Key missing");
 var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
