@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using ReportMicroservice.Domain.Ports;
 using ReportMicroservice.Domain.Models;
+using ReportMicroservice.Domain.DTO;
 using System.Security.Claims;
 
 namespace ReportMicroservice.Application.Services
@@ -29,16 +30,20 @@ namespace ReportMicroservice.Application.Services
 
             if (string.IsNullOrEmpty(token)) throw new UnauthorizedAccessException("No JWT token found");
 
-            var sale = await _externalDataService.GetSaleByIdAsync(saleId, token);
-            var details = sale.Details; 
-
-            var clientTask = _externalDataService.GetClientByIdAsync(sale.ClientId, token);
+            var saleTask = _externalDataService.GetSaleByIdAsync(saleId, token);
+            var detailsTask = _externalDataService.GetSaleDetailsBySaleIdAsync(saleId, token);
             var disciplinesTask = _externalDataService.GetAllDisciplinesAsync(token);
 
-            await Task.WhenAll(clientTask, disciplinesTask);
+            var sale = await saleTask;
 
-            var client = clientTask.Result;
-            var disciplines = disciplinesTask.Result;
+            var clientTask = _externalDataService.GetClientByIdAsync(sale.ClientId, token);
+
+            // Esperamos a que todo lo demás termine
+            await Task.WhenAll(detailsTask, disciplinesTask, clientTask);
+
+            var details = await detailsTask;
+            var disciplines = await disciplinesTask;
+            var client = await clientTask;
 
             // Lógica con LINQ para armar el modelo del reporte
             var reportDetails = (from d in details
@@ -56,7 +61,7 @@ namespace ReportMicroservice.Application.Services
                 SaleId = sale.Id,
                 Date = sale.SaleDate,
                 ClientName = client.FullName,
-                ClientCiNit = client.Ci, 
+                ClientCiNit = sale.Nit, 
                 Details = reportDetails,
                 TotalAmount = sale.TotalAmount,
                 GeneratedAt = DateTime.Now,

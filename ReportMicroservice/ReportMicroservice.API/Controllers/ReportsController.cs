@@ -36,8 +36,6 @@ namespace ReportMicroservice.API.Controllers
         [HttpPost("~/api/Report/sales")] 
         public IActionResult ReceiveSaleNotification([FromBody] SaleNotificationDto request)
         {
-            // Solo logueamos que el orquestador terminó.
-            // No hacemos nada más porque el PDF lo pide el usuario desde la WebUI.
             Console.WriteLine($"[Orchestrator Notification] Venta {request.SaleId} finalizada correctamente.");
             return Ok();
         }

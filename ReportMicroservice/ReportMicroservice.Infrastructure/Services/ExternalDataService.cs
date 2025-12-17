@@ -23,6 +23,7 @@ namespace ReportMicroservice.Infrastructure.Services
         {
             if (!string.IsNullOrEmpty(token))
             {
+                // Asegurarse de no duplicar "Bearer" si ya viene en el string
                 var cleanToken = token.Replace("Bearer ", "").Trim();
                 _httpClient.DefaultRequestHeaders.Authorization =
                     new AuthenticationHeaderValue("Bearer", cleanToken);
@@ -44,9 +45,15 @@ namespace ReportMicroservice.Infrastructure.Services
 
         public async Task<List<SaleDetailDto>> GetSaleDetailsBySaleIdAsync(int saleId, string token)
         {
-            var sale = await GetSaleByIdAsync(saleId, token);
+            SetToken(token);
+            var baseUrl = _configuration["Microservices:SaleDetailsApi"]; 
+            
+            var response = await _httpClient.GetAsync($"{baseUrl}/api/SaleDetails/sale/{saleId}");
+            
+            response.EnsureSuccessStatusCode();
 
-            return sale.Details ?? new List<SaleDetailDto>();
+            return await JsonSerializer.DeserializeAsync<List<SaleDetailDto>>(
+                await response.Content.ReadAsStreamAsync(), _jsonOptions) ?? new List<SaleDetailDto>();
         }
 
         public async Task<ClientDto> GetClientByIdAsync(int id, string token)

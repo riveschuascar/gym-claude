@@ -51,6 +51,7 @@ $services = @(
     @{ Name = "Discipline API";       Path = "DisciplineMicroservice/DisciplineMicroserviceAPI/DisciplineMicroserviceApi.csproj"; Url = "http://localhost:5098"; LaunchProfile = "http" },
     @{ Name = "Membership API";       Path = "MembershipMicroservice/MembershipMicroserviceAPI/MembershipMicroserviceAPI.csproj"; Url = "http://localhost:5292"; LaunchProfile = "http" },
     @{ Name = "Sales API";            Path = "SalesMicroservice/SalesMicroserviceAPI/SalesMicroserviceAPI.csproj"; Url = "http://localhost:5305"; LaunchProfile = "http" },
+    @{ Name = "SaleDetail API";       Path = "SaleDetailMicroservice/SaleDetailMicroservice/SaleDetailMicroservice.API.csproj"; Url = "http://localhost:5079"; LaunchProfile = "http" },
     @{ Name = "Report API";           Path = "ReportMicroservice/ReportMicroservice.API/ReportMicroservice.API.csproj"; Url = "http://localhost:5236"; LaunchProfile = "http" },
     @{ Name = "Email gRPC";           Path = "EmailMicroservice/EmailMicroservice.API/EmailMicroservice.API.csproj"; Url = "http://localhost:5254"; LaunchProfile = "http" },
     @{ Name = "Orchestrator";         Path = "OrchestratorMicroservice/Orchestrator.Rest/Orchestrator.Rest.csproj"; Url = "http://localhost:5071"; LaunchProfile = "http" },
