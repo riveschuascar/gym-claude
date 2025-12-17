@@ -50,7 +50,14 @@ public class CreateModel : PageModel
         }
         catch { /* ignored */ }
 
-        return new JsonResult(new { success = true, newId = newId });
+        // MODIFICACIÓN: Devolvemos un objeto con los datos necesarios para la UI de Ventas
+        return new JsonResult(new
+        {
+            success = true,
+            newId = newId,
+            fullName = $"{Client.Name} {Client.FirstLastname} {Client.SecondLastname}".Trim(),
+            ci = Client.Ci
+        });
     }
 
     public async Task<IActionResult> OnPostAsync()
