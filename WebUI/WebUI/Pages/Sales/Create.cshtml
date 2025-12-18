@@ -73,11 +73,15 @@
                     <select asp-for="Input.ClientId" class="form-select" id="clientSelect">
                         <option value="">-- Selecciona un cliente --</option>
                         @foreach (var c in Model.Clients)
-                        {
-                            var fullName = $"{c.Name} {c.FirstLastname} {c.SecondLastname}".Trim();
+        {
+            var fullName = $"{c.Name} {c.FirstLastname} {c.SecondLastname}".Trim();
                         <option value="@c.Id" data-name="@fullName" data-ci="@c.Ci">@fullName (@c.Ci)</option>
-                        }
+        }
                     </select>
+
+                    <!-- 🔹 Hidden input -->
+                    <input type="hidden" asp-for="Input.ClientId" id="clientHidden" />
+
                     <span asp-validation-for="Input.ClientId" class="text-danger"></span>
                 </div>
 
@@ -168,196 +172,173 @@
 
 
 @section Scripts {
-        <partial name="_ValidationScriptsPartial" />
-        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-        <script>
+    <partial name="_ValidationScriptsPartial" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
         const clientSelect = document.getElementById('clientSelect');
         const totalInput = document.getElementById('totalAmount');
-        const clientPreview = document.getElementById('clientPreview');
-        const clientDoc = document.getElementById('clientDoc');
-        const disciplinePreview = document.getElementById('disciplinePreview');
-        const totalPreview = document.getElementById('totalPreview');
         const detailsContainer = document.getElementById('detailsContainer');
         const addDetailBtn = document.getElementById('addDetailBtn');
 
         function updateClientInfo() {
             const option = clientSelect.options[clientSelect.selectedIndex];
-            clientPreview.textContent = option?.getAttribute('data-name') || 'Selecciona un cliente';
-            clientDoc.textContent = option?.getAttribute('data-ci') || '-';
+            const name = option?.getAttribute('data-name') || 'Selecciona un cliente';
+            const ci = option?.getAttribute('data-ci') || '-';
+
+            $('#clientPreview').text(name);
+            $('#clientDoc').text(ci);
+
+            // Actualizar input de NIT/CI
+            if (ci !== '-') {
+                $('input[name="Input.TaxId"]').val(ci);
+            }
+
+            // 🔹 Actualizar hidden para que Razor Pages reciba el valor
+            $('#clientHidden').val(clientSelect.value);
+
+            // Forzar validación
+            const form = $('#saleForm');
+            if (form.data('validator')) {
+                form.validate().element('#clientSelect');
+            }
         }
+
 
         function createDetailRow(idx, detail) {
             const wrapper = document.createElement('div');
             wrapper.className = 'row g-2 align-items-end mb-2 detail-row';
 
-            const sel = document.createElement('select');
-            sel.className = 'form-select detail-discipline';
-            sel.name = `Input.Details[${idx}].DisciplineId`;
-            sel.innerHTML = '<option value="">-- Selecciona --</option>';
-
-            // Cargar disciplinas del servidor
+            let optionsHtml = '<option value="">-- Selecciona --</option>';
             @foreach (var d in Model.Disciplines) {
-                <text>
-                var opt = document.createElement('option');
-                opt.value = '@d.Id';
-                opt.setAttribute('data-price','@d.Price');
-                opt.textContent = '@d.Name (@(d.Price?.ToString("N2")) Bs)';
-                sel.appendChild(opt);
-                </text>
+                <text>optionsHtml += `<option value="@d.Id" data-price="@d.Price">@d.Name (@(d.Price?.ToString("N2")) Bs)</option>`;</text>
             }
 
-            // SI LA DISCIPLINA ES NUEVA (creada por modal), la inyectamos manualmente
-            if (detail && detail.isNew) {
-                const newOpt = document.createElement('option');
-                newOpt.value = detail.DisciplineId;
-                newOpt.setAttribute('data-price', detail.Price);
-                newOpt.textContent = `${detail.Name} (${detail.Price} Bs)`;
-                sel.appendChild(newOpt);
-            }
+            wrapper.innerHTML = `
+                <div class="col-md-5">
+                    <label class="form-label">Disciplina</label>
+                    <select name="Input.Details[${idx}].DisciplineId" class="form-select detail-discipline" required>
+                        ${optionsHtml}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Cantidad</label>
+                    <input type="number" name="Input.Details[${idx}].Qty" class="form-control detail-qty" value="${detail?.Qty || 1}" min="1">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Precio</label>
+                    <input type="number" name="Input.Details[${idx}].Price" class="form-control detail-price" readonly value="${detail?.Price || ''}">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Total</label>
+                    <input type="number" name="Input.Details[${idx}].Total" class="form-control detail-total" readonly value="${detail?.Total || ''}">
+                </div>
+                <div class="col-md-1">
+                    <button type="button" class="btn btn-outline-danger btn-sm remove-row"><i class="fas fa-trash"></i></button>
+                </div>
+            `;
 
-            const qtyInput = document.createElement('input');
-            qtyInput.type='number'; qtyInput.className='form-control detail-qty';
-            qtyInput.name=`Input.Details[${idx}].Qty`; qtyInput.value = detail?.Qty || 1;
-
-            const priceInput = document.createElement('input');
-            priceInput.type='number'; priceInput.className='form-control detail-price';
-            priceInput.name=`Input.Details[${idx}].Price`; priceInput.readOnly=true;
-            priceInput.value = detail?.Price || '';
-
-            const totalRowInput = document.createElement('input');
-            totalRowInput.className='form-control detail-total'; totalRowInput.readOnly=true;
-            totalRowInput.value = detail?.Total || '';
-
-            const remBtn = document.createElement('button');
-            remBtn.type='button'; remBtn.className='btn btn-outline-danger btn-sm';
-            remBtn.innerHTML = '<i class="fas fa-trash"></i>';
-
-            // Armar columnas (simplificado para brevedad)
-            wrapper.innerHTML = `<div class="col-md-5"><label class="form-label">Disciplina</label></div>
-                                 <div class="col-md-2"><label class="form-label">Cantidad</label></div>
-                                 <div class="col-md-2"><label class="form-label">Precio</label></div>
-                                 <div class="col-md-2"><label class="form-label">Total</label></div>
-                                 <div class="col-md-1"></div>`;
-
-            wrapper.children[0].appendChild(sel);
-            wrapper.children[1].appendChild(qtyInput);
-            wrapper.children[2].appendChild(priceInput);
-            wrapper.children[3].appendChild(totalRowInput);
-            wrapper.children[4].appendChild(remBtn);
             detailsContainer.appendChild(wrapper);
+            const sel = wrapper.querySelector('.detail-discipline');
+            const qtyInp = wrapper.querySelector('.detail-qty');
+            const priceInp = wrapper.querySelector('.detail-price');
+            const totalRowInp = wrapper.querySelector('.detail-total');
 
-            const calculate = () => {
-                const p = parseFloat(priceInput.value || 0);
-                const q = parseInt(qtyInput.value || 0);
-                totalRowInput.value = (p * q).toFixed(2);
+            const calc = () => {
+                const p = parseFloat(priceInp.value || 0);
+                const q = parseInt(qtyInp.value || 0);
+                totalRowInp.value = (p * q).toFixed(2);
                 recomputeTotal();
             };
 
             sel.addEventListener('change', () => {
                 const p = sel.options[sel.selectedIndex]?.getAttribute('data-price');
-                priceInput.value = p ? parseFloat(p).toFixed(2) : '';
-                calculate();
+                priceInp.value = p ? parseFloat(p).toFixed(2) : '';
+                calc();
             });
-            qtyInput.addEventListener('change', calculate);
-            remBtn.addEventListener('click', () => { wrapper.remove(); recomputeTotal(); });
+
+            qtyInp.addEventListener('change', calc);
+            wrapper.querySelector('.remove-row').addEventListener('click', () => { wrapper.remove(); recomputeTotal(); });
 
             if (detail?.DisciplineId) {
-                sel.value = detail.DisciplineId;
-                sel.dispatchEvent(new Event('change'));
+                $(sel).val(detail.DisciplineId).trigger('change');
             }
         }
-
-        function addDetail(d) { createDetailRow(detailsContainer.querySelectorAll('.detail-row').length, d); }
 
         function recomputeTotal() {
             let sum = 0;
             document.querySelectorAll('.detail-total').forEach(i => sum += parseFloat(i.value || 0));
             totalInput.value = sum.toFixed(2);
-            totalPreview.textContent = sum.toFixed(2) + " Bs";
+            if (document.getElementById('totalPreview')) document.getElementById('totalPreview').textContent = sum.toFixed(2) + " Bs";
+
+            if (sum > 0) {
+                $(totalInput).removeClass("is-invalid input-validation-error");
+                $(`[data-valmsg-for="Input.TotalAmount"]`).text("");
+            }
         }
 
-        addDetailBtn.addEventListener('click', () => addDetail(null));
-        clientSelect.addEventListener('change', updateClientInfo);
+        // --- MANEJO DE MODALES ---
+        // --- MANEJO DE MODAL DE NUEVO CLIENTE ---
+$('#clientModal').on('show.bs.modal', function () {
+    $.get('@Url.Page("/Clients/Create", "Partial")', function (data) {
+        $('#clientModalBody').html(data);
 
-        // Lógica Modal Disciplina
-        // Dentro de la sección Scripts de tu página de Nueva Venta
-$('#disciplineModal').on('show.bs.modal', function (event) {
-    var modalBody = document.getElementById('disciplineModalBody');
-    $.get('@Url.Page("/Disciplines/Create", "Partial")', function (data) {
-        modalBody.innerHTML = data;
-
-        $('#disciplineModalBody form').off('submit').on('submit', function (e) {
+        // 🔹 Formulario del modal
+        $('#clientModalBody form').on('submit', function (e) {
             e.preventDefault();
             $.ajax({
-                url: '@Url.Page("/Disciplines/Create", "Post")',
+                url: '@Url.Page("/Clients/Create", null, new { handler = "Post" })',
                 type: 'POST',
                 data: $(this).serialize(),
-                success: function (response) {
-                    if (response.success) {
-                        $('#disciplineModal').modal('hide');
+                dataType: 'json', // importante
+                success: function(res) {
+                    if (res.success) {
+                        // Cierra el modal
+                        $('#clientModal').modal('hide');
 
-                        // 1. Formatear el texto para el select
-                        const price = parseFloat(response.price).toFixed(2);
-                        const text = `${response.name} (${price} Bs)`;
+                        // Añadir cliente al select
+                        const newId = Number(res.newId);
+                        const opt = new Option(`${res.fullName} (${res.ci})`, newId, true, true);
+                        opt.setAttribute('data-name', res.fullName);
+                        opt.setAttribute('data-ci', res.ci);
 
-                        // 2. Crear y añadir la opción
-                        const newOption = new Option(text, response.id, true, true);
-                        $(newOption).attr('data-price', response.price);
+                        const clientSelect = document.getElementById('clientSelect');
+                        clientSelect.add(opt);
+                        clientSelect.value = newId;
 
-                        // 3. Seleccionar el elemento (Asegúrate que el ID sea el correcto)
-                        const $select = $('#disciplineSelect');
-                        $select.append(newOption).trigger('change');
-
-                        // 4. Si tienes campos de autocompletado de precio, actualízalos
-                        $('#precioUnitario').val(price);
-
+                        // Actualizar hidden y resumen
+                        $('#clientHidden').val(newId);
+                        updateClientInfo();
                     } else {
-                        // Si hay errores de validación, recargar el formulario en el modal
-                        $('#disciplineModalBody').html(response);
+                        // Mostrar errores si los hay
+                        alert("Error al crear cliente: " + (res.errors?.join(", ") || "Desconocido"));
                     }
+                },
+                error: function() {
+                    alert("Error al crear cliente. Intente nuevamente.");
                 }
             });
         });
     });
 });
 
-        // Lógica Modal Cliente (Tu código existente corregido)
-        $('#clientModal').on('show.bs.modal', function () {
-            $.get('@Url.Page("/Clients/Create", "Partial")', function (data) {
-                $('#clientModalBody').html(data);
-                $('#clientModalBody form').on('submit', function (e) {
-                    e.preventDefault();
-                    $.ajax({
-                        url: '@Url.Page("/Clients/Create", "Post")',
-                        type: 'POST',
-                        data: $(this).serialize(),
-                        success: function (res) {
-                            if (res.success) {
-                                $('#clientModal').modal('hide');
-                                const opt = new Option(`${res.fullName} (${res.ci})`, res.newId, true, true);
-                                opt.setAttribute('data-name', res.fullName);
-                                opt.setAttribute('data-ci', res.ci);
-                                clientSelect.add(opt);
-                                $(clientSelect).trigger('change');
-                            } else { $('#clientModalBody').html(res); }
-                        }
-                    });
-                });
-            });
+
+
+        // --- SOLUCIÓN FINAL PARA EL BOTÓN REGISTRAR ---
+        $('#saleForm').on('submit', function (e) {
+            // Si hay un cliente seleccionado, forzamos que pase la validación
+            if ($(clientSelect).val() !== "") {
+                $(clientSelect).removeClass("input-validation-error");
+            }
+            // Si el total es mayor a cero, forzamos que pase
+            if (parseFloat(totalInput.value) > 0) {
+                $(totalInput).removeClass("input-validation-error");
+            }
         });
 
-        $('#clientModal').on('hidden.bs.modal', function () {
-            document.getElementById('clientModalBody').innerHTML = '<div class="text-center p-5"><i class="fas fa-spinner fa-spin fa-2x"></i> Cargando formulario...</div>';
-        });
-
-        $('#disciplineModal').on('hidden.bs.modal', function () {
-            document.getElementById('disciplineModalBody').innerHTML = '<div class="text-center p-5"><i class="fas fa-spinner fa-spin fa-2x"></i> Cargando formulario...</div>';
-        });
-
-        // Inicialización
-        addDetailBtn.addEventListener('click', () => addDetail(null));
+        addDetailBtn.addEventListener('click', () => createDetailRow(document.querySelectorAll('.detail-row').length, null));
         clientSelect.addEventListener('change', updateClientInfo);
+
         updateClientInfo();
-        addDetail(null); // Crea la primera fila vacía al cargar
-        </script>
+        createDetailRow(0, null);
+    </script>
 }

@@ -30,6 +30,7 @@ public class CreateModel : PageModel
     {
         if (!ModelState.IsValid)
         {
+            // Devuelve el Partial si hay errores
             return Partial("_CreateClientForm", this);
         }
 
@@ -42,15 +43,29 @@ public class CreateModel : PageModel
             return Partial("_CreateClientForm", this);
         }
 
+        // 🔹 Leer el ID del cliente recién creado desde la API
         int newId = 0;
         try
         {
             var responseString = await resp.Content.ReadAsStringAsync();
-            if (int.TryParse(responseString, out int parsedId)) { newId = parsedId; }
-        }
-        catch { /* ignored */ }
 
-        // MODIFICACIÓN: Devolvemos un objeto con los datos necesarios para la UI de Ventas
+            // Si la API devuelve un entero puro, intenta parsearlo
+            if (!int.TryParse(responseString, out newId))
+            {
+                // Si devuelve un objeto JSON {"id":5,...}
+                using var doc = JsonDocument.Parse(responseString);
+                if (doc.RootElement.TryGetProperty("id", out var idProp))
+                {
+                    newId = idProp.GetInt32();
+                }
+            }
+        }
+        catch
+        {
+            newId = 0; // fallback
+        }
+
+        // 🔹 Devuelve JSON que espera Sales
         return new JsonResult(new
         {
             success = true,

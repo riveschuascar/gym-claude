@@ -187,8 +187,7 @@ public class CreateModel : PageModel
 public class SaleInput
 {
     [Required(ErrorMessage = "El cliente es obligatorio.")]
-    [Range(1, int.MaxValue, ErrorMessage = "Seleccione un cliente.")]
-    public int ClientId { get; set; }
+    public int? ClientId { get; set; }
 
     public List<SaleDetailInput>? Details { get; set; }
 
