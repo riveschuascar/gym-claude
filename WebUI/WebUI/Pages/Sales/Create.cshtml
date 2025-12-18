@@ -276,6 +276,25 @@
             }
         }
 
+        // --- Actualiza el resumen de disciplinas ---
+        function updateDisciplinePreview() {
+            const disciplines = [];
+            document.querySelectorAll('.detail-discipline').forEach(sel => {
+                const option = sel.options[sel.selectedIndex];
+                if (option && option.value) {
+                    disciplines.push(option.text);
+                }
+            });
+            document.getElementById('disciplinePreview').textContent = disciplines.length ? disciplines.join(', ') : 'Selecciona una disciplina';
+
+            // Actualizar sesiones
+            let totalSessions = 0;
+            document.querySelectorAll('.detail-qty').forEach(qty => {
+                totalSessions += parseInt(qty.value || 0);
+            });
+            document.getElementById('sessionPreview').textContent = totalSessions || '-';
+        }
+
         // --- MANEJO DE MODALES ---
         // --- MANEJO DE MODAL DE NUEVO CLIENTE ---
 $('#clientModal').on('show.bs.modal', function () {
@@ -321,6 +340,48 @@ $('#clientModal').on('show.bs.modal', function () {
     });
 });
 
+// --- MANEJO DE MODAL DE NUEVA DISCIPLINA ---
+// --- MANEJO DE MODAL DE NUEVA DISCIPLINA ---
+$('#disciplineModal').on('show.bs.modal', function () {
+    $.get('@Url.Page("/Disciplines/Create", "Partial")', function (data) {
+        $('#disciplineModalBody').html(data);
+
+        // Formulario del modal
+        $('#disciplineModalBody form').on('submit', function (e) {
+            e.preventDefault();
+            $.ajax({
+                url: '@Url.Page("/Disciplines/Create", null, new { handler = "Post" })',
+                type: 'POST',
+                data: $(this).serialize(),
+                dataType: 'json',
+                success: function (res) {
+                    if (res.success) {
+                        $('#disciplineModal').modal('hide');
+
+                        // 🔹 Tomamos la última fila de detalle (ya creada con "Añadir disciplina")
+                        const allSelects = document.querySelectorAll('.detail-discipline');
+                        const lastSel = allSelects[allSelects.length - 1];
+
+                        // 🔹 Añadimos la disciplina recién creada como opción si no existe
+                        if (![...lastSel.options].some(o => o.value == res.newId)) {
+                            const opt = new Option(`${res.name} (${res.price.toFixed(2)} Bs)`, res.newId);
+                            opt.setAttribute('data-price', res.price);
+                            lastSel.add(opt);
+                        }
+
+                        // 🔹 Seleccionamos automáticamente la nueva disciplina
+                        lastSel.value = res.newId;
+                        lastSel.dispatchEvent(new Event('change')); // dispara actualización de precio, total y resumen
+
+                        alert("Disciplina creada y añadida automáticamente.");
+                    } else {
+                        alert("Error al crear disciplina: " + (res.errors?.join(", ") || "Desconocido"));
+                    }
+                }
+            });
+        });
+    });
+});
 
 
         // --- SOLUCIÓN FINAL PARA EL BOTÓN REGISTRAR ---
@@ -339,6 +400,7 @@ $('#clientModal').on('show.bs.modal', function () {
         clientSelect.addEventListener('change', updateClientInfo);
 
         updateClientInfo();
+        updateDisciplinePreview();
         createDetailRow(0, null);
     </script>
 }
