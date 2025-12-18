@@ -39,7 +39,20 @@ public class CreateModel : PageModel
 
             if (resp.IsSuccessStatusCode)
             {
-                return new JsonResult(new { success = true });
+                // Leer la disciplina creada desde el microservicio
+                var json = await resp.Content.ReadAsStringAsync();
+                var created = JsonSerializer.Deserialize<DisciplineDTO>(
+                    json,
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
+                );
+
+                return new JsonResult(new
+                {
+                    success = true,
+                    newId = created!.Id,
+                    name = created.Name,
+                    price = created.Price
+                });
             }
             else
             {

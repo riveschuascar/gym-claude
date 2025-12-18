@@ -180,6 +180,33 @@
         const detailsContainer = document.getElementById('detailsContainer');
         const addDetailBtn = document.getElementById('addDetailBtn');
 
+        function getOrCreateLastDetailRow() {
+            let rows = document.querySelectorAll('.detail-row');
+
+            // Si no hay ninguna fila, crear una
+            if (rows.length === 0) {
+                createDetailRow(0, null);
+                rows = document.querySelectorAll('.detail-row');
+            }
+
+            return rows[rows.length - 1];
+        }
+
+        function addDisciplineToAllSelects(discipline) {
+            document.querySelectorAll('.detail-discipline').forEach(sel => {
+
+                // Evitar duplicados
+                if ([...sel.options].some(o => o.value == discipline.id)) return;
+
+                const opt = new Option(
+                    `${discipline.name} (${discipline.price.toFixed(2)} Bs)`,
+                    discipline.id
+                );
+                opt.setAttribute('data-price', discipline.price);
+                sel.add(opt);
+            });
+        }
+
         function updateClientInfo() {
             const option = clientSelect.options[clientSelect.selectedIndex];
             const name = option?.getAttribute('data-name') || 'Selecciona un cliente';
@@ -201,6 +228,15 @@
             if (form.data('validator')) {
                 form.validate().element('#clientSelect');
             }
+        }
+
+        function ensureDetailRow() {
+            let rows = document.querySelectorAll('.detail-row');
+            if (rows.length === 0) {
+                createDetailRow(0, null);
+                rows = document.querySelectorAll('.detail-row');
+            }
+            return rows[rows.length - 1];
         }
 
 
@@ -346,42 +382,57 @@ $('#disciplineModal').on('show.bs.modal', function () {
     $.get('@Url.Page("/Disciplines/Create", "Partial")', function (data) {
         $('#disciplineModalBody').html(data);
 
-        // Formulario del modal
         $('#disciplineModalBody form').on('submit', function (e) {
             e.preventDefault();
+
             $.ajax({
                 url: '@Url.Page("/Disciplines/Create", null, new { handler = "Post" })',
                 type: 'POST',
                 data: $(this).serialize(),
                 dataType: 'json',
                 success: function (res) {
-                    if (res.success) {
-                        $('#disciplineModal').modal('hide');
-
-                        // 🔹 Tomamos la última fila de detalle (ya creada con "Añadir disciplina")
-                        const allSelects = document.querySelectorAll('.detail-discipline');
-                        const lastSel = allSelects[allSelects.length - 1];
-
-                        // 🔹 Añadimos la disciplina recién creada como opción si no existe
-                        if (![...lastSel.options].some(o => o.value == res.newId)) {
-                            const opt = new Option(`${res.name} (${res.price.toFixed(2)} Bs)`, res.newId);
-                            opt.setAttribute('data-price', res.price);
-                            lastSel.add(opt);
-                        }
-
-                        // 🔹 Seleccionamos automáticamente la nueva disciplina
-                        lastSel.value = res.newId;
-                        lastSel.dispatchEvent(new Event('change')); // dispara actualización de precio, total y resumen
-
-                        alert("Disciplina creada y añadida automáticamente.");
-                    } else {
-                        alert("Error al crear disciplina: " + (res.errors?.join(", ") || "Desconocido"));
+                    if (!res.success) {
+                        alert("Error al crear disciplina");
+                        return;
                     }
+
+                    $('#disciplineModal').modal('hide');
+
+                    const discipline = {
+                        id: res.newId,
+                        name: res.name,
+                        price: Number(res.price)
+                    };
+
+                    // 🔹 1. Asegurar fila
+                    const row = getOrCreateLastDetailRow();
+                    const sel = row.querySelector('.detail-discipline');
+
+                    // 🔹 2. Agregar opción
+                    if (![...sel.options].some(o => o.value == discipline.id)) {
+                        const opt = new Option(
+                            `${discipline.name} (${discipline.price.toFixed(2)} Bs)`,
+                            discipline.id,
+                            true,
+                            true
+                        );
+                        opt.setAttribute('data-price', discipline.price);
+                        sel.add(opt);
+                    }
+
+                    // 🔹 3. Seleccionar y recalcular
+                    sel.value = discipline.id;
+                    sel.dispatchEvent(new Event('change'));
+
+                    updateDisciplinePreview();
+
+                    console.log("✔ Disciplina agregada sin recargar");
                 }
             });
         });
     });
 });
+
 
 
         // --- SOLUCIÓN FINAL PARA EL BOTÓN REGISTRAR ---
