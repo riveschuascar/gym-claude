@@ -287,6 +287,7 @@
                 const q = parseInt(qtyInp.value || 0);
                 totalRowInp.value = (p * q).toFixed(2);
                 recomputeTotal();
+                updateDisciplinePreview(); // Update summary
             };
 
             sel.addEventListener('change', () => {
@@ -296,7 +297,11 @@
             });
 
             qtyInp.addEventListener('change', calc);
-            wrapper.querySelector('.remove-row').addEventListener('click', () => { wrapper.remove(); recomputeTotal(); });
+            wrapper.querySelector('.remove-row').addEventListener('click', () => { 
+                wrapper.remove(); 
+                recomputeTotal(); 
+                updateDisciplinePreview(); // Update summary
+            });
 
             if (detail?.DisciplineId) {
                 $(sel).val(detail.DisciplineId).trigger('change');
