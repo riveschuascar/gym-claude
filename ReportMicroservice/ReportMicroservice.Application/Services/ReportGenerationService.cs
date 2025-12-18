@@ -48,14 +48,18 @@ namespace ReportMicroservice.Application.Services
 
             // Lógica con LINQ para armar el modelo del reporte
             var reportDetails = (from d in details
-                                 join disc in disciplines on d.DisciplineId equals disc.Id
-                                 select new SaleReportDetail
-                                 {
-                                     Quantity = d.Qty,
-                                     Description = disc.Name,
-                                     UnitPrice = disc.Price, 
-                                     Import = d.Total
-                                 }).ToList();
+                     join disc in disciplines on d.DisciplineId equals disc.Id into discGroup
+                     from subDisc in discGroup.DefaultIfEmpty() // Esto hace que sea Left Join
+                     select new SaleReportDetail
+                     {
+                         Quantity = d.Qty,
+                         
+                         // Si subDisc es null (no hubo coincidencia), mostramos el ID para depurar
+                         Description = subDisc != null ? subDisc.Name : $"Disciplina ID: {d.DisciplineId} (No encontrada)",
+                         
+                         UnitPrice = d.Price, 
+                         Import = d.Total
+                     }).ToList();
 
             var reportData = new SaleReportData
             {

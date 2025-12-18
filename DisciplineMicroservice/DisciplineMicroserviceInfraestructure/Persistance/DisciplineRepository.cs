@@ -19,7 +19,6 @@ namespace DisciplineMicroservice.DisciplineMicroserviceInfraestructure.Persistan
         {
             _connectionString = config.GetConnectionString("DisciplineMicroserviceDB")
                 ?? throw new Exception("No se encontró la cadena de conexión 'DisciplineMicroserviceDB'");
-            Console.WriteLine("ConnectionString: " + _connectionString);
         }
 
         private NpgsqlConnection CreateConnection() => new NpgsqlConnection(_connectionString);
