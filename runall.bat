@@ -45,12 +45,12 @@ REM ===========================
 start cmd /k "echo [Orchestator] iniciando... & cd OrchestratorMicroservice\Orchestrator.Rest && dotnet run --launch-profile http --urls http://localhost:5071"
 
 REM ===========================
-REM   WebUI (http://localhost:5030)
+REM   Report Microservice (http://localhost:5236)
 REM ===========================
 start cmd /k "echo [Reportes] iniciando... & cd ReportMicroservice\ReportMicroservice.API && dotnet run --launch-profile http --urls http://localhost:5236"
 
 REM ===========================
-REM   WebUI (http://localhost:5030)
+REM   SaleDetails Microservice (http://localhost:5079)
 REM ===========================
 start cmd /k "echo [SaleDetails] iniciando... & cd SaleDetailMicroservice\SaleDetailMicroservice && dotnet run --launch-profile http --urls http://localhost:5079"
 

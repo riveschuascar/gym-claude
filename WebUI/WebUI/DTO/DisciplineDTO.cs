@@ -11,6 +11,6 @@ namespace WebUI.DTO
         public DateTime? CreatedAt { get; set; }
         public DateTime? LastModification { get; set; }
         public double? Price { get; set; }
-        public short? MonthlySessions { get; set; }
+        public short? Cupos { get; set; }
     }
 }

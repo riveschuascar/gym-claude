@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Net;
 using System.Text.Json;
 using WebUI.DTO;
+using System; // Agrega cualquier otro using que encuentres al final del archivo aquí.
 
 namespace WebUI.Pages.Disciplines;
 
@@ -18,6 +19,63 @@ public class CreateModel : PageModel
     }
 
     public void OnGet() { }
+
+    public IActionResult OnGetPartial()
+    {
+        Discipline = new DisciplineDTO();
+        return Partial("_CreateDisciplineForm", this);
+    }
+
+    public async Task<IActionResult> OnPostPostAsync()
+    {
+        if (!ModelState.IsValid)
+        {
+            return Partial("_CreateDisciplineForm", this);
+        }
+
+        try
+        {
+            var resp = await _disciplineHttp.PostAsJsonAsync("/api/Disciplines", Discipline);
+
+            if (resp.IsSuccessStatusCode)
+            {
+                // Leer la disciplina creada desde el microservicio
+                var json = await resp.Content.ReadAsStringAsync();
+                var created = JsonSerializer.Deserialize<DisciplineDTO>(
+                    json,
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
+                );
+
+                return new JsonResult(new
+                {
+                    success = true,
+                    newId = created!.Id,
+                    name = created.Name,
+                    price = created.Price
+                });
+            }
+            else
+            {
+                var error = await resp.Content.ReadAsStringAsync();
+                TempData["ErrorMessage"] = ExtractErrorMessage(error, resp.StatusCode, "crear la disciplina");
+                ModelState.AddModelError(string.Empty, TempData["ErrorMessage"] as string ?? "Error desconocido.");
+                return Partial("_CreateDisciplineForm", this);
+            }
+        }
+        catch (HttpRequestException ex)
+        {
+            // Captura de error de conexión de red
+            ModelState.AddModelError(string.Empty, "Error de Conexión: No se pudo contactar al microservicio de Disciplinas. Verifique que esté activo y la configuración del HttpClient.");
+            Console.WriteLine($"Error de Conexión (Disciplina): {ex.Message}");
+            return Partial("_CreateDisciplineForm", this);
+        }
+        catch (Exception ex)
+        {
+            ModelState.AddModelError(string.Empty, "Error inesperado al intentar registrar la disciplina.");
+            Console.WriteLine($"Error General (Disciplina): {ex.Message}");
+            return Partial("_CreateDisciplineForm", this);
+        }
+    }
 
     public async Task<IActionResult> OnPostAsync()
     {
@@ -48,6 +106,7 @@ public class CreateModel : PageModel
         return RedirectToPage("Index");
     }
 
+
     private static string ExtractErrorMessage(string raw, HttpStatusCode status, string action)
     {
         if (!string.IsNullOrWhiteSpace(raw))
@@ -60,14 +119,10 @@ public class CreateModel : PageModel
                     return err.GetString() ?? $"No se pudo {action}.";
                 }
             }
-            catch (JsonException)
-            {
-                // ignorar parseo, usar texto crudo
-            }
+            catch (JsonException) { }
             return $"No se pudo {action}: {raw}";
         }
 
         return $"No se pudo {action}. Código HTTP: {(int)status} ({status}).";
     }
 }
-

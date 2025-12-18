@@ -1,21 +1,13 @@
-﻿@page
-@model WebUI.Pages.Disciplines.EditModel
-@{
-    ViewData["Title"] = "Editar Disciplina";
-}
+@model WebUI.Pages.Disciplines.CreateModel
 
-<div class="text-center">
-    <h1 class="display-4">Editar Disciplina</h1>
-    <p class="lead text-muted">Actualice los datos de la disciplina.</p>
+<!--  Contenedor para mensajes de error -->
+<div id="disciplineErrorContainer" class="alert alert-danger d-none mb-3" role="alert">
+    <ul id="disciplineErrorList" class="mb-0"></ul>
 </div>
 
-@if (TempData["ErrorMessage"] is string err && !string.IsNullOrWhiteSpace(err))
-{
-    <div class="alert alert-danger mt-3">@err</div>
-}
+<div asp-validation-summary="All" class="text-danger mb-3"></div>
 
-<form method="post" class="mt-4">
-    <input type="hidden" asp-for="Discipline.Id" />
+<form id="createDisciplineForm" method="post" asp-page="Create" asp-page-handler="Post">
 
     <div class="mb-3">
         <label asp-for="Discipline.Name" class="form-label">Nombre</label>
@@ -49,13 +41,11 @@
 
     <div class="form-check mb-3">
         <input asp-for="Discipline.IsActive" class="form-check-input" type="checkbox" />
-        <label asp-for="Discipline.IsActive" class="form-check-label">Activo</label>
+        <label asp-for="Discipline.IsActive" class="form-check-label">Disciplina Activa</label>
     </div>
 
-    <button type="submit" class="btn btn-primary">Actualizar Disciplina</button>
-    <a asp-page="Index" class="btn btn-secondary">Cancelar</a>
+    <div class="d-grid gap-2 d-md-flex justify-content-md-center mt-4">
+        <button type="submit" class="btn btn-primary">Registrar Disciplina</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+    </div>
 </form>
-
-@section Scripts {
-    <partial name="_ValidationScriptsPartial" />
-}

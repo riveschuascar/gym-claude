@@ -50,10 +50,13 @@
                 </div>
             </div>
             <div class="d-flex justify-content-between align-items-center mt-2">
-                <div class="text-muted small">Si no encuentras resultados, crea el registro y vuelve a esta pantalla.</div>
+                <div class="text-muted small">Si no encuentras resultados, crea el registro y vuelve a esta pantalla.
+                </div>
                 <div class="d-flex gap-2">
-                    <a asp-page="/Clients/Create" class="btn btn-outline-primary btn-sm" target="_blank"><i class="fas fa-user-plus"></i> Nuevo cliente</a>
-                    <a asp-page="/Disciplines/Create" class="btn btn-outline-primary btn-sm" target="_blank"><i class="fas fa-id-card-alt"></i> Nueva disciplina</a>
+                    <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal"
+                        data-bs-target="#clientModal"><i class="fas fa-user-plus"></i> Nuevo cliente</button>
+                    <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal"
+                        data-bs-target="#disciplineModal"><i class="fas fa-id-card-alt"></i> Nueva disciplina</button>
                 </div>
             </div>
         </div>
@@ -78,6 +81,10 @@
                             <option value="@c.Id" data-name="@fullName" data-ci="@c.Ci">@fullName (@c.Ci)</option>
                         }
                     </select>
+
+                    <!-- 🔹 Hidden input -->
+                    <input type="hidden" asp-for="Input.ClientId" id="clientHidden" />
+
                     <span asp-validation-for="Input.ClientId" class="text-danger"></span>
                 </div>
 
@@ -85,7 +92,8 @@
                     <label class="form-label">Detalles de venta (disciplinas)</label>
                     <div id="detailsContainer"></div>
                     <div class="mt-2">
-                        <button type="button" id="addDetailBtn" class="btn btn-outline-secondary btn-sm"><i class="fas fa-plus"></i> Añadir disciplina</button>
+                        <button type="button" id="addDetailBtn" class="btn btn-outline-secondary btn-sm"><i
+                                class="fas fa-plus"></i> Añadir disciplina</button>
                     </div>
                 </div>
 
@@ -98,12 +106,11 @@
 
                 <div class="col-md-3">
                     <label asp-for="Input.TotalAmount" class="form-label">Total (Bs)</label>
-                    <input asp-for="Input.TotalAmount" class="form-control" type="number" step="0.01" min="0" id="totalAmount" readonly />
+                    <input asp-for="Input.TotalAmount" class="form-control" type="number" step="0.01" min="0"
+                        id="totalAmount" readonly />
                     <span asp-validation-for="Input.TotalAmount" class="text-danger"></span>
                 </div>
 
-
-                
 
                 <div class="col-md-6">
                     <div class="bg-light border rounded p-3 h-100">
@@ -114,10 +121,10 @@
                             <dd class="col-8" id="clientPreview">Selecciona un cliente</dd>
                             <dt class="col-4">CI/NIT</dt>
                             <dd class="col-8" id="clientDoc">-</dd>
-                                <dt class="col-4">Disciplinas</dt>
-                                <dd class="col-8" id="disciplinePreview">Selecciona una disciplina</dd>
-                                <dt class="col-4">Sesiones/mes</dt>
-                                <dd class="col-8" id="sessionPreview">-</dd>
+                            <dt class="col-4">Disciplinas</dt>
+                            <dd class="col-8" id="disciplinePreview">Selecciona una disciplina</dd>
+                            <dt class="col-4">Cupos</dt>
+                            <dd class="col-8" id="sessionPreview">-</dd>
                             <dt class="col-4">Total</dt>
                             <dd class="col-8 fw-bold" id="totalPreview">0</dd>
                         </dl>
@@ -134,121 +141,369 @@
     </div>
 </div>
 
+<div class="modal fade" id="clientModal" tabindex="-1" aria-labelledby="clientModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="clientModalLabel"><i class="fas fa-user-plus"></i> Nuevo Cliente</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                    aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="clientModalBody">
+                <div class="text-center p-5"><i class="fas fa-spinner fa-spin fa-2x"></i> Cargando formulario...</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="disciplineModal" tabindex="-1" aria-labelledby="disciplineModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="disciplineModalLabel"><i class="fas fa-id-card-alt"></i> Nueva Disciplina
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                    aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="disciplineModalBody">
+                <div class="text-center p-5"><i class="fas fa-spinner fa-spin fa-2x"></i> Cargando formulario...</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
-        
         const clientSelect = document.getElementById('clientSelect');
         const totalInput = document.getElementById('totalAmount');
-        const clientPreview = document.getElementById('clientPreview');
-        const clientDoc = document.getElementById('clientDoc');
-        const disciplinePreview = document.getElementById('disciplinePreview');
-        const sessionPreview = document.getElementById('sessionPreview');
-        const totalPreview = document.getElementById('totalPreview');
         const detailsContainer = document.getElementById('detailsContainer');
         const addDetailBtn = document.getElementById('addDetailBtn');
 
-        function updateMembershipInfo() {
-            // no-op: membership select removed
+        function getOrCreateLastDetailRow() {
+            let rows = document.querySelectorAll('.detail-row');
+
+            // Si no hay ninguna fila, crear una
+            if (rows.length === 0) {
+                createDetailRow(0, null);
+                rows = document.querySelectorAll('.detail-row');
+            }
+
+            return rows[rows.length - 1];
+        }
+
+        function addDisciplineToAllSelects(discipline) {
+            document.querySelectorAll('.detail-discipline').forEach(sel => {
+
+                // Evitar duplicados
+                if ([...sel.options].some(o => o.value == discipline.id)) return;
+
+                const opt = new Option(
+                    `${discipline.name} (${discipline.price.toFixed(2)} Bs)`,
+                    discipline.id
+                );
+                opt.setAttribute('data-price', discipline.price);
+                sel.add(opt);
+            });
         }
 
         function updateClientInfo() {
             const option = clientSelect.options[clientSelect.selectedIndex];
             const name = option?.getAttribute('data-name') || 'Selecciona un cliente';
             const ci = option?.getAttribute('data-ci') || '-';
-            clientPreview.textContent = name;
-            clientDoc.textContent = ci;
+
+            $('#clientPreview').text(name);
+            $('#clientDoc').text(ci);
+
+            // Actualizar input de NIT/CI
+            if (ci !== '-') {
+                $('input[name="Input.TaxId"]').val(ci);
+            }
+
+            // 🔹 Actualizar hidden para que Razor Pages reciba el valor
+            $('#clientHidden').val(clientSelect.value);
+
+            // Forzar validación
+            const form = $('#saleForm');
+            if (form.data('validator')) {
+                form.validate().element('#clientSelect');
+            }
         }
+
+        function ensureDetailRow() {
+            let rows = document.querySelectorAll('.detail-row');
+            if (rows.length === 0) {
+                createDetailRow(0, null);
+                rows = document.querySelectorAll('.detail-row');
+            }
+            return rows[rows.length - 1];
+        }
+
 
         function createDetailRow(idx, detail) {
             const wrapper = document.createElement('div');
             wrapper.className = 'row g-2 align-items-end mb-2 detail-row';
-            wrapper.dataset.index = idx;
 
-            const selectColumn = document.createElement('div');
-            selectColumn.className = 'col-md-5';
-            const labelSel = document.createElement('label');
-            labelSel.className = 'form-label';
-            labelSel.textContent = 'Disciplina';
-            const sel = document.createElement('select');
-            sel.className = 'form-select detail-discipline';
-            sel.name = `Input.Details[${idx}].DisciplineId`;
-            const defaultOpt = document.createElement('option');
-            defaultOpt.value = '';
-            defaultOpt.textContent = '-- Selecciona --';
-            sel.appendChild(defaultOpt);
-            @* Populate options *@
-            @foreach (var d in Model.Disciplines)
-            {
-                <text>var opt = document.createElement('option'); opt.value = '@d.Id'; opt.setAttribute('data-price','@d.Price'); opt.textContent = '@d.Name (@(d.Price?.ToString("N2") ?? "-") Bs)'; sel.appendChild(opt);</text>
+            let optionsHtml = '<option value="">-- Selecciona --</option>';
+                @foreach (var d in Model.Disciplines)
+                {
+                    <text>optionsHtml += `<option value="@d.Id" data-price="@d.Price">@d.Name (@(d.Price?.ToString("N2")) Bs)</option>`;</text>
             }
-            selectColumn.appendChild(labelSel);
-            selectColumn.appendChild(sel);
 
-            const qtyCol = document.createElement('div');
-            qtyCol.className = 'col-md-2';
-            const qtyLabel = document.createElement('label'); qtyLabel.className='form-label'; qtyLabel.textContent='Cantidad';
-            const qtyInput = document.createElement('input'); qtyInput.type='number'; qtyInput.className='form-control detail-qty'; qtyInput.name=`Input.Details[${idx}].Qty`; qtyInput.min='1'; qtyInput.value = detail?.Qty || 1;
-            qtyCol.appendChild(qtyLabel); qtyCol.appendChild(qtyInput);
-
-            const priceCol = document.createElement('div'); priceCol.className='col-md-2'; const priceLabel = document.createElement('label'); priceLabel.className='form-label'; priceLabel.textContent='Precio'; const priceInput = document.createElement('input'); priceInput.type='number'; priceInput.className='form-control detail-price'; priceInput.name=`Input.Details[${idx}].Price`; priceInput.readOnly=true; priceInput.step='0.01'; priceInput.value = detail?.Price || '';
-            priceCol.appendChild(priceLabel); priceCol.appendChild(priceInput);
-
-            const totalCol = document.createElement('div'); totalCol.className='col-md-2'; const totalLabel = document.createElement('label'); totalLabel.className='form-label'; totalLabel.textContent='Total'; const totalInputRow = document.createElement('input'); totalInputRow.type='number'; totalInputRow.className='form-control detail-total'; totalInputRow.name=`Input.Details[${idx}].Total`; totalInputRow.readOnly=true; totalInputRow.step='0.01'; totalInputRow.value = detail?.Total || '';
-            totalCol.appendChild(totalLabel); totalCol.appendChild(totalInputRow);
-
-            const removeCol = document.createElement('div'); removeCol.className='col-md-1'; const remBtn = document.createElement('button'); remBtn.type='button'; remBtn.className='btn btn-outline-danger btn-sm'; remBtn.innerHTML = '<i class="fas fa-trash"></i>';
-            removeCol.appendChild(remBtn);
-
-            wrapper.appendChild(selectColumn);
-            wrapper.appendChild(qtyCol);
-            wrapper.appendChild(priceCol);
-            wrapper.appendChild(totalCol);
-            wrapper.appendChild(removeCol);
+                wrapper.innerHTML = `
+                    <div class="col-md-5">
+                        <label class="form-label">Disciplina</label>
+                        <select name="Input.Details[${idx}].DisciplineId" class="form-select detail-discipline" required>
+                            ${optionsHtml}
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Cantidad</label>
+                        <input type="number" name="Input.Details[${idx}].Qty" class="form-control detail-qty" value="${detail?.Qty || 1}" min="1">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Precio</label>
+                        <input type="number" name="Input.Details[${idx}].Price" class="form-control detail-price" readonly value="${detail?.Price || ''}">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Total</label>
+                        <input type="number" name="Input.Details[${idx}].Total" class="form-control detail-total" readonly value="${detail?.Total || ''}">
+                    </div>
+                    <div class="col-md-1">
+                        <button type="button" class="btn btn-outline-danger btn-sm remove-row"><i class="fas fa-trash"></i></button>
+                    </div>
+                `;
 
             detailsContainer.appendChild(wrapper);
+            const sel = wrapper.querySelector('.detail-discipline');
+            const qtyInp = wrapper.querySelector('.detail-qty');
+            const priceInp = wrapper.querySelector('.detail-price');
+            const totalRowInp = wrapper.querySelector('.detail-total');
 
-            function recomputeRow() {
-                const priceVal = parseFloat(priceInput.value || 0);
-                const qtyVal = parseInt(qtyInput.value || 1);
-                const totalVal = (priceVal * qtyVal) || 0;
-                totalInputRow.value = totalVal.toFixed(2);
+            const calc = () => {
+                const p = parseFloat(priceInp.value || 0);
+                const q = parseInt(qtyInp.value || 0);
+                totalRowInp.value = (p * q).toFixed(2);
                 recomputeTotal();
-            }
+            };
 
-            sel.addEventListener('change', function() {
-                const selOpt = sel.options[sel.selectedIndex];
-                const p = selOpt?.getAttribute('data-price');
-                if (p) priceInput.value = parseFloat(p).toFixed(2);
-                recomputeRow();
+            sel.addEventListener('change', () => {
+                const p = sel.options[sel.selectedIndex]?.getAttribute('data-price');
+                priceInp.value = p ? parseFloat(p).toFixed(2) : '';
+                calc();
             });
-            qtyInput.addEventListener('change', recomputeRow);
-            remBtn.addEventListener('click', function() { wrapper.remove(); recomputeTotal(); });
-        }
 
-        function addDetail(detail) {
-            const idx = detailsContainer.querySelectorAll('.detail-row').length;
-            createDetailRow(idx, detail);
+            qtyInp.addEventListener('change', calc);
+            wrapper.querySelector('.remove-row').addEventListener('click', () => { wrapper.remove(); recomputeTotal(); });
+
+            if (detail?.DisciplineId) {
+                $(sel).val(detail.DisciplineId).trigger('change');
+            }
         }
 
         function recomputeTotal() {
-            const totals = Array.from(document.querySelectorAll('.detail-total')).map(i => parseFloat(i.value || 0));
-            const sum = totals.reduce((a,b)=>a+b,0);
+            let sum = 0;
+            document.querySelectorAll('.detail-total').forEach(i => sum += parseFloat(i.value || 0));
             totalInput.value = sum.toFixed(2);
-            totalPreview.textContent = `${sum.toFixed(2)} Bs`;
-            // update discipline preview
-            const names = Array.from(document.querySelectorAll('.detail-row select.detail-discipline')).map(s => s.options[s.selectedIndex]?.text || '').filter(t => t && t.trim() !== '');
-            disciplinePreview.textContent = names.length ? names.join(', ') : 'Selecciona una disciplina';
+            if (document.getElementById('totalPreview')) document.getElementById('totalPreview').textContent = sum.toFixed(2) + " Bs";
+
+            if (sum > 0) {
+                $(totalInput).removeClass("is-invalid input-validation-error");
+                $(`[data-valmsg-for="Input.TotalAmount"]`).text("");
+            }
         }
 
-        addDetailBtn?.addEventListener('click', () => addDetail(null));
+        // --- Actualiza el resumen de disciplinas ---
+        function updateDisciplinePreview() {
+            const disciplines = [];
+            document.querySelectorAll('.detail-discipline').forEach(sel => {
+                const option = sel.options[sel.selectedIndex];
+                if (option && option.value) {
+                    disciplines.push(option.text);
+                }
+            });
+            document.getElementById('disciplinePreview').textContent = disciplines.length ? disciplines.join(', ') : 'Selecciona una disciplina';
 
-        // membership select removed
-        clientSelect?.addEventListener('change', updateClientInfo);
-        // updateMembershipInfo();
+            // Actualizar cupos
+            let totalSessions = 0;
+            document.querySelectorAll('.detail-qty').forEach(qty => {
+                totalSessions += parseInt(qty.value || 0);
+            });
+            document.getElementById('sessionPreview').textContent = totalSessions || '-';
+        }
+
+        // --- MANEJO DE MODALES ---
+        // --- MANEJO DE MODAL DE NUEVO CLIENTE ---
+        $('#clientModal').on('show.bs.modal', function () {
+            $.get('@Url.Page("/Clients/Create", "Partial")', function (data) {
+                $('#clientModalBody').html(data);
+
+                // 🔹 Formulario del modal
+                $('#clientModalBody form').on('submit', function (e) {
+                    e.preventDefault();
+                    $.ajax({
+                        url: '@Url.Page("/Clients/Create", null, new { handler = "Post" })',
+                        type: 'POST',
+                        data: $(this).serialize(),
+                        dataType: 'json', // importante
+                        success: function (res) {
+                            if (res.success) {
+                                // Cierra el modal
+                                $('#clientModal').modal('hide');
+
+                                // Añadir cliente al select
+                                const newId = Number(res.newId);
+                                const opt = new Option(`${res.fullName} (${res.ci})`, newId, true, true);
+                                opt.setAttribute('data-name', res.fullName);
+                                opt.setAttribute('data-ci', res.ci);
+
+                                const clientSelect = document.getElementById('clientSelect');
+                                clientSelect.add(opt);
+                                clientSelect.value = newId;
+
+                                // Actualizar hidden y resumen
+                                $('#clientHidden').val(newId);
+                                updateClientInfo();
+                            } else {
+                                // Mostrar errores si los hay
+                                alert("Error al crear cliente: " + (res.errors?.join(", ") || "Desconocido"));
+                            }
+                        },
+                        error: function () {
+                            alert("Error al crear cliente. Intente nuevamente.");
+                        }
+                    });
+                });
+            });
+        });
+
+
+        // MODAL DISCIPLINAS
+        $('#disciplineModal').on('show.bs.modal', function () {
+            $.get('@Url.Page("/Disciplines/Create", "Partial")', function (data) {
+                $('#disciplineModalBody').html(data);
+
+                $('#disciplineModalBody form').on('submit', function (e) {
+                    e.preventDefault();
+
+                    console.log("📤 Enviando formulario de disciplina...");
+
+                    // 🔹 Limpiar errores previos
+                    $('#disciplineErrorContainer').addClass('d-none');
+                    $('#disciplineErrorList').empty();
+
+                    const formData = $(this).serialize();
+                    console.log("📋 Form data serializado:", formData);
+
+                    $.ajax({
+                        url: '@Url.Page("/Disciplines/Create", null, new { handler = "Post" })',
+                        type: 'POST',
+                        data: formData,
+                        dataType: 'json',
+                        success: function (res) {
+                            console.log("✅ Respuesta del servidor:", res);
+
+                            if (!res.success) {
+                                // 🔹 Mostrar errores en el modal
+                                const errors = res.errors || [res.error || "Error desconocido"];
+                                showErrors(errors);
+                                return;
+                            }
+
+                            $('#disciplineModal').modal('hide');
+
+                            const discipline = {
+                                id: res.newId || res.id,
+                                name: res.name,
+                                price: Number(res.price || 0)
+                            };
+
+                            const row = getOrCreateLastDetailRow();
+                            const sel = row.querySelector('.detail-discipline');
+
+                            if (![...sel.options].some(o => o.value == discipline.id)) {
+                                const opt = new Option(
+                                    `${discipline.name} (${discipline.price.toFixed(2)} Bs)`,
+                                    discipline.id,
+                                    true,
+                                    true
+                                );
+                                opt.setAttribute('data-price', discipline.price);
+                                sel.add(opt);
+                            }
+
+                            sel.value = discipline.id;
+                            sel.dispatchEvent(new Event('change'));
+                            updateDisciplinePreview();
+
+                            console.log("✔ Disciplina agregada exitosamente");
+                        },
+                        error: function (xhr, status, error) {
+                            console.error("❌ Error al crear disciplina:", {
+                                status: xhr.status,
+                                statusText: xhr.statusText,
+                                response: xhr.responseText,
+                                error: error
+                            });
+
+                            // 🔹 Extraer errores de validación del HTML
+                            if (xhr.responseText && xhr.responseText.includes('validation-summary-errors')) {
+                                const parser = new DOMParser();
+                                const doc = parser.parseFromString(xhr.responseText, 'text/html');
+                                const errors = Array.from(doc.querySelectorAll('.validation-summary-errors li'))
+                                    .map(li => li.textContent.trim());
+
+                                if (errors.length > 0) {
+                                    showErrors(errors);
+                                    return;
+                                }
+                            }
+
+                            // 🔹 Error genérico
+                            showErrors(["Error al crear disciplina. Intente nuevamente."]);
+                        }
+                    });
+                });
+
+                // 🔹 Función para mostrar errores en el modal
+                function showErrors(errors) {
+                    const errorContainer = $('#disciplineErrorContainer');
+                    const errorList = $('#disciplineErrorList');
+
+                    errorList.empty();
+                    errors.forEach(error => {
+                        errorList.append(`<li>${error}</li>`);
+                    });
+
+                    errorContainer.removeClass('d-none');
+
+                    // 🔹 Scroll al top del modal para ver el error
+                    $('#disciplineModalBody').animate({ scrollTop: 0 }, 300);
+                }
+            });
+        });
+
+
+
+        // --- SOLUCIÓN FINAL PARA EL BOTÓN REGISTRAR ---
+        $('#saleForm').on('submit', function (e) {
+            // Si hay un cliente seleccionado, forzamos que pase la validación
+            if ($(clientSelect).val() !== "") {
+                $(clientSelect).removeClass("input-validation-error");
+            }
+            // Si el total es mayor a cero, forzamos que pase
+            if (parseFloat(totalInput.value) > 0) {
+                $(totalInput).removeClass("input-validation-error");
+            }
+        });
+
+        addDetailBtn.addEventListener('click', () => createDetailRow(document.querySelectorAll('.detail-row').length, null));
+        clientSelect.addEventListener('change', updateClientInfo);
+
         updateClientInfo();
-
-        // Initialize with one detail row
-        addDetail();
+        updateDisciplinePreview();
+        createDetailRow(0, null);
     </script>
 }

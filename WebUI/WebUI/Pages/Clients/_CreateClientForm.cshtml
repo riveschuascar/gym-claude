@@ -1,0 +1,75 @@
+@model WebUI.Pages.Clients.CreateModel
+
+<div asp-validation-summary="All" class="text-danger mb-3"></div>
+@* Apunta al handler OnPostPostAsync con asp-page-handler="Post" *@
+<form id="createClientForm" method="post" asp-page="Create" asp-page-handler="Post">
+    <h5 class="mt-2 mb-3">Información Personal</h5>
+    <div class="row">
+        <div class="col-md-4 mb-3">
+            <label asp-for="Client.Name" class="form-label fw-bold">Nombres</label>
+            <input asp-for="Client.Name" class="form-control" />
+            <span asp-validation-for="Client.Name" class="text-danger"></span>
+        </div>
+        <div class="col-md-4 mb-3">
+            <label asp-for="Client.FirstLastname" class="form-label fw-bold">Primer Apellido</label>
+            <input asp-for="Client.FirstLastname" class="form-control" />
+            <span asp-validation-for="Client.FirstLastname" class="text-danger"></span>
+        </div>
+        <div class="col-md-4 mb-3">
+            <label asp-for="Client.SecondLastname" class="form-label fw-bold">Segundo Apellido</label>
+            <input asp-for="Client.SecondLastname" class="form-control" />
+            <span asp-validation-for="Client.SecondLastname" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label asp-for="Client.Ci" class="form-label fw-bold">CI</label>
+            <input asp-for="Client.Ci" class="form-control" />
+            <span asp-validation-for="Client.Ci" class="text-danger"></span>
+        </div>
+        <div class="col-md-6 mb-3">
+            <label asp-for="Client.DateBirth" class="form-label fw-bold">Fecha de Nacimiento</label>
+            <input asp-for="Client.DateBirth" class="form-control" type="date" />
+            <span asp-validation-for="Client.DateBirth" class="text-danger"></span>
+        </div>
+    </div>
+
+    <hr />
+    <h5 class="mt-2 mb-3">Información de Cliente</h5>
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label asp-for="Client.FitnessLevel" class="form-label fw-bold">Nivel de Condición Física</label>
+            <select asp-for="Client.FitnessLevel" class="form-select">
+                <option value="">-- Seleccione un nivel --</option>
+                <option value="Principiante">Principiante</option>
+                <option value="Intermedio">Intermedio</option>
+                <option value="Avanzado">Avanzado</option>
+            </select>
+            <span asp-validation-for="Client.FitnessLevel" class="text-danger"></span>
+        </div>
+        <div class="col-md-6 mb-3">
+            <label asp-for="Client.EmergencyContactPhone" class="form-label fw-bold">Teléfono de Emergencia</label>
+            <input asp-for="Client.EmergencyContactPhone" class="form-control" />
+            <span asp-validation-for="Client.EmergencyContactPhone" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label asp-for="Client.InitialWeightKg" class="form-label fw-bold">Peso Inicial (Kg)</label>
+            <input asp-for="Client.InitialWeightKg" class="form-control" type="number" step="0.01" />
+            <span asp-validation-for="Client.InitialWeightKg" class="text-danger"></span>
+        </div>
+        <div class="col-md-6 mb-3">
+            <label asp-for="Client.CurrentWeightKg" class="form-label fw-bold">Peso Actual (Kg)</label>
+            <input asp-for="Client.CurrentWeightKg" class="form-control" type="number" step="0.01" />
+            <span asp-validation-for="Client.CurrentWeightKg" class="text-danger"></span>
+        </div>
+    </div>
+
+    <div class="d-grid gap-2 d-md-flex justify-content-md-center mt-4">
+        <button type="submit" class="btn btn-primary">Registrar Cliente</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+    </div>
+</form>
+
+@* ELIMINAR ESTA LÍNEA: <partial name="_ValidationScriptsPartial" /> *@

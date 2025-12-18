@@ -13,7 +13,7 @@ CREATE TABLE public.discipline (
 
     name                VARCHAR(50) NOT NULL,
 
-    id_user             BIGINT,
+    id_user             BIGINT DEFAULT NULL,
 
     start_time          INTERVAL NOT NULL,
     end_time            INTERVAL NOT NULL,

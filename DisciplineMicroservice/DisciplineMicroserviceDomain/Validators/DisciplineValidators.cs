@@ -68,7 +68,7 @@ namespace DisciplineMicroservice.DisciplineMicroserviceDomain.Validators
                 return Result<Discipline>.Failure("El precio debe ser un valor positivo.");
 
             if (discipline.Cupos is null || discipline.Cupos < 12)
-                return Result<Discipline>.Failure("El número de sesiones mensuales debe ser mayor o igual a 12.");
+                return Result<Discipline>.Failure("El número de cupos debe ser mayor o igual a 12.");
 
             return Result<Discipline>.Success(discipline);
         }
