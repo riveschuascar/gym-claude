@@ -97,5 +97,17 @@ namespace DisciplineMicroservice.DisciplineMicroserviceApplication.Services
             }    
             return await repo.UpdateCupos(id, newQty, email);
         }
+
+        public async Task<Result> Compensate(short id, int qty, string? email)
+        {
+            var discipline = await repo.GetById(id);
+            if (!discipline.IsSuccess || discipline.Value is null)
+            {
+                return Result.Failure($"No se encontro la disciplina con Id {id}");
+            }
+            int newQty = (int)(discipline.Value.Cupos + qty)!;
+
+            return await repo.UpdateCupos(id, newQty, email);
+        }
     }
 }

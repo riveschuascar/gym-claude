@@ -11,5 +11,6 @@ namespace DisciplineMicroservice.DisciplineMicroserviceApplication.Interfaces
         Task<Result<Discipline>> Update(Discipline disciplineToUpdate, string? userEmail = null);
         Task<Result<bool>> Delete(int id, string? userEmail = null);
         Task<Result> Validate(short id, int qty, string? email);
+        Task<Result> Compensate(short id, int qty, string? email);
     }
 }

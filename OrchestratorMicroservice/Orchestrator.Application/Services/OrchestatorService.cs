@@ -182,9 +182,8 @@ public class OrchestratorService : IOrchestatorService
             try
             {
                 var client = _httpClientFactory.CreateClient("disciplines");
-                // Revertir la operación: devolver los cupos sumando qty de nuevo
-                var payload = new { Qty = d.Qty };
-                var resp = await client.PutAsJsonAsync($"/api/Disciplines/compensate/{d.DisciplineId}", payload);
+
+                var resp = await client.PutAsJsonAsync($"/api/Disciplines/compensate/{d.DisciplineId}", d.Qty);
 
                 if (resp.IsSuccessStatusCode)
                 {

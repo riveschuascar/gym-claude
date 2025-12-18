@@ -77,4 +77,13 @@ public class DisciplinesController : ControllerBase
         var result = await _disciplineService.Validate(Id, qty, userId);
         return result.IsSuccess ? Ok(result) : BadRequest(result.Error);
     }
+
+    [HttpPut("compensate/{id}")]
+    public async Task<IActionResult> Compensate(int id, [FromBody] int qty)
+    {
+        var userId = GetUserIdFromClaims();
+        short Id = (short)id;
+        var result = await _disciplineService.Compensate(Id, qty, userId);
+        return result.IsSuccess ? Ok(result) : BadRequest(result.Error);
+    }
 }
