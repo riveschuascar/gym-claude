@@ -46,23 +46,26 @@ namespace ReportMicroservice.Application.Services
             var disciplines = await disciplinesTask;
             var client = await clientTask;
 
-            // Lógica con LINQ para armar el modelo del reporte
-            var reportDetails = (from d in details
-                     join disc in disciplines on d.DisciplineId equals disc.Id into discGroup
-                     from subDisc in discGroup.DefaultIfEmpty() // Esto hace que sea Left Join
-                     select new SaleReportDetail
-                     {
-                         // Fix: Si la cantidad es 1 pero el total sugiere más (y el precio > 0), recalculamos.
-                         Quantity = (d.Qty <= 1 && d.Total > d.Price && d.Price > 0) 
-                                    ? (int)Math.Round(d.Total / d.Price) 
-                                    : d.Qty,
-                         
-                         // Si subDisc es null (no hubo coincidencia), mostramos el ID para depurar
-                         Description = subDisc != null ? subDisc.Name : $"Disciplina ID: {d.DisciplineId} (No encontrada)",
-                         
-                         UnitPrice = d.Price, 
-                         Import = d.Total
-                     }).ToList();
+            // Lógica explícita para armar el modelo del reporte y asegurar que no se pierdan filas
+            var reportDetails = new List<SaleReportDetail>();
+
+            foreach (var d in details)
+            {
+                var disc = disciplines.FirstOrDefault(x => x.Id == d.DisciplineId);
+                
+                // Fix: Si la cantidad es 1 pero el total sugiere más, recalculamos.
+                var qty = (d.Qty <= 1 && d.Total > d.Price && d.Price > 0)
+                          ? (int)Math.Round(d.Total / d.Price)
+                          : d.Qty;
+
+                reportDetails.Add(new SaleReportDetail
+                {
+                    Quantity = qty,
+                    Description = disc != null ? disc.Name : $"Disciplina ID: {d.DisciplineId} (No encontrada)",
+                    UnitPrice = d.Price,
+                    Import = d.Total
+                });
+            }
 
             var reportData = new SaleReportData
             {
