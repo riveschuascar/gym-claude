@@ -18,20 +18,18 @@ namespace MembershipMicroservice.MembershipMicroserviceAPI.Controllers
             _detailService = detailService;
         }
 
-        private string? GetEmailFromClaims()
+        private string? GetUserIdFromClaims()
         {
-            var email = User.FindFirst(ClaimTypes.Email)?.Value;
-
-            if (string.IsNullOrEmpty(email))
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
             {
-                email = User.FindFirst("email")?.Value;
+                userId = User.FindFirst("sub")?.Value;
             }
-
-            var allClaims = User.Claims.Select(c => $"{c.Type}: {c.Value}").ToList();
-            System.Diagnostics.Debug.WriteLine($"All claims: {string.Join(", ", allClaims)}");
-            System.Diagnostics.Debug.WriteLine($"Email extracted: {email}");
-
-            return email;
+            if (string.IsNullOrEmpty(userId))
+            {
+                userId = User.FindFirst(ClaimTypes.Email)?.Value;
+            }
+            return userId;
         }
 
         [HttpGet("{membershipId:int}")]
@@ -54,8 +52,8 @@ namespace MembershipMicroservice.MembershipMicroserviceAPI.Controllers
             if (request == null)
                 return BadRequest(new { error = "Datos requeridos." });
 
-            var email = GetEmailFromClaims();
-            var result = await _detailService.AddDiscipline(request.MembershipId, request.DisciplineId, email);
+            var userId = GetUserIdFromClaims();
+            var result = await _detailService.AddDiscipline(request.MembershipId, request.DisciplineId, userId);
 
             if (!result.IsSuccess)
                 return BadRequest(new { error = result.Error });
@@ -66,8 +64,8 @@ namespace MembershipMicroservice.MembershipMicroserviceAPI.Controllers
         [HttpDelete("{membershipId:int}/{disciplineId:int}")]
         public async Task<IActionResult> Remove(int membershipId, int disciplineId)
         {
-            var email = GetEmailFromClaims();
-            var result = await _detailService.RemoveDiscipline(membershipId, disciplineId, email);
+            var userId = GetUserIdFromClaims();
+            var result = await _detailService.RemoveDiscipline(membershipId, disciplineId, userId);
 
             if (!result.IsSuccess)
                 return NotFound(new { error = result.Error });

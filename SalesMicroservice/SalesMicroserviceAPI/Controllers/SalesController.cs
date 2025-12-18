@@ -19,19 +19,18 @@ namespace SalesMicroserviceAPI.Controllers
             _saleService = saleService;
         }
 
-        private string? GetEmailFromClaims()
+        private string? GetUserIdFromClaims()
         {
-            var email = User.FindFirst(ClaimTypes.Email)?.Value;
-            if (string.IsNullOrEmpty(email))
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
             {
-                email = User.FindFirst("email")?.Value;
+                userId = User.FindFirst("sub")?.Value;
             }
-
-            var allClaims = User.Claims.Select(c => $"{c.Type}: {c.Value}").ToList();
-            System.Diagnostics.Debug.WriteLine($"All claims: {string.Join(", ", allClaims)}");
-            System.Diagnostics.Debug.WriteLine($"Email extracted: {email}");
-
-            return email;
+            if (string.IsNullOrEmpty(userId))
+            {
+                userId = User.FindFirst(ClaimTypes.Email)?.Value;
+            }
+            return userId;
         }
 
         private OperationContext BuildOperationContext()
@@ -69,9 +68,9 @@ namespace SalesMicroserviceAPI.Controllers
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] Sale sale)
         {
-            var email = GetEmailFromClaims();
+            var userId = GetUserIdFromClaims();
             var context = BuildOperationContext();
-            var result = await _saleService.Create(sale, email, context);
+            var result = await _saleService.Create(sale, userId, context);
             if (!result.IsSuccess)
                 return BadRequest(new { error = result.Error });
 
@@ -82,16 +81,16 @@ namespace SalesMicroserviceAPI.Controllers
         public async Task<IActionResult> Update(int id, [FromBody] Sale sale)
         {
             sale.Id = id;
-            var email = GetEmailFromClaims();
-            var result = await _saleService.Update(sale, email);
+            var userId = GetUserIdFromClaims();
+            var result = await _saleService.Update(sale, userId);
             return result.IsSuccess ? Ok(result.Value) : BadRequest(result.Error);
         }
 
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {
-            var email = GetEmailFromClaims();
-            var result = await _saleService.Delete(id, email);
+            var userId = GetUserIdFromClaims();
+            var result = await _saleService.Delete(id, userId);
             return result.IsSuccess ? NoContent() : NotFound(result.Error);
         }
 

@@ -22,22 +22,18 @@ namespace UserMicroservice.Api.Controllers
             _emailClient = emailClient;
         }
 
-        private string? GetEmailFromClaims()
+        private string? GetUserIdFromClaims()
         {
-            var email = User.FindFirst(ClaimTypes.Email)?.Value;
-
-            // Debug: Si no encuentra el email con ClaimTypes.Email, intenta con el nombre literal
-            if (string.IsNullOrEmpty(email))
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
             {
-                email = User.FindFirst("email")?.Value;
+                userId = User.FindFirst("sub")?.Value;
             }
-
-            // Debug: Log de todos los claims
-            var allClaims = User.Claims.Select(c => $"{c.Type}: {c.Value}").ToList();
-            System.Diagnostics.Debug.WriteLine($"All claims: {string.Join(", ", allClaims)}");
-            System.Diagnostics.Debug.WriteLine($"Email extracted: {email}");
-
-            return email;
+            if (string.IsNullOrEmpty(userId))
+            {
+                userId = User.FindFirst(ClaimTypes.Email)?.Value;
+            }
+            return userId;
         }
 
         [HttpGet("id/{id}")]
@@ -68,8 +64,8 @@ namespace UserMicroservice.Api.Controllers
             if (user == null)
                 return BadRequest(new { error = "El usuario no puede ser vacío" });
 
-            var email = GetEmailFromClaims();
-            var result = await _service.Create(user, email);
+            var userId = GetUserIdFromClaims();
+            var result = await _service.Create(user, userId);
 
             if (!result.IsSuccess)
             {
@@ -103,8 +99,8 @@ namespace UserMicroservice.Api.Controllers
             if (user == null)
                 return BadRequest(new { error = "El usuario no puede ser nulo" });
 
-            var email = GetEmailFromClaims();
-            var result = await _service.Update(user, email);
+            var userId = GetUserIdFromClaims();
+            var result = await _service.Update(user, userId);
 
             if (!result.IsSuccess)
                 return BadRequest(new { error = result.Error });
@@ -115,8 +111,8 @@ namespace UserMicroservice.Api.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            var email = GetEmailFromClaims();
-            var result = await _service.Delete(id, email);
+            var userId = GetUserIdFromClaims();
+            var result = await _service.Delete(id, userId);
 
             if (!result.IsSuccess)
                 return NotFound(new { error = result.Error });
@@ -143,8 +139,8 @@ namespace UserMicroservice.Api.Controllers
             if (string.IsNullOrWhiteSpace(request.NewPassword))
                 return BadRequest(new { error = "Nueva contraseña requerida" });
 
-            var email = GetEmailFromClaims();
-            var result = await _service.UpdatePassword(id, request.NewPassword, email);
+            var userId = GetUserIdFromClaims();
+            var result = await _service.UpdatePassword(id, request.NewPassword, userId);
 
             if (!result.IsSuccess)
                 return BadRequest(new { error = result.Error });
