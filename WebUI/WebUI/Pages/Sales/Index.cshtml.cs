@@ -1,4 +1,6 @@
 using System.Net.Http.Json;
+using Microsoft.AspNetCore.Mvc;
+using System.Linq;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
@@ -10,6 +12,7 @@ namespace WebUI.Pages.Sales
     public class IndexModel : PageModel
     {
         private readonly HttpClient _salesClient;
+        private readonly HttpClient _saleDetailClient;
         private readonly HttpClient _clientApi;
         private readonly HttpClient _disciplineApi;
         private readonly HttpClient _reportClient;
@@ -26,6 +29,7 @@ namespace WebUI.Pages.Sales
         {
             _reportClient = factory.CreateClient("ReportAPI");
             _salesClient = factory.CreateClient("SalesAPI");
+            _saleDetailClient = factory.CreateClient("SaleDetailAPI");
             _clientApi = factory.CreateClient("ClientAPI");
             _disciplineApi = factory.CreateClient("Disciplines");
         }
@@ -40,6 +44,7 @@ namespace WebUI.Pages.Sales
             public string? Nit { get; set; }
         }
 
+        
         public async Task<IActionResult> OnGetAsync()
         {
             try
@@ -80,7 +85,7 @@ namespace WebUI.Pages.Sales
                             : "-",
                         Total = s.TotalAmount,
                         SaleDate = s.SaleDate,
-                        Nit = s.Nit
+                        Nit = s.Nit                     
                     })
                     .OrderByDescending(s => s.SaleDate)
                     .ToList();
@@ -138,5 +143,60 @@ namespace WebUI.Pages.Sales
             }
         }
 
+        public async Task<IActionResult> OnGetSaleDetailsAsync(int id)
+        {
+            try
+            {
+                var saleTask = _salesClient.GetFromJsonAsync<SaleDTO>($"/api/Sales/{id}");
+                
+                var detailsTask = _saleDetailClient.GetFromJsonAsync<List<SaleDetailDTO>>($"/api/SaleDetails/sale/{id}");
+                
+                var disciplinesTask = _disciplineApi.GetFromJsonAsync<List<DisciplineDTO>>("/api/Disciplines");
+
+                await Task.WhenAll(saleTask, detailsTask, disciplinesTask);
+
+                var sale = saleTask.Result;
+                if (sale == null) return NotFound();
+
+                sale.Details = detailsTask.Result ?? new List<SaleDetailDTO>();
+
+                string clientName = "Cliente Desconocido";
+                try 
+                {
+                    var client = await _clientApi.GetFromJsonAsync<ClientDto>($"/api/Client/{sale.ClientId}");
+                    if (client != null) 
+                        clientName = $"{client.Name} {client.FirstLastname} {client.SecondLastname}".Trim();
+                }
+                catch { /* Ignorar error de cliente */ }
+
+                var disciplines = disciplinesTask.Result;
+                var discLookup = disciplines?.ToDictionary(d => (int)d.Id, d => d.Name ?? "Sin Nombre") 
+                                ?? new Dictionary<int, string>();
+
+                var detailsList = sale.Details.Select(d => new
+                {
+                    disciplineName = discLookup.TryGetValue(d.DisciplineId, out var name) ? name : $"Disciplina {d.DisciplineId}",
+                    qty = d.Qty,
+                    unitPrice = d.Price, 
+                    subTotal = d.Total
+                }).ToList();
+
+                var response = new
+                {
+                    id = sale.Id,
+                    clientName = clientName,
+                    saleDate = sale.SaleDate,
+                    nit = sale.Nit,
+                    total = sale.TotalAmount,
+                    details = detailsList
+                };
+
+                return new JsonResult(response);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Error al cargar detalles: " + ex.Message);
+            }
+        }
     }
 }

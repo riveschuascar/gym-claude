@@ -76,6 +76,13 @@ builder.Services.AddHttpClient("SalesAPI", client =>
     client.DefaultRequestHeaders.Add("Accept", "application/json");
 }).AddHttpMessageHandler<TokenMessageHandler>();
 
+builder.Services.AddHttpClient("SaleDetailAPI", client =>
+{
+    var baseUrl = builder.Configuration["SaleDetailApiBase"] ?? "http://localhost:5079";
+    client.BaseAddress = new Uri(baseUrl);
+    client.DefaultRequestHeaders.Add("Accept", "application/json");
+}).AddHttpMessageHandler<TokenMessageHandler>();
+
 builder.Services.AddHttpClient("ReportAPI", client =>
 {
     var baseUrl = builder.Configuration["ReportApiBase"] ?? "http://localhost:5236";
