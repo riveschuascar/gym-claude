@@ -144,8 +144,18 @@ namespace ReportMicroservice.Infrastructure.Reports
             {
                 container.PaddingTop(10).Row(row =>
                 {
-                    row.RelativeItem(); // Espacio vacío a la izquierda
-                    row.AutoItem().Text($"Total: {_data.TotalAmount:F2}").FontSize(14).Bold();
+                    row.RelativeItem()
+                    .AlignMiddle() 
+                    .Text(_data.TotalAmountLiteral) 
+                    .FontSize(10)
+                    .SemiBold(); 
+
+                    row.AutoItem()
+                    .PaddingLeft(15) 
+                    .AlignMiddle()
+                    .Text($"Total: {_data.TotalAmount:F2} Bs")
+                    .FontSize(14)
+                    .Bold();
                 });
             };
             return this;

@@ -2,6 +2,7 @@
 using ReportMicroservice.Domain.Ports;
 using ReportMicroservice.Domain.Models;
 using ReportMicroservice.Domain.DTO;
+using ReportMicroservice.Application.Utils;
 using System.Security.Claims;
 
 namespace ReportMicroservice.Application.Services
@@ -64,6 +65,7 @@ namespace ReportMicroservice.Application.Services
                 ClientCiNit = sale.Nit, 
                 Details = reportDetails,
                 TotalAmount = sale.TotalAmount,
+                TotalAmountLiteral = CurrencyConverter.Convertir(sale.TotalAmount),
                 GeneratedAt = DateTime.Now,
                 GeneratedByEmail = userEmail
             };

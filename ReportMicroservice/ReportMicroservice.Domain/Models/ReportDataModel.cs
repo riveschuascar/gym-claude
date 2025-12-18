@@ -8,6 +8,7 @@
         public string ClientCiNit { get; set; }
         public List<SaleReportDetail> Details { get; set; } = new();
         public decimal TotalAmount { get; set; }
+        public string TotalAmountLiteral { get; set; }
         public string GeneratedByEmail { get; set; }
         public DateTime GeneratedAt { get; set; }
     }

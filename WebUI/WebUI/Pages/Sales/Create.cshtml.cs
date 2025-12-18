@@ -56,7 +56,13 @@ public class CreateModel : PageModel
             TempData["ErrorMessage"] = "Revisa los datos ingresados.";
             return Page();
         }
+        var selectedClient = Clients.FirstOrDefault(c => c.Id == Input.ClientId);
 
+        // asignamos el CI del cliente automáticamente.
+        if (selectedClient != null && string.IsNullOrWhiteSpace(Input.TaxId))
+        {
+            Input.TaxId = selectedClient.Ci;
+        }
         // Si no se digitó monto, calcula el total desde los detalles (disciplinas)
         // If details provided, calculate total from details; otherwise leave as provided
         if (Input.Details != null && Input.Details.Any())
