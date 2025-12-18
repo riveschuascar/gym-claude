@@ -142,20 +142,20 @@ namespace ReportMicroservice.Infrastructure.Reports
         {
             _totalAction = container =>
             {
-                container.PaddingTop(10).Row(row =>
+                container.PaddingTop(10).Column(col => 
                 {
-                    row.RelativeItem()
-                    .AlignMiddle() 
-                    .Text(_data.TotalAmountLiteral) 
-                    .FontSize(10)
-                    .SemiBold(); 
-
-                    row.AutoItem()
-                    .PaddingLeft(15) 
-                    .AlignMiddle()
+                    col.Item()
+                    .AlignRight() 
                     .Text($"Total: {_data.TotalAmount:F2} Bs")
                     .FontSize(14)
                     .Bold();
+
+                    col.Item()
+                    .PaddingTop(5) 
+                    .AlignLeft()   
+                    .Text(_data.TotalAmountLiteral)
+                    .FontSize(10)
+                    .SemiBold();
                 });
             };
             return this;
