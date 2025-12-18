@@ -32,7 +32,8 @@ namespace SalesMicroserviceInfraestructure.Persistence
                        s.total_amount AS TotalAmount, s.nit AS Nit,
                        s.created_at AS CreatedAt, s.last_modification AS LastModification,
                        s.is_active AS IsActive, s.created_by AS CreatedBy, s.modified_by AS ModifiedBy
-                FROM sales s";
+                FROM sales s 
+                WHERE s.is_active = true AND s.status = 'Completed'";
 
             try
             {
