@@ -52,7 +52,10 @@ namespace ReportMicroservice.Application.Services
                      from subDisc in discGroup.DefaultIfEmpty() // Esto hace que sea Left Join
                      select new SaleReportDetail
                      {
-                         Quantity = d.Qty,
+                         // Fix: Si la cantidad es 1 pero el total sugiere más (y el precio > 0), recalculamos.
+                         Quantity = (d.Qty <= 1 && d.Total > d.Price && d.Price > 0) 
+                                    ? (int)Math.Round(d.Total / d.Price) 
+                                    : d.Qty,
                          
                          // Si subDisc es null (no hubo coincidencia), mostramos el ID para depurar
                          Description = subDisc != null ? subDisc.Name : $"Disciplina ID: {d.DisciplineId} (No encontrada)",
