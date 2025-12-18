@@ -1,0 +1,51 @@
+@model WebUI.Pages.Disciplines.CreateModel
+
+<!--  Contenedor para mensajes de error -->
+<div id="disciplineErrorContainer" class="alert alert-danger d-none mb-3" role="alert">
+    <ul id="disciplineErrorList" class="mb-0"></ul>
+</div>
+
+<div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+<form id="createDisciplineForm" method="post" asp-page="Create" asp-page-handler="Post">
+
+    <div class="mb-3">
+        <label asp-for="Discipline.Name" class="form-label">Nombre</label>
+        <input asp-for="Discipline.Name" class="form-control" />
+        <span asp-validation-for="Discipline.Name" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Discipline.StartTime" class="form-label">Hora de Inicio</label>
+        <input asp-for="Discipline.StartTime" type="time" class="form-control" />
+        <span asp-validation-for="Discipline.StartTime" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Discipline.EndTime" class="form-label">Hora de Fin</label>
+        <input asp-for="Discipline.EndTime" type="time" class="form-control" />
+        <span asp-validation-for="Discipline.EndTime" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Discipline.Price" class="form-label">Precio</label>
+        <input asp-for="Discipline.Price" type="number" step="0.01" class="form-control" />
+        <span asp-validation-for="Discipline.Price" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Discipline.Cupos" class="form-label">Cupos</label>
+        <input asp-for="Discipline.Cupos" type="number" class="form-control" />
+        <span asp-validation-for="Discipline.Cupos" class="text-danger"></span>
+    </div>
+
+    <div class="form-check mb-3">
+        <input asp-for="Discipline.IsActive" class="form-check-input" type="checkbox" />
+        <label asp-for="Discipline.IsActive" class="form-check-label">Disciplina Activa</label>
+    </div>
+
+    <div class="d-grid gap-2 d-md-flex justify-content-md-center mt-4">
+        <button type="submit" class="btn btn-primary">Registrar Disciplina</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+    </div>
+</form>

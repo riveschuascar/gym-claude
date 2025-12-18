@@ -29,6 +29,8 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddScoped<IMembershipRepository, MembershipRepository>();
 builder.Services.AddScoped<IMembershipService, MembershipService>();
+builder.Services.AddScoped<IMembershipDetailRepository, MembershipDetailRepository>();
+builder.Services.AddScoped<IMembershipDetailService, MembershipDetailService>();
 
 var jwtKey = builder.Configuration["Jwt:Key"] ?? throw new InvalidOperationException("Jwt:Key missing");
 var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));

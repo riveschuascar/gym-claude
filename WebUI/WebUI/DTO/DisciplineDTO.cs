@@ -10,5 +10,7 @@ namespace WebUI.DTO
         public TimeSpan? EndTime { get; set; }
         public DateTime? CreatedAt { get; set; }
         public DateTime? LastModification { get; set; }
+        public double? Price { get; set; }
+        public short? Cupos { get; set; }
     }
 }

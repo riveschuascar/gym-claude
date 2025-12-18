@@ -82,5 +82,20 @@ namespace DisciplineMicroservice.DisciplineMicroserviceApplication.Services
         {
             return await repo.GetAll();
         }
+
+        public async Task<Result> Validate(short id, int qty, string? email)
+        {
+            var discipline = await repo.GetById(id);
+            if (!discipline.IsSuccess || discipline.Value is null)
+            {
+                return Result.Failure($"No se encontro la disciplina con Id {id}");
+            }
+            int newQty = (int)(discipline.Value.Cupos - qty)!;
+            if (newQty < 0)
+            {
+                return Result.Failure("No existen suficientes cupos");
+            }    
+            return await repo.UpdateCupos(id, newQty, email);
+        }
     }
 }

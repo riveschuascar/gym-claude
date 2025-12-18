@@ -64,6 +64,12 @@ namespace DisciplineMicroservice.DisciplineMicroserviceDomain.Validators
             if (start < horaApertura || end > horaCierre)
                 return Result<Discipline>.Failure("La disciplina debe realizarse entre las 06:00 y las 22:00.");
 
+            if (discipline.Price == null || discipline.Price < 0)
+                return Result<Discipline>.Failure("El precio debe ser un valor positivo.");
+
+            if (discipline.Cupos is null || discipline.Cupos < 12)
+                return Result<Discipline>.Failure("El número de cupos debe ser mayor o igual a 12.");
+
             return Result<Discipline>.Success(discipline);
         }
     }

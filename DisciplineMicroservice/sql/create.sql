@@ -13,10 +13,13 @@ CREATE TABLE public.discipline (
 
     name                VARCHAR(50) NOT NULL,
 
-    id_user             BIGINT,
+    id_user             BIGINT DEFAULT NULL,
 
     start_time          INTERVAL NOT NULL,
     end_time            INTERVAL NOT NULL,
+
+    price               DOUBLE PRECISION NOT NULL,
+    cupos    SMALLINT NOT NULL,
 
     CONSTRAINT chk_discipline_name_chars CHECK (
         name ~ '^[[:alpha:][:digit:] ''-]+$'
@@ -57,14 +60,16 @@ CREATE INDEX idx_discipline_is_active ON public.discipline(is_active);
 CREATE INDEX idx_discipline_name      ON public.discipline(name);
 
 INSERT INTO public.discipline
-    (name, id_user, start_time, end_time, created_by)
+    (name, id_user, start_time, end_time, price, cupos, created_by)
 VALUES
-    ('Zumba',      1, '08:00', '09:30', 'system'),
-    ('Crossfit1',  2, '09:00', '10:30', 'system'),
-    ('YogaFit99',  3, '17:00', '18:00', 'system'),
-    ('Aerobicos',  4, '10:00', '11:00', 'system'),
-    ('BoxeoPro',   5, '18:00', '19:00', 'system'),
-    ('Pilates',    6, '15:00', '16:30', 'system');
+    ('Funcional AM',     1, '07:00', '08:30', 100.00, 12, 'system'),
+    ('Spinning After',   2, '18:00', '19:00', 150.50, 12, 'system'),
+    ('Yoga Flow',        3, '17:00', '18:00', 80.00, 12, 'system'),
+    ('CrossFit Base',    4, '19:00', '20:30', 180.00, 12, 'system'),
+    ('Pilates Core',     5, '09:00', '10:00', 120.50, 12, 'system'),
+    ('Boxeo Tecnico',    6, '20:30', '21:30', 100.00, 12, 'system'),
+    ('Zumba Cardio',     7, '10:30', '11:30', 90.00, 12, 'system'),
+    ('HIIT Express',     8, '12:30', '13:30', 70.50, 12, 'system');
 
 COMMIT;
 

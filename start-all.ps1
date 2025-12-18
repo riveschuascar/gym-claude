@@ -43,14 +43,18 @@ function Start-DotnetService {
                   -WorkingDirectory (Split-Path $fullPath -Parent) `
                   -WindowStyle Normal
 }
-
+ReportMicroservice\ReportMicroservice.API\ReportMicroservice.API.csproj
 $services = @(
     @{ Name = "Login API";            Path = "LoginMicroservice/LoginMicroservice/LoginMicroservice.csproj";       Url = "http://localhost:5289"; LaunchProfile = "http" },
     @{ Name = "User API";             Path = "UserMicroservice/UserMicroserviceApi/UserMicroserviceApi.csproj";    Url = "http://localhost:5089"; LaunchProfile = "http" },
     @{ Name = "Client API";           Path = "ClientMicroservice/ClientMicroservice/ClientMicroservice.csproj";    Url = "http://localhost:5135"; LaunchProfile = "http" },
     @{ Name = "Discipline API";       Path = "DisciplineMicroservice/DisciplineMicroserviceAPI/DisciplineMicroserviceApi.csproj"; Url = "http://localhost:5098"; LaunchProfile = "http" },
     @{ Name = "Membership API";       Path = "MembershipMicroservice/MembershipMicroserviceAPI/MembershipMicroserviceAPI.csproj"; Url = "http://localhost:5292"; LaunchProfile = "http" },
+    @{ Name = "Sales API";            Path = "SalesMicroservice/SalesMicroserviceAPI/SalesMicroserviceAPI.csproj"; Url = "http://localhost:5305"; LaunchProfile = "http" },
+    @{ Name = "SaleDetail API";       Path = "SaleDetailMicroservice/SaleDetailMicroservice/SaleDetailMicroservice.API.csproj"; Url = "http://localhost:5079"; LaunchProfile = "http" },
+    @{ Name = "Report API";           Path = "ReportMicroservice/ReportMicroservice.API/ReportMicroservice.API.csproj"; Url = "http://localhost:5236"; LaunchProfile = "http" },
     @{ Name = "Email gRPC";           Path = "EmailMicroservice/EmailMicroservice.API/EmailMicroservice.API.csproj"; Url = "http://localhost:5254"; LaunchProfile = "http" },
+    @{ Name = "Orchestrator";         Path = "OrchestratorMicroservice/Orchestrator.Rest/Orchestrator.Rest.csproj"; Url = "http://localhost:5071"; LaunchProfile = "http" },
     @{ Name = "WebUI";                Path = "WebUI/WebUI/WebUI.csproj";                                            Url = "https://localhost:7241"; LaunchProfile = "https" }
 )
 

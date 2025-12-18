@@ -17,8 +17,10 @@ CREATE TABLE membership (
 
 INSERT INTO membership (created_at, name, price, description, monthly_sessions, created_by)
 VALUES
-    (now(), 'Basic Plan',    100.00, 'Acceso limitado al gimnasio.',       12, 'system'),
-    (now(), 'Premium Plan',  200.00, 'Acceso total y clases ilimitadas.',  30, 'system'),
-    (now(), 'Student Plan',   80.00, 'Precio especial para estudiantes.',   8, 'system');
+    (now(), 'Fit Básica',        120.00, 'Acceso general y 8 sesiones guiadas al mes.',            8,  'system'),
+    (now(), 'Clásica',           180.00, '12 sesiones mensuales, acceso a peso libre y cardio.',  12, 'system'),
+    (now(), 'Full Acceso',       260.00, '20 sesiones + clases funcionales y spinning.',          20, 'system'),
+    (now(), 'Premium Ilimitada', 320.00, 'Clases y salas ilimitadas, incluye invitado 1 vez/mes.',30, 'system'),
+    (now(), 'Plan Estudiante',    95.00, 'Tarifa reducida con 10 sesiones al mes.',               10, 'system');
 
 SELECT * FROM membership;

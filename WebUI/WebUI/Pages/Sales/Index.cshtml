@@ -1,0 +1,230 @@
+@page
+@model WebUI.Pages.Sales.IndexModel
+
+@{
+    ViewData["Title"] = "Ventas";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1 class="mb-0">@ViewData["Title"]</h1>
+        <div class="d-flex gap-2">
+            <form method="get" class="d-flex">
+                <input type="text" name="Search" value="@Model.Search" class="form-control me-2" placeholder="Buscar por cliente, CI/NIT o disciplina" />
+                <button type="submit" class="btn btn-outline-secondary me-2"><i class="fas fa-search"></i></button>
+                <a href='@Url.Page("Index")' class="btn btn-outline-warning" title="Limpiar filtros">
+                    <i class="fas fa-eraser"></i>
+                </a>
+            </form>
+            <a asp-page="Create" class="btn btn-primary">
+                <i class="fas fa-cash-register"></i> Nueva venta
+            </a>
+        </div>
+    </div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.10.0/sweetalert2.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.10.0/sweetalert2.min.css" />
+    <script>
+        function confirmDelete(event, saleName) {
+            event.preventDefault();
+            const form = event.target;
+
+            Swal.fire({
+                title: '¿Estás seguro?',
+                text: `Esta acción eliminará la venta de "${saleName}".`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }
+            });
+        }
+    </script>
+
+        <!-- Script de Descarga Automática -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var autoDownload = '@Model.AutoDownload'.toLowerCase() === 'true'; 
+            var saleId = parseInt('@Model.SaleId');
+
+            if (autoDownload && saleId > 0) {
+                console.log("Iniciando descarga automática para venta ID: " + saleId);
+                
+                window.location.href = '?handler=Download&saleId=' + saleId;
+            }
+        });
+    </script>
+
+    <script>
+        async function loadAndShowDetails(saleId) {
+        document.getElementById('modalClientName').textContent = 'Cargando...';
+        document.getElementById('modalTableBody').innerHTML = '<tr><td colspan="4" class="text-center">Cargando datos...</td></tr>';
+        
+        var myModalEl = document.getElementById('detailsModal');
+        var myModal = bootstrap.Modal.getOrCreateInstance(myModalEl);
+        myModal.show();
+
+        try {
+            const response = await fetch(`?handler=SaleDetails&id=${saleId}`);
+            
+            if (!response.ok) throw new Error('Error al obtener datos');
+
+            const data = await response.json();
+
+            document.getElementById('modalClientName').textContent = data.clientName;
+            document.getElementById('modalNit').textContent = data.nit || '-';
+            
+            const dateObj = new Date(data.saleDate);
+            document.getElementById('modalDate').textContent = dateObj.toLocaleDateString();
+            document.getElementById('modalId').textContent = data.id;
+
+            const tbody = document.getElementById('modalTableBody');
+            tbody.innerHTML = ''; 
+
+            if (data.details && data.details.length > 0) {
+                data.details.forEach(d => {
+                    const row = `
+                        <tr>
+                            <td>${d.disciplineName}</td>
+                            <td class="text-center">${d.qty}</td>
+                            <td class="text-end">${d.unitPrice.toFixed(2)}</td>
+                            <td class="text-end">${d.subTotal.toFixed(2)}</td>
+                        </tr>
+                    `;
+                    tbody.innerHTML += row;
+                });
+            } else {
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">Sin detalles registrados</td></tr>';
+            }
+
+            document.getElementById('modalTotal').textContent = data.total.toFixed(2);
+
+        } catch (error) {
+            console.error(error);
+            document.getElementById('modalTableBody').innerHTML = '<tr><td colspan="4" class="text-center text-danger">Error al cargar los detalles.</td></tr>';
+        }
+    }
+    </script>
+}
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    <!-- Modal de Detalles de Venta -->
+    <div class="modal fade" id="detailsModal" tabindex="-1" aria-labelledby="detailsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-info text-white">
+                    <h5 class="modal-title" id="detailsModalLabel"><i class="fas fa-receipt"></i> Detalle de Venta</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <strong>Cliente:</strong> <span id="modalClientName"></span><br />
+                            <strong>CI/NIT:</strong> <span id="modalNit"></span>
+                        </div>
+                        <div class="col-md-6 text-end">
+                            <strong>Fecha:</strong> <span id="modalDate"></span><br />
+                            <strong>Nro Venta:</strong> #<span id="modalId"></span>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-sm">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Disciplina</th>
+                                    <th class="text-center">Cant.</th>
+                                    <th class="text-end">P. Unit.</th>
+                                    <th class="text-end">Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody id="modalTableBody">
+                                <!-- Aquí se inyectan las filas con JS -->
+                            </tbody>
+                            <tfoot>
+                                <tr class="fw-bold">
+                                    <td colspan="3" class="text-end">TOTAL:</td>
+                                    <td class="text-end"><span id="modalTotal"></span> Bs</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-dark text-white">
+            <i class="fas fa-list"></i> Historial de ventas
+        </div>
+        <div class="card-body">
+            @if (!Model.Sales.Any())
+            {
+                <div class="text-muted">Aún no hay ventas registradas.</div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-striped align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Cliente</th>
+                                <th>Fecha venta</th>
+                                <th>CI/NIT</th>
+                                <th class="text-end">Total (Bs)</th>
+                                <th class="text-end">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var s in Model.Sales)
+                            {
+                                <tr>
+                                    <td>@s.ClientName</td>
+                                    <td>@s.SaleDate.ToString("dd/MM/yyyy")</td>
+                                    <td>@(string.IsNullOrWhiteSpace(s.Nit) ? "-" : s.Nit)</td>
+                                    <td class="text-end">@s.Total.ToString("N2")</td>
+                                    <td class="text-end">
+                                        <button type="button" 
+                                                class="btn btn-sm btn-outline-info me-1" 
+                                                title="Ver detalles"
+                                                onclick="loadAndShowDetails(@s.Id)">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <form method="post" asp-page-handler="Delete" asp-route-id="@s.Id" class="d-inline" onsubmit="return confirmDelete(event, '@s.Disciplines');">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>

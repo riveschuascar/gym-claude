@@ -19,7 +19,6 @@ namespace DisciplineMicroservice.DisciplineMicroserviceInfraestructure.Persistan
         {
             _connectionString = config.GetConnectionString("DisciplineMicroserviceDB")
                 ?? throw new Exception("No se encontró la cadena de conexión 'DisciplineMicroserviceDB'");
-            Console.WriteLine("ConnectionString: " + _connectionString);
         }
 
         private NpgsqlConnection CreateConnection() => new NpgsqlConnection(_connectionString);
@@ -28,15 +27,18 @@ namespace DisciplineMicroservice.DisciplineMicroserviceInfraestructure.Persistan
         public async Task<Result<IEnumerable<Discipline>>> GetAll()
         {
             const string query = @"
-            SELECT id AS Id,
-                   name AS Name,
-                   start_time AS StartTime,
-                   end_time AS EndTime,
-                   created_at AS CreatedAt,
-                   last_modification AS LastModification,
-                   is_active AS IsActive
-            FROM discipline
-            WHERE is_active = true;";
+                SELECT id AS Id,
+                    name AS Name,
+                    id_user AS IdUser,
+                    start_time AS StartTime,
+                    end_time AS EndTime,
+                    price AS Price,
+                    cupos AS Cupos,
+                    created_at AS CreatedAt,
+                    last_modification AS LastModification,
+                    is_active AS IsActive
+                FROM discipline
+                WHERE is_active = true;";
 
             try
             {
@@ -56,15 +58,18 @@ namespace DisciplineMicroservice.DisciplineMicroserviceInfraestructure.Persistan
         public async Task<Result<Discipline>> GetById(int id)
         {
             const string query = @"
-            SELECT id AS Id,
-                   name AS Name,
-                   start_time AS StartTime,
-                   end_time AS EndTime,
-                   created_at AS CreatedAt,
-                   last_modification AS LastModification,
-                   is_active AS IsActive
-            FROM discipline
-            WHERE id = @Id AND is_active = true;";
+                SELECT id AS Id,
+                    name AS Name,
+                    id_user AS IdUser,
+                    start_time AS StartTime,
+                    end_time AS EndTime,
+                    price AS Price,
+                    cupos AS Cupos,
+                    created_at AS CreatedAt,
+                    last_modification AS LastModification,
+                    is_active AS IsActive
+                FROM discipline
+                WHERE id = @Id AND is_active = true;";
 
             try
             {
@@ -89,9 +94,9 @@ namespace DisciplineMicroservice.DisciplineMicroserviceInfraestructure.Persistan
         {
             const string query = @"
             INSERT INTO discipline
-                (name, start_time, end_time, created_at, last_modification, is_active, created_by)
+                (name, id_user, start_time, end_time, price, cupos, created_at, last_modification, is_active, created_by)
             VALUES
-                (@Name, @StartTime, @EndTime, @CreatedAt, @LastModification, @IsActive, @CreatedBy)
+                (@Name, @IdUser, @StartTime, @EndTime, @Price, @Cupos, @CreatedAt, @LastModification, @IsActive, @CreatedBy)
             RETURNING id;";
 
             try
@@ -106,8 +111,11 @@ namespace DisciplineMicroservice.DisciplineMicroserviceInfraestructure.Persistan
                 var parameters = new
                 {
                     entity.Name,
+                    entity.IdUser,
                     entity.StartTime,
                     entity.EndTime,
+                    entity.Price,
+                    entity.Cupos,
                     entity.CreatedAt,
                     entity.LastModification,
                     entity.IsActive,
@@ -133,8 +141,11 @@ namespace DisciplineMicroservice.DisciplineMicroserviceInfraestructure.Persistan
             const string query = @"
             UPDATE discipline
             SET name = @Name,
+                id_user = @IdUser,
                 start_time = @StartTime,
                 end_time = @EndTime,
+                price = @Price,
+                cupos = @Cupos,
                 last_modification = @LastModification,
                 is_active = @IsActive,
                 modified_by = @ModifiedBy
@@ -151,8 +162,11 @@ namespace DisciplineMicroservice.DisciplineMicroserviceInfraestructure.Persistan
                 {
                     entity.Id,
                     entity.Name,
+                    entity.IdUser,
                     entity.StartTime,
                     entity.EndTime,
+                    entity.Price,
+                    entity.Cupos,
                     entity.LastModification,
                     entity.IsActive,
                     ModifiedBy = userEmail
@@ -202,6 +216,39 @@ namespace DisciplineMicroservice.DisciplineMicroserviceInfraestructure.Persistan
             {
                 Console.WriteLine("Error en DeleteById: " + ex.Message);
                 return Result.Failure("Error al eliminar disciplina.");
+            }
+        }
+
+        public async Task<Result> UpdateCupos(short id, int qty, string? userEmail)
+        {
+            const string query = @"
+            UPDATE discipline
+            SET cupos = @Qty,
+            last_modification = @LastModification,
+            modified_by = @ModifiedBy
+            WHERE id = @Id";
+
+            try
+            {
+                using var conn = CreateConnection();
+                await conn.OpenAsync();
+
+                var parameters = new
+                {
+                    Id = id,
+                    LastModification = DateTime.Now,
+                    Qty = qty,
+                    ModifiedBy = userEmail
+                };
+
+                var affected = await conn.ExecuteAsync(query, parameters);
+
+                return affected > 0 ? Result.Success() : Result.Failure("No se encontro la disciplina a validar");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error en Validate" + ex.Message);
+                return Result.Failure("Error al validar disciplina");
             }
         }
     }
