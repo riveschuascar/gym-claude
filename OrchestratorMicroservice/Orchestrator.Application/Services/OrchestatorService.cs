@@ -40,21 +40,21 @@ public class OrchestratorService : IOrchestatorService
 
         // 3) Validate each discipline via PUT /api/Disciplines/validate/ (verifica existencia y actualiza cupos)
         var processedDisciplines = new List<SaleDetailDto>();
-        
+
         foreach (var d in @event.Details)
         {
             var valid = await ValidateDisciplineAsync(d.DisciplineId, d.Qty);
             if (!valid)
             {
                 _logger.LogWarning("Discipline {DisciplineId} validation failed. Starting compensation.", d.DisciplineId);
-                
+
                 // Compensar las disciplinas que ya fueron procesadas
                 await CompensateDisciplinesAsync(processedDisciplines);
-                
+
                 await UpdateSaleStatusAsync(@event.SaleId, SaleStatus.DisciplineFailed);
                 return;
             }
-            
+
             // Agregar a la lista de procesadas exitosamente
             processedDisciplines.Add(d);
             _logger.LogInformation("Discipline {DisciplineId} validated and updated successfully", d.DisciplineId);
@@ -71,7 +71,7 @@ public class OrchestratorService : IOrchestatorService
     {
         try
         {
-            var client = _httpClientFactory.CreateClient("SaleDetails");
+            var client = _httpClientFactory.CreateClient("saleDetails");
             var response = await client.PostAsJsonAsync("/api/SaleDetails", details);
 
             if (response.IsSuccessStatusCode)
@@ -142,21 +142,21 @@ public class OrchestratorService : IOrchestatorService
         try
         {
             var client = _httpClientFactory.CreateClient("disciplines");
-            var payload = new { Qty = qty };
-            var resp = await client.PutAsJsonAsync($"/api/Disciplines/validate/{disciplineId}", payload);
-            
+
+            var resp = await client.PutAsJsonAsync($"/api/Disciplines/validate/{disciplineId}", qty);
+
             if (resp.IsSuccessStatusCode)
             {
                 return true;
             }
-            
+
             if (resp.StatusCode == System.Net.HttpStatusCode.BadRequest)
             {
                 var errorContent = await resp.Content.ReadAsStringAsync();
                 _logger.LogWarning("Discipline {DisciplineId} validation failed: {Error}", disciplineId, errorContent);
                 return false;
             }
-            
+
             _logger.LogWarning("Discipline service returned status {Status} for {Id}", resp.StatusCode, disciplineId);
             return false;
         }
@@ -188,12 +188,12 @@ public class OrchestratorService : IOrchestatorService
 
                 if (resp.IsSuccessStatusCode)
                 {
-                    _logger.LogInformation("Discipline {DisciplineId} compensated successfully (restored {Qty} cupos)", 
+                    _logger.LogInformation("Discipline {DisciplineId} compensated successfully (restored {Qty} cupos)",
                         d.DisciplineId, d.Qty);
                 }
                 else
                 {
-                    _logger.LogError("Failed to compensate discipline {DisciplineId} with status {Status}", 
+                    _logger.LogError("Failed to compensate discipline {DisciplineId} with status {Status}",
                         d.DisciplineId, resp.StatusCode);
                 }
             }

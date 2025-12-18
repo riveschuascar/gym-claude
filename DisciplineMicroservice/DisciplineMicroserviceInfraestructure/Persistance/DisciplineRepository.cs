@@ -27,19 +27,19 @@ namespace DisciplineMicroservice.DisciplineMicroserviceInfraestructure.Persistan
         // Obtener todas las disciplinas activas
         public async Task<Result<IEnumerable<Discipline>>> GetAll()
         {
-                 const string query = @"
-                 SELECT id AS Id,
-                     name AS Name,
-                     id_user AS IdUser,
-                     start_time AS StartTime,
-                     end_time AS EndTime,
-                     price AS Price,
-                     monthly_sessions AS MonthlySessions,
-                     created_at AS CreatedAt,
-                     last_modification AS LastModification,
-                     is_active AS IsActive
-                 FROM discipline
-                 WHERE is_active = true;";
+            const string query = @"
+                SELECT id AS Id,
+                    name AS Name,
+                    id_user AS IdUser,
+                    start_time AS StartTime,
+                    end_time AS EndTime,
+                    price AS Price,
+                    cupos AS Cupos,
+                    created_at AS CreatedAt,
+                    last_modification AS LastModification,
+                    is_active AS IsActive
+                FROM discipline
+                WHERE is_active = true;";
 
             try
             {
@@ -58,19 +58,19 @@ namespace DisciplineMicroservice.DisciplineMicroserviceInfraestructure.Persistan
         // Obtener disciplina por Id
         public async Task<Result<Discipline>> GetById(int id)
         {
-                 const string query = @"
-                 SELECT id AS Id,
-                     name AS Name,
-                     id_user AS IdUser,
-                     start_time AS StartTime,
-                     end_time AS EndTime,
-                     price AS Price,
-                     monthly_sessions AS MonthlySessions,
-                     created_at AS CreatedAt,
-                     last_modification AS LastModification,
-                     is_active AS IsActive
-                 FROM discipline
-                 WHERE id = @Id AND is_active = true;";
+            const string query = @"
+                SELECT id AS Id,
+                    name AS Name,
+                    id_user AS IdUser,
+                    start_time AS StartTime,
+                    end_time AS EndTime,
+                    price AS Price,
+                    cupos AS Cupos,
+                    created_at AS CreatedAt,
+                    last_modification AS LastModification,
+                    is_active AS IsActive
+                FROM discipline
+                WHERE id = @Id AND is_active = true;";
 
             try
             {
@@ -95,9 +95,9 @@ namespace DisciplineMicroservice.DisciplineMicroserviceInfraestructure.Persistan
         {
             const string query = @"
             INSERT INTO discipline
-                (name, id_user, start_time, end_time, price, monthly_sessions, created_at, last_modification, is_active, created_by)
+                (name, id_user, start_time, end_time, price, cupos, created_at, last_modification, is_active, created_by)
             VALUES
-                (@Name, @IdUser, @StartTime, @EndTime, @Price, @MonthlySessions, @CreatedAt, @LastModification, @IsActive, @CreatedBy)
+                (@Name, @IdUser, @StartTime, @EndTime, @Price, @Cupos, @CreatedAt, @LastModification, @IsActive, @CreatedBy)
             RETURNING id;";
 
             try
@@ -146,7 +146,7 @@ namespace DisciplineMicroservice.DisciplineMicroserviceInfraestructure.Persistan
                 start_time = @StartTime,
                 end_time = @EndTime,
                 price = @Price,
-                monthly_sessions = @MonthlySessions,
+                cupos = @Cupos,
                 last_modification = @LastModification,
                 is_active = @IsActive,
                 modified_by = @ModifiedBy
@@ -238,6 +238,7 @@ namespace DisciplineMicroservice.DisciplineMicroserviceInfraestructure.Persistan
                 {
                     Id = id,
                     LastModification = DateTime.Now,
+                    Qty = qty,
                     ModifiedBy = userEmail
                 };
 
