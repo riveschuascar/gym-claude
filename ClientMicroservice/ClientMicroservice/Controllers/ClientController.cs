@@ -18,22 +18,18 @@ public class ClientController : ControllerBase
         _service = service;
     }
 
-    private string? GetEmailFromClaims()
+    private string? GetUserIdFromClaims()
     {
-        var email = User.FindFirst(ClaimTypes.Email)?.Value;
-        
-        // Debug: Si no encuentra el email con ClaimTypes.Email, intenta con el nombre literal
-        if (string.IsNullOrEmpty(email))
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userId))
         {
-            email = User.FindFirst("email")?.Value;
+            userId = User.FindFirst("sub")?.Value;
         }
-        
-        // Debug: Log de todos los claims
-        var allClaims = User.Claims.Select(c => $"{c.Type}: {c.Value}").ToList();
-        System.Diagnostics.Debug.WriteLine($"All claims: {string.Join(", ", allClaims)}");
-        System.Diagnostics.Debug.WriteLine($"Email extracted: {email}");
-        
-        return email;
+        if (string.IsNullOrEmpty(userId))
+        {
+            userId = User.FindFirst(ClaimTypes.Email)?.Value;
+        }
+        return userId;
     }
 
     [HttpGet]
@@ -56,8 +52,8 @@ public class ClientController : ControllerBase
     {
         try
         {
-            var email = GetEmailFromClaims();
-            var created = await _service.CreateAsync(client, email);
+            var userId = GetUserIdFromClaims();
+            var created = await _service.CreateAsync(client, userId);
             return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
         }
         catch (ArgumentException ex)
@@ -72,8 +68,8 @@ public class ClientController : ControllerBase
         if (id != client.Id) return BadRequest("ID de ruta y cuerpo no coinciden");
         try
         {
-            var email = GetEmailFromClaims();
-            var updated = await _service.UpdateAsync(client, email);
+            var userId = GetUserIdFromClaims();
+            var updated = await _service.UpdateAsync(client, userId);
             if (updated is null) return NotFound();
             return Ok(updated);
         }
@@ -86,8 +82,8 @@ public class ClientController : ControllerBase
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id)
     {
-        var email = GetEmailFromClaims();
-        var ok = await _service.DeleteByIdAsync(id, email);
+        var userId = GetUserIdFromClaims();
+        var ok = await _service.DeleteByIdAsync(id, userId);
         if (!ok) return NotFound();
         return NoContent();
     }

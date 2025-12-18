@@ -86,6 +86,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseAuthentication();
 app.UseAuthorization();
+// ... (existing middleware)
 app.MapControllers();
 
 app.Run();
